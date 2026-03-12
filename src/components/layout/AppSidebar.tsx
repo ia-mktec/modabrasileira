@@ -1,0 +1,173 @@
+import { NavLink } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import {
+  LayoutDashboard,
+  Scissors,
+  Shirt,
+  Layers,
+  Users,
+  Package,
+  TruckIcon,
+  Settings,
+  ChevronLeft,
+  ChevronRight,
+  Factory,
+  PackageCheck,
+  HandCoins,
+  BarChart3,
+  DollarSign,
+  Warehouse,
+  Menu,
+  X,
+} from "lucide-react";
+import { useState, useEffect } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+
+const navItems = [
+  { to: "/", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/tecidos", icon: Layers, label: "Tecidos" },
+  { to: "/estoque-tecidos", icon: Warehouse, label: "Estoque Tecidos" },
+  { to: "/modelos", icon: Shirt, label: "Modelos" },
+  { to: "/corte", icon: Scissors, label: "Corte" },
+  { to: "/expedicao", icon: TruckIcon, label: "Expedição" },
+  { to: "/recebimento", icon: PackageCheck, label: "Recebimento" },
+  { to: "/entrega-cliente", icon: HandCoins, label: "Entrega Cliente" },
+  { to: "/relatorio-clientes", icon: BarChart3, label: "Relatório Clientes" },
+  { to: "/relatorio-producao", icon: Factory, label: "Fluxo de Produção" },
+  { to: "/cash-flow", icon: DollarSign, label: "Cash Flow" },
+  { to: "/cadastro", icon: Users, label: "Cadastro" },
+  { to: "/aviamentos", icon: Package, label: "Aviamentos" },
+];
+
+function SidebarContent({ collapsed, setCollapsed, onNavigate }: { collapsed: boolean; setCollapsed?: (v: boolean) => void; onNavigate?: () => void }) {
+  return (
+    <div className="flex flex-col h-full">
+      {/* Logo */}
+      <div className="flex items-center gap-3 px-4 h-16 border-b border-[hsl(var(--sidebar-border))]">
+        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-[hsl(var(--sidebar-primary))]">
+          <Factory className="w-5 h-5 text-[hsl(var(--sidebar-primary-foreground))]" />
+        </div>
+        {!collapsed && (
+          <div className="overflow-hidden">
+            <h1 className="text-sm font-bold text-[hsl(var(--sidebar-primary-foreground))] tracking-wide">
+              MKTEC Flow
+            </h1>
+            <p className="text-[10px] text-[hsl(var(--sidebar-foreground))] opacity-60">
+              Produção Têxtil
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.to === "/"}
+            onClick={onNavigate}
+            className={({ isActive }) =>
+              cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                "hover:bg-[hsl(var(--sidebar-accent))] hover:text-[hsl(var(--sidebar-accent-foreground))]",
+                isActive
+                  ? "bg-[hsl(var(--sidebar-accent))] text-[hsl(var(--sidebar-primary))] shadow-sm"
+                  : "text-[hsl(var(--sidebar-foreground))]",
+                collapsed && "justify-center px-2"
+              )
+            }
+          >
+            <item.icon className="w-5 h-5 shrink-0" />
+            {!collapsed && <span>{item.label}</span>}
+          </NavLink>
+        ))}
+      </nav>
+
+      {/* Collapse toggle - desktop only */}
+      {setCollapsed && (
+        <div className="px-2 py-3 border-t border-[hsl(var(--sidebar-border))]">
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="flex items-center justify-center w-full py-2 rounded-lg hover:bg-[hsl(var(--sidebar-accent))] transition-colors"
+          >
+            {collapsed ? (
+              <ChevronRight className="w-4 h-4" />
+            ) : (
+              <ChevronLeft className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* Settings */}
+      <div className="px-2 pb-4">
+        <NavLink
+          to="/cadastro"
+          onClick={onNavigate}
+          className={({ isActive }) =>
+            cn(
+              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
+              "hover:bg-[hsl(var(--sidebar-accent))]",
+              isActive ? "text-[hsl(var(--sidebar-primary))]" : "",
+              collapsed && "justify-center px-2"
+            )
+          }
+        >
+          <Settings className="w-5 h-5 shrink-0" />
+          {!collapsed && <span>Configurações</span>}
+        </NavLink>
+      </div>
+    </div>
+  );
+}
+
+export function AppSidebar() {
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const isMobile = useIsMobile();
+
+  // Close mobile drawer on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, []);
+
+  if (isMobile) {
+    return (
+      <>
+        {/* Mobile hamburger button - fixed top-left */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="fixed top-3 left-3 z-50 bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent))] rounded-lg shadow-lg h-10 w-10"
+          onClick={() => setMobileOpen(true)}
+        >
+          <Menu className="w-5 h-5" />
+        </Button>
+
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <SheetContent
+            side="left"
+            className="p-0 w-[260px] bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] border-[hsl(var(--sidebar-border))]"
+          >
+            <SidebarContent collapsed={false} onNavigate={() => setMobileOpen(false)} />
+          </SheetContent>
+        </Sheet>
+      </>
+    );
+  }
+
+  return (
+    <aside
+      className={cn(
+        "flex flex-col h-screen sticky top-0 border-r transition-all duration-300",
+        "bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] border-[hsl(var(--sidebar-border))]",
+        collapsed ? "w-[68px]" : "w-[240px]"
+      )}
+    >
+      <SidebarContent collapsed={collapsed} setCollapsed={setCollapsed} />
+    </aside>
+  );
+}

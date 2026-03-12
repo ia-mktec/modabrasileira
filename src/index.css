@@ -1,0 +1,198 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@layer base {
+  :root {
+    --background: 220 20% 97%;
+    --foreground: 220 30% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 30% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 30% 10%;
+
+    --primary: 217 71% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 90%;
+    --secondary-foreground: 220 30% 10%;
+
+    --muted: 220 14% 94%;
+    --muted-foreground: 220 10% 46%;
+
+    --accent: 217 71% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 35%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
+    --border: 220 14% 88%;
+    --input: 220 14% 88%;
+    --ring: 217 71% 45%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 222 30% 12%;
+    --sidebar-foreground: 220 14% 80%;
+    --sidebar-primary: 217 71% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 25% 18%;
+    --sidebar-accent-foreground: 220 14% 90%;
+    --sidebar-border: 222 20% 20%;
+    --sidebar-ring: 217 71% 55%;
+    --sidebar-muted: 222 20% 25%;
+  }
+
+  .dark {
+    --background: 222 30% 8%;
+    --foreground: 220 14% 90%;
+
+    --card: 222 25% 12%;
+    --card-foreground: 220 14% 90%;
+
+    --popover: 222 25% 12%;
+    --popover-foreground: 220 14% 90%;
+
+    --primary: 217 71% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 222 20% 20%;
+    --secondary-foreground: 220 14% 90%;
+
+    --muted: 222 20% 16%;
+    --muted-foreground: 220 10% 55%;
+
+    --accent: 217 71% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62% 40%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 222 20% 18%;
+    --input: 222 20% 18%;
+    --ring: 217 71% 55%;
+
+    --sidebar-background: 222 35% 6%;
+    --sidebar-foreground: 220 14% 75%;
+    --sidebar-primary: 217 71% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 30% 12%;
+    --sidebar-accent-foreground: 220 14% 90%;
+    --sidebar-border: 222 25% 14%;
+    --sidebar-ring: 217 71% 55%;
+    --sidebar-muted: 222 25% 18%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', system-ui, sans-serif;
+    @apply font-semibold tracking-tight;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(217 71% 55%), hsl(199 89% 48%));
+  }
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 8mm;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide sidebar */
+  aside {
+    display: none !important;
+  }
+
+  /* Hide action panel */
+  .print\\:hidden {
+    display: none !important;
+  }
+
+  /* Make content full width */
+  main {
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
+  /* Compact spacing for single page */
+  .p-4, .md\\:p-6 {
+    padding: 4px !important;
+  }
+
+  .space-y-4 > * + * {
+    margin-top: 8px !important;
+  }
+
+  .gap-4 {
+    gap: 8px !important;
+  }
+
+  .min-h-\[280px\], .min-h-\[400px\] {
+    min-height: 150px !important;
+  }
+
+  /* Reduce card padding */
+  .p-6, .p-4 {
+    padding: 6px !important;
+  }
+
+  /* Smaller text */
+  .text-xl, .text-2xl {
+    font-size: 16px !important;
+  }
+
+  .text-sm {
+    font-size: 11px !important;
+  }
+
+  .text-xs {
+    font-size: 10px !important;
+  }
+
+  /* Ensure tables don't break */
+  table {
+    page-break-inside: avoid;
+  }
+
+  /* Hide upload buttons in print */
+  input[type="file"] {
+    display: none !important;
+  }
+}
