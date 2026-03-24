@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import { Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -109,6 +109,13 @@ export default function LoginPage() {
                 </>
               )}
             </Button>
+            {!isSignUp && (
+              <div className="text-center">
+                <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+                  Esqueceu a senha?
+                </Link>
+              </div>
+            )}
             <Button
               type="button"
               variant="ghost"
