@@ -18,12 +18,18 @@ import {
   DollarSign,
   Warehouse,
   Menu,
-  X,
+  LogOut,
+  ShieldCheck,
+  Lock,
+  Eye,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { canAccessRoute, canEditRoute } from "@/lib/permissions";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
@@ -42,6 +48,10 @@ const navItems = [
 ];
 
 function SidebarContent({ collapsed, setCollapsed, onNavigate }: { collapsed: boolean; setCollapsed?: (v: boolean) => void; onNavigate?: () => void }) {
+  const { roles, signOut, user, isDev } = useAuth();
+
+  const accessibleItems = navItems.filter((item) => canAccessRoute(item.to, roles));
+
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}
@@ -55,7 +65,7 @@ function SidebarContent({ collapsed, setCollapsed, onNavigate }: { collapsed: bo
               MKTEC Flow
             </h1>
             <p className="text-[10px] text-[hsl(var(--sidebar-foreground))] opacity-60">
-              Produção Têxtil
+              {user?.email}
             </p>
           </div>
         )}
@@ -63,27 +73,47 @@ function SidebarContent({ collapsed, setCollapsed, onNavigate }: { collapsed: bo
 
       {/* Navigation */}
       <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === "/"}
-            onClick={onNavigate}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-                "hover:bg-[hsl(var(--sidebar-accent))] hover:text-[hsl(var(--sidebar-accent-foreground))]",
-                isActive
-                  ? "bg-[hsl(var(--sidebar-accent))] text-[hsl(var(--sidebar-primary))] shadow-sm"
-                  : "text-[hsl(var(--sidebar-foreground))]",
-                collapsed && "justify-center px-2"
-              )
-            }
-          >
-            <item.icon className="w-5 h-5 shrink-0" />
-            {!collapsed && <span>{item.label}</span>}
-          </NavLink>
-        ))}
+        {accessibleItems.map((item) => {
+          const isEditMode = canEditRoute(item.to, roles);
+          return (
+            <Tooltip key={item.to} delayDuration={300}>
+              <TooltipTrigger asChild>
+                <NavLink
+                  to={item.to}
+                  end={item.to === "/"}
+                  onClick={onNavigate}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                      "hover:bg-[hsl(var(--sidebar-accent))] hover:text-[hsl(var(--sidebar-accent-foreground))]",
+                      isActive
+                        ? "bg-[hsl(var(--sidebar-accent))] text-[hsl(var(--sidebar-primary))] shadow-sm"
+                        : "text-[hsl(var(--sidebar-foreground))]",
+                      collapsed && "justify-center px-2"
+                    )
+                  }
+                >
+                  <item.icon className="w-5 h-5 shrink-0" />
+                  {!collapsed && (
+                    <>
+                      <span className="flex-1">{item.label}</span>
+                      {isEditMode ? (
+                        <Settings className="w-3.5 h-3.5 opacity-40" />
+                      ) : (
+                        <Eye className="w-3.5 h-3.5 opacity-40" />
+                      )}
+                    </>
+                  )}
+                </NavLink>
+              </TooltipTrigger>
+              {collapsed && (
+                <TooltipContent side="right">
+                  {item.label} {isEditMode ? "(edição)" : "(visualização)"}
+                </TooltipContent>
+              )}
+            </Tooltip>
+          );
+        })}
       </nav>
 
       {/* Collapse toggle - desktop only */}
@@ -102,23 +132,36 @@ function SidebarContent({ collapsed, setCollapsed, onNavigate }: { collapsed: bo
         </div>
       )}
 
-      {/* Settings */}
-      <div className="px-2 pb-4">
-        <NavLink
-          to="/cadastro"
-          onClick={onNavigate}
-          className={({ isActive }) =>
-            cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
-              "hover:bg-[hsl(var(--sidebar-accent))]",
-              isActive ? "text-[hsl(var(--sidebar-primary))]" : "",
-              collapsed && "justify-center px-2"
-            )
-          }
+      {/* Bottom actions */}
+      <div className="px-2 pb-4 space-y-1">
+        {isDev && (
+          <NavLink
+            to="/gerenciar-usuarios"
+            onClick={onNavigate}
+            className={({ isActive }) =>
+              cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
+                "hover:bg-[hsl(var(--sidebar-accent))]",
+                isActive ? "text-[hsl(var(--sidebar-primary))]" : "",
+                collapsed && "justify-center px-2"
+              )
+            }
+          >
+            <ShieldCheck className="w-5 h-5 shrink-0" />
+            {!collapsed && <span>Gerenciar Usuários</span>}
+          </NavLink>
+        )}
+        <button
+          onClick={signOut}
+          className={cn(
+            "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all w-full",
+            "hover:bg-[hsl(var(--sidebar-accent))] text-[hsl(var(--sidebar-foreground))]",
+            collapsed && "justify-center px-2"
+          )}
         >
-          <Settings className="w-5 h-5 shrink-0" />
-          {!collapsed && <span>Configurações</span>}
-        </NavLink>
+          <LogOut className="w-5 h-5 shrink-0" />
+          {!collapsed && <span>Sair</span>}
+        </button>
       </div>
     </div>
   );
@@ -129,7 +172,6 @@ export function AppSidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const isMobile = useIsMobile();
 
-  // Close mobile drawer on route change
   useEffect(() => {
     setMobileOpen(false);
   }, []);
@@ -137,7 +179,6 @@ export function AppSidebar() {
   if (isMobile) {
     return (
       <>
-        {/* Mobile hamburger button - fixed top-left */}
         <Button
           variant="ghost"
           size="icon"
