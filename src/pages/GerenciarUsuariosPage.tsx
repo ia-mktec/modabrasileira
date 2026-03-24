@@ -101,7 +101,6 @@ export default function GerenciarUsuariosPage() {
       <PageHeader
         title="Gerenciar Usuários"
         description="Controle de perfis e permissões de acesso"
-        icon={Users}
       />
 
       <Card>
