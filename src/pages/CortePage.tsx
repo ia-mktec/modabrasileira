@@ -86,61 +86,89 @@ const CortePage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isLoadedFromSearch, setIsLoadedFromSearch] = useState(false);
 
-  const filteredOrdens = ordensCorte.filter(
-    (oc) =>
-    oc.numero.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    oc.modeloRef.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredOrdens = ordensCorteDb.filter(
+    (oc: any) =>
+    (oc.numero || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (oc.modelo_ref || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredModelos = modelos.filter(
-    (m) =>
+  const filteredModelos = modelosDb.filter(
+    (m: any) =>
     m.referencia.toLowerCase().includes(modeloSearchTerm.toLowerCase()) ||
     m.descricao.toLowerCase().includes(modeloSearchTerm.toLowerCase())
   );
 
   // Filtra tecidos pelo cliente selecionado
-  const clienteNomeSelecionado = clientes.find((c) => c.id === selectedClienteId)?.razaoSocial || "";
-  const filteredTecidos = tecidos.filter(
-    (t) =>
-    t.cliente === clienteNomeSelecionado && (
+  const filteredTecidos = tecidosDb.filter(
+    (t: any) =>
+    t.cliente_id === selectedClienteId && (
     t.nome.toLowerCase().includes(tecidoSearchTerm.toLowerCase()) ||
-    t.cor.toLowerCase().includes(tecidoSearchTerm.toLowerCase()))
+    (t.cor || "").toLowerCase().includes(tecidoSearchTerm.toLowerCase()))
   );
 
   // Cores disponíveis: tecidos do mesmo cliente e mesmo nome de tecido selecionado
-  const coresDisponiveisData = tecidos.
-  filter((t) => t.cliente === clienteNomeSelecionado && t.nome === tecido);
-
-  const filteredCores = coresDisponiveisData.filter((t) =>
-  t.cor.toLowerCase().includes(corSearchTerm.toLowerCase())
+  const coresDisponiveisData = tecidosDb.filter(
+    (t: any) => t.cliente_id === selectedClienteId && t.nome === tecido
   );
 
-  const filteredClientes = clientes.filter(
-    (c) =>
-    c.razaoSocial.toLowerCase().includes(clienteSearchTerm.toLowerCase()) ||
-    c.cnpj.includes(clienteSearchTerm)
+  const filteredCores = coresDisponiveisData.filter((t: any) =>
+    (t.cor || "").toLowerCase().includes(corSearchTerm.toLowerCase())
   );
 
-  const allAviamentoItems = cadastroAviamentos.flatMap((cat) =>
-  cat.itens.map((item) => ({ ...item, tipo: cat.tipo }))
+  const filteredClientes = clientesDb.filter(
+    (c: any) =>
+    (c.razao_social || "").toLowerCase().includes(clienteSearchTerm.toLowerCase()) ||
+    (c.cnpj || "").includes(clienteSearchTerm)
   );
 
-  const filteredAviamentos = allAviamentoItems.filter(
-    (a) =>
-    a.descricao.toLowerCase().includes(aviamentoSearchTerm.toLowerCase()) ||
-    a.tipo.toLowerCase().includes(aviamentoSearchTerm.toLowerCase())
+  const filteredAviamentosItems = aviamentosDb.filter(
+    (a: any) =>
+    (a.descricao || "").toLowerCase().includes(aviamentoSearchTerm.toLowerCase()) ||
+    (a.tipo || "").toLowerCase().includes(aviamentoSearchTerm.toLowerCase())
   );
 
-  const loadOrdem = (oc: typeof ordensCorte[0]) => {
+  const loadOrdem = (oc: any) => {
+    setCurrentOrdemId(oc.id);
     setNumero(oc.numero);
-    setModeloRef(oc.modeloRef);
-    const foundModelo = modelos.find(m => m.referencia === oc.modeloRef);
+    setModeloRef(oc.modelo_ref || "");
+    const foundModelo = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
     setModeloNome(foundModelo?.descricao || "");
-    setTecido(oc.tecido);
-    setDataCorte(oc.dataCorte);
-    setCortador(oc.cortador);
-    setEnfestos(String(oc.enfestos));
-    setStatus(oc.status);
+    setTecido(oc.tecido_nome || "");
+    setSelectedTecidoId(oc.tecido_id || "");
+    setSelectedClienteId(oc.cliente_id || "");
+    const foundCliente = clientesDb.find((c: any) => c.id === oc.cliente_id);
+    setClienteNome(foundCliente?.razao_social || "");
+    setDataCorte(oc.data_corte || "");
+    setCortador(oc.cortador || "");
+    setEnfestos(String(oc.enfestos || ""));
+    setConsumoPorPeca(String(oc.consumo_por_peca || ""));
+    setObservacoes(oc.observacoes || "");
+    setStatus(oc.status || "");
+    // Load grade
+    if (oc.grade_corte && oc.grade_corte.length > 0) {
+      setGradeRows(oc.grade_corte.map((g: any) => ({
+        id: g.id || crypto.randomUUID(),
+        cor: g.cor || "",
+        tecidoId: g.tecido_id || "",
+        quantidades: {
+          PP: String(g.pp || ""), P: String(g.p || ""), M: String(g.m || ""),
+          G: String(g.g || ""), GG: String(g.gg || ""), G1: String(g.g1 || ""),
+          G2: String(g.g2 || ""), G3: String(g.g3 || ""),
+        }
+      })));
+    } else {
+      setGradeRows([createEmptyGradeRow()]);
+    }
+    // Load aviamentos
+    if (oc.aviamentos_ordem && oc.aviamentos_ordem.length > 0) {
+      setAviamentos(oc.aviamentos_ordem.map((a: any) => ({
+        id: a.id || crypto.randomUUID(),
+        descricao: a.descricao || "",
+        quantidade: String(a.quantidade || ""),
+      })));
+    } else {
+      setAviamentos([]);
+    }
     setSearchOpen(false);
     setIsLoadedFromSearch(true);
   };
