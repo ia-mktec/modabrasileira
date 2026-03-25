@@ -147,8 +147,8 @@ const ExpedicaoPage = () => {
   const updateAviamentoEnvio = (id: string, val: string) =>
   setAviamentosExp((prev) => prev.map((a) => a.id === id ? { ...a, qtdEnvio: val } : a));
 
-  const handleRegistrarSaida = () => {
-    if (!numero) {
+  const handleRegistrarSaida = async () => {
+    if (!numero || !currentOrdemCorteId) {
       toast({ title: "Nenhuma ordem carregada", description: "Busque uma ordem de corte primeiro.", variant: "destructive" });
       return;
     }
@@ -156,7 +156,32 @@ const ExpedicaoPage = () => {
       toast({ title: "Campo obrigatório", description: "Preencha a data de saída.", variant: "destructive" });
       return;
     }
-    toast({ title: "Saída registrada", description: `Expedição da ordem ${numero} registrada com sucesso.` });
+
+    const gradeData = gradeRows.map((row) => ({
+      cor: row.cor,
+      pp_prod: row.qtdProduzida.PP || 0, p_prod: row.qtdProduzida.P || 0,
+      m_prod: row.qtdProduzida.M || 0, g_prod: row.qtdProduzida.G || 0,
+      gg_prod: row.qtdProduzida.GG || 0, g1_prod: row.qtdProduzida.G1 || 0,
+      g2_prod: row.qtdProduzida.G2 || 0, g3_prod: row.qtdProduzida.G3 || 0,
+      pp_exp: row.qtdProduzida.PP || 0, p_exp: row.qtdProduzida.P || 0,
+      m_exp: row.qtdProduzida.M || 0, g_exp: row.qtdProduzida.G || 0,
+      gg_exp: row.qtdProduzida.GG || 0, g1_exp: row.qtdProduzida.G1 || 0,
+      g2_exp: row.qtdProduzida.G2 || 0, g3_exp: row.qtdProduzida.G3 || 0,
+    }));
+
+    const result = await salvarExpedicao({
+      ordem_corte_id: currentOrdemCorteId,
+      data_saida: dataSaida || null,
+      oficina_nome: oficina || null,
+      destino: cliente || null,
+      preco_peca: parseFloat(preco) || 0,
+      observacoes: observacoes || null,
+      status: statusKanban || "pendente",
+    }, gradeData);
+
+    if (result) {
+      toast({ title: "Expedição registrada", description: `Saída da ordem ${numero} registrada com sucesso.` });
+    }
   };
 
   const handlePrint = useCallback(() => {window.print();}, []);
