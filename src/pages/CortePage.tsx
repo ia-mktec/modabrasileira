@@ -174,9 +174,7 @@ const CortePage = () => {
   };
 
   const limparCampos = () => {
-    if (reservaAtiva && numero) {
-      cancelarReserva(numero);
-    }
+    setCurrentOrdemId(null);
     setNumero("");setModeloRef("");setModeloNome("");setTecido("");setSelectedTecidoId("");
     setDataCorte("");setCortador("");
     setEnfestos("");setStatus("");
@@ -196,19 +194,13 @@ const CortePage = () => {
 
   const consumoTotal = totalGeral * (parseFloat(consumoPorPeca) || 0);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!numero || !modeloRef || !tecido) {
       toast({ title: "Campos obrigatórios", description: "Preencha ao menos Nº Ordem, Modelo e Tecido.", variant: "destructive" });
       return;
     }
     if (!selectedClienteId) {
       toast({ title: "Cliente não selecionado", description: "Selecione um cliente antes de salvar.", variant: "destructive" });
-      return;
-    }
-
-    const consumoPorPecaNum = parseFloat(consumoPorPeca) || 0;
-    if (consumoPorPecaNum <= 0) {
-      toast({ title: "Consumo inválido", description: "Preencha o consumo por peça.", variant: "destructive" });
       return;
     }
 
@@ -229,36 +221,48 @@ const CortePage = () => {
       return;
     }
 
-    // Reserve stock per color row
-    let allOk = true;
-    for (const row of rowsComQtd) {
-      const rowTotal = TAMANHOS.reduce((sum, t) => sum + (parseInt(row.quantidades[t]) || 0), 0);
-      const consumoRow = rowTotal * consumoPorPecaNum;
-      const disponivel = getEstoqueDisponivel(row.tecidoId);
+    const foundModelo = modelosDb.find((m: any) => m.referencia === modeloRef);
 
-      if (consumoRow > disponivel) {
-        toast({
-          title: "Estoque insuficiente",
-          description: `Cor "${row.cor}": Disponível ${disponivel.toFixed(2)} Kg, necessário ${consumoRow.toFixed(2)} Kg.`,
-          variant: "destructive"
-        });
-        allOk = false;
-        break;
-      }
+    const ordemData = {
+      numero,
+      modelo_ref: modeloRef,
+      modelo_id: foundModelo?.id || null,
+      tecido_nome: tecido,
+      tecido_id: selectedTecidoId || null,
+      cliente_id: selectedClienteId || null,
+      quantidade_pecas: totalGeral,
+      data_corte: dataCorte || null,
+      cortador: cortador || null,
+      enfestos: parseInt(enfestos) || 0,
+      perda_percent: 0,
+      consumo_por_peca: parseFloat(consumoPorPeca) || 0,
+      observacoes: observacoes || null,
+      status: status || "pendente",
+    };
 
-      const ok = reservarEstoque(numero, row.tecidoId, `${tecido} - ${row.cor}`, consumoRow);
-      if (!ok) {
-        allOk = false;
-        toast({ title: "Erro na reserva", description: `Não foi possível reservar estoque para cor "${row.cor}".`, variant: "destructive" });
-        break;
-      }
-    }
+    const gradeData = rowsComQtd.map((row) => ({
+      cor: row.cor,
+      tecido_id: row.tecidoId || null,
+      pp: parseInt(row.quantidades.PP) || 0,
+      p: parseInt(row.quantidades.P) || 0,
+      m: parseInt(row.quantidades.M) || 0,
+      g: parseInt(row.quantidades.G) || 0,
+      gg: parseInt(row.quantidades.GG) || 0,
+      g1: parseInt(row.quantidades.G1) || 0,
+      g2: parseInt(row.quantidades.G2) || 0,
+      g3: parseInt(row.quantidades.G3) || 0,
+    }));
 
-    if (allOk) {
-      setReservaAtiva(true);
+    const aviamentosData = aviamentos
+      .filter(a => a.descricao && parseInt(a.quantidade) > 0)
+      .map(a => ({ descricao: a.descricao, quantidade: parseInt(a.quantidade) || 0 }));
+
+    const result = await salvarOrdem(ordemData, gradeData, aviamentosData, currentOrdemId || undefined);
+    if (result) {
+      setCurrentOrdemId(result);
       toast({
-        title: "Ordem salva — Estoque reservado",
-        description: `${consumoTotal.toFixed(2)} Kg reservados para a ordem ${numero} (${rowsComQtd.length} cor(es)).`
+        title: currentOrdemId ? "Ordem atualizada" : "Ordem salva",
+        description: `Ordem ${numero} salva com sucesso. ${totalGeral} peças.`
       });
     }
   };
