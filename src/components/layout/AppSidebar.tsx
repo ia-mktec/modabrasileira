@@ -72,7 +72,7 @@ function SidebarContent({ collapsed, setCollapsed, onNavigate }: { collapsed: bo
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
+      <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto overflow-x-hidden">
         {accessibleItems.map((item) => {
           const isEditMode = canEditRoute(item.to, roles);
           return (
@@ -84,7 +84,7 @@ function SidebarContent({ collapsed, setCollapsed, onNavigate }: { collapsed: bo
                   onClick={onNavigate}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap",
                       "hover:bg-[hsl(var(--sidebar-accent))] hover:text-[hsl(var(--sidebar-accent-foreground))]",
                       isActive
                         ? "bg-[hsl(var(--sidebar-accent))] text-[hsl(var(--sidebar-primary))] shadow-sm"
@@ -96,11 +96,11 @@ function SidebarContent({ collapsed, setCollapsed, onNavigate }: { collapsed: bo
                   <item.icon className="w-5 h-5 shrink-0" />
                   {!collapsed && (
                     <>
-                      <span className="flex-1">{item.label}</span>
+                      <span className="flex-1 truncate">{item.label}</span>
                       {isEditMode ? (
-                        <Settings className="w-3.5 h-3.5 opacity-40" />
+                        <Settings className="w-3.5 h-3.5 opacity-40 shrink-0" />
                       ) : (
-                        <Eye className="w-3.5 h-3.5 opacity-40" />
+                        <Eye className="w-3.5 h-3.5 opacity-40 shrink-0" />
                       )}
                     </>
                   )}
