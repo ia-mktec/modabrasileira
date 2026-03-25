@@ -76,14 +76,16 @@ export default function GerenciarUsuariosPage() {
     const role = selectedRole[userId];
     if (!role) return;
 
+    // Clear selection immediately to unmount Select portal before refetch
+    setSelectedRole((prev) => ({ ...prev, [userId]: undefined as unknown as AppRole }));
+
     const { error } = await supabase.from("user_roles").insert({ user_id: userId, role });
     if (error) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Perfil adicionado" });
-      setSelectedRole((prev) => ({ ...prev, [userId]: undefined as unknown as AppRole }));
-      fetchUsers();
     }
+    await fetchUsers();
   };
 
   const removeRole = async (userId: string, role: AppRole) => {
@@ -92,8 +94,8 @@ export default function GerenciarUsuariosPage() {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Perfil removido" });
-      fetchUsers();
     }
+    await fetchUsers();
   };
 
   return (
@@ -148,6 +150,7 @@ export default function GerenciarUsuariosPage() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Select
+                          key={`select-${u.id}-${u.roles.join(",")}`}
                           value={selectedRole[u.id] || ""}
                           onValueChange={(v) =>
                             setSelectedRole((prev) => ({ ...prev, [u.id]: v as AppRole }))
