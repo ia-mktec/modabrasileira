@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { ordensCorte, modelos } from "@/lib/mock-data";
+import { useOrdensCorte, useEntregaCliente, useModelos } from "@/hooks/useSupabaseData";
 import { Search, Printer, PackageCheck, ImageOff, Send, CalendarIcon } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -33,6 +33,10 @@ interface GradeEntregueRow {
 }
 
 const EntregaClientePage = () => {
+  const { ordens: ordensCorteDb } = useOrdensCorte();
+  const { salvarEntrega } = useEntregaCliente();
+  const { modelos: modelosDb } = useModelos();
+  const [currentOrdemCorteId, setCurrentOrdemCorteId] = useState<string | null>(null);
   // Consulta (read-only)
   const [ordemCorte, setOrdemCorte] = useState("");
   const [referencia, setReferencia] = useState("");
@@ -60,10 +64,10 @@ const EntregaClientePage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const filteredOrdens = ordensCorte.filter(
-    (oc) =>
-    oc.numero.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    oc.modeloRef.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredOrdens = ordensCorteDb.filter(
+    (oc: any) =>
+    (oc.numero || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (oc.modelo_ref || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const statusLabel = (s: string) => {
@@ -76,40 +80,44 @@ const EntregaClientePage = () => {
     }
   };
 
-  const loadOrdem = (oc: typeof ordensCorte[0]) => {
+  const loadOrdem = (oc: any) => {
+    setCurrentOrdemCorteId(oc.id);
     setOrdemCorte(oc.numero);
-    setReferencia(oc.modeloRef);
-    const foundModelo = modelos.find(m => m.referencia === oc.modeloRef);
+    setReferencia(oc.modelo_ref || "");
+    const foundModelo = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
     setModeloNome(foundModelo?.descricao || "");
-    setCliente("Cliente Exemplo");
-    setDataCorte(oc.dataCorte);
-    setOficina("Oficina Costura Fina");
-    setDataEnvio("2025-03-08");
+    setCliente("");
+    setDataCorte(oc.data_corte || "");
+    setOficina("");
+    setDataEnvio("");
     setDataEntrega(undefined);
     setTempoProducao("");
 
-    // Grade cortada (consulta)
-    const cores = ["Preto", "Off", "Rosa"];
-    const mockCortada: GradeCortadaRow[] = cores.map((cor, i) => ({
-      id: String(i + 1),
-      cor,
-      qtdCortada: Object.fromEntries(TAMANHOS.map((t, j) => [t, j >= 1 && j <= 3 ? Math.floor(oc.quantidadePecas / 15) : 0])),
-      totalPecasRecebido: 0,
-      totalDefeitos: 0
-    }));
-    mockCortada.forEach((r) => {
-      r.totalPecasRecebido = TAMANHOS.reduce((s, t) => s + (r.qtdCortada[t] || 0), 0);
-    });
-    setGradeCortada(mockCortada);
+    // Grade cortada from ordem
+    if (oc.grade_corte && oc.grade_corte.length > 0) {
+      const cortada = oc.grade_corte.map((g: any) => ({
+        id: g.id || crypto.randomUUID(),
+        cor: g.cor || "",
+        qtdCortada: {
+          PP: g.pp || 0, P: g.p || 0, M: g.m || 0, G: g.g || 0,
+          GG: g.gg || 0, G1: g.g1 || 0, G2: g.g2 || 0, G3: g.g3 || 0,
+        },
+        totalPecasRecebido: (g.pp || 0) + (g.p || 0) + (g.m || 0) + (g.g || 0) + (g.gg || 0) + (g.g1 || 0) + (g.g2 || 0) + (g.g3 || 0),
+        totalDefeitos: 0,
+      }));
+      setGradeCortada(cortada);
 
-    // Grade entregue (editável)
-    const mockEntregue: GradeEntregueRow[] = cores.map((cor, i) => ({
-      id: String(i + 1),
-      cor,
-      qtdEntregue: Object.fromEntries(TAMANHOS.map((t) => [t, ""])),
-      segundaQualidade: ""
-    }));
-    setGradeEntregue(mockEntregue);
+      const entregue = oc.grade_corte.map((g: any) => ({
+        id: g.id || crypto.randomUUID(),
+        cor: g.cor || "",
+        qtdEntregue: Object.fromEntries(TAMANHOS.map((t: string) => [t, ""])),
+        segundaQualidade: "",
+      }));
+      setGradeEntregue(entregue);
+    } else {
+      setGradeCortada([]);
+      setGradeEntregue([]);
+    }
 
     setRefImage(null);
     setSearchOpen(false);
@@ -141,12 +149,26 @@ const EntregaClientePage = () => {
     return gradeEntregue.reduce((sum, row) => sum + (parseInt(row.segundaQualidade) || 0), 0);
   }, [gradeEntregue]);
 
-  const handleRegistrarEntrega = () => {
-    if (!ordemCorte) {
+  const handleRegistrarEntrega = async () => {
+    if (!ordemCorte || !currentOrdemCorteId) {
       toast({ title: "Nenhuma ordem carregada", description: "Busque uma ordem primeiro.", variant: "destructive" });
       return;
     }
-    toast({ title: "Entrega registrada", description: `Entrega da ordem ${ordemCorte} registrada com sucesso.` });
+
+    const result = await salvarEntrega({
+      ordem_corte_id: currentOrdemCorteId,
+      data_entrega: dataEntrega ? format(dataEntrega, "yyyy-MM-dd") : null,
+      qtd_entregue: qtdEntregueAuto,
+      segunda_qualidade: segundaQualidadeAuto,
+      oficina_nome: oficina || null,
+      tempo_producao: tempoProducao || null,
+      observacoes: observacoes || null,
+      status: statusKanban || "pendente",
+    });
+
+    if (result) {
+      toast({ title: "Entrega registrada", description: `Entrega da ordem ${ordemCorte} registrada com sucesso.` });
+    }
   };
 
   const handlePrint = useCallback(() => {window.print();}, []);
@@ -183,11 +205,11 @@ const EntregaClientePage = () => {
                   <Input placeholder="Número ou modelo..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9" />
                 </div>
                 <div className="space-y-1 max-h-[70vh] overflow-y-auto">
-                  {filteredOrdens.map((oc) =>
+                  {filteredOrdens.map((oc: any) =>
                   <button key={oc.id} onClick={() => loadOrdem(oc)} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
                       <div className="font-mono text-xs font-semibold text-primary">{oc.numero}</div>
-                      <div className="text-muted-foreground text-xs">{oc.modeloRef} — {oc.tecido}</div>
-                      <div className="text-muted-foreground text-[10px]">{statusLabel(oc.status)} • {oc.quantidadePecas} peças</div>
+                      <div className="text-muted-foreground text-xs">{oc.modelo_ref} — {oc.tecido_nome}</div>
+                      <div className="text-muted-foreground text-[10px]">{statusLabel(oc.status)} • {oc.quantidade_pecas} peças</div>
                     </button>
                   )}
                   {filteredOrdens.length === 0 &&

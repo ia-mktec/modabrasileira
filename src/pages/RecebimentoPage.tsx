@@ -8,7 +8,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { ordensCorte, modelos } from "@/lib/mock-data";
+import { useOrdensCorte, useRecebimento, useModelos } from "@/hooks/useSupabaseData";
 import { Search, Printer, PackageCheck, ImageOff, Eraser, Save } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { differenceInDays, parseISO } from "date-fns";
@@ -25,6 +25,10 @@ interface GradeRecRow {
 }
 
 const RecebimentoPage = () => {
+  const { ordens: ordensCorteDb } = useOrdensCorte();
+  const { salvarRecebimento } = useRecebimento();
+  const { modelos: modelosDb } = useModelos();
+  const [currentOrdemCorteId, setCurrentOrdemCorteId] = useState<string | null>(null);
   // Consulta (read-only) - dados da ordem
   const [referencia, setReferencia] = useState("");
   const [ordemCorte, setOrdemCorte] = useState("");
@@ -49,10 +53,10 @@ const RecebimentoPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const filteredOrdens = ordensCorte.filter(
-    (oc) =>
-      oc.numero.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      oc.modeloRef.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredOrdens = ordensCorteDb.filter(
+    (oc: any) =>
+      (oc.numero || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (oc.modelo_ref || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const statusLabel = (s: string) => {
@@ -84,28 +88,32 @@ const RecebimentoPage = () => {
     }
   }, [dataEnvio, dataRecebimento]);
 
-  const loadOrdem = (oc: typeof ordensCorte[0]) => {
-    setReferencia(oc.modeloRef);
+  const loadOrdem = (oc: any) => {
+    setCurrentOrdemCorteId(oc.id);
+    setReferencia(oc.modelo_ref || "");
     setOrdemCorte(oc.numero);
-    setCliente("Cliente Exemplo");
-    const foundModelo = modelos.find(m => m.referencia === oc.modeloRef);
-    setModelo(foundModelo?.descricao || oc.modeloRef);
-    setOficina("Oficina Exemplo");
-    setDataEnvio(oc.dataCorte);
+    setCliente("");
+    const foundModelo = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
+    setModelo(foundModelo?.descricao || oc.modelo_ref || "");
+    setOficina("");
+    setDataEnvio(oc.data_corte || "");
 
-    const cores = ["Preto", "Off", "Rosa"];
-    const mockRows: GradeRecRow[] = cores.map((cor, i) => ({
-      id: String(i + 1),
-      cor,
-      qtdCortada: Object.fromEntries(TAMANHOS.map((t, j) => [t, j >= 1 && j <= 3 ? Math.floor(oc.quantidadePecas / 15) : 0])),
-      totalPecas: 0,
-      totalDefeitos: "",
-      totalRecebido: "",
-    }));
-    mockRows.forEach((r) => {
-      r.totalPecas = TAMANHOS.reduce((s, t) => s + (r.qtdCortada[t] || 0), 0);
-    });
-    setGradeRows(mockRows);
+    // Load grade from ordem corte
+    if (oc.grade_corte && oc.grade_corte.length > 0) {
+      setGradeRows(oc.grade_corte.map((g: any) => ({
+        id: g.id || crypto.randomUUID(),
+        cor: g.cor || "",
+        qtdCortada: {
+          PP: g.pp || 0, P: g.p || 0, M: g.m || 0, G: g.g || 0,
+          GG: g.gg || 0, G1: g.g1 || 0, G2: g.g2 || 0, G3: g.g3 || 0,
+        },
+        totalPecas: (g.pp || 0) + (g.p || 0) + (g.m || 0) + (g.g || 0) + (g.gg || 0) + (g.g1 || 0) + (g.g2 || 0) + (g.g3 || 0),
+        totalDefeitos: "",
+        totalRecebido: "",
+      })));
+    } else {
+      setGradeRows([]);
+    }
 
     setRefImage(null);
     setSearchOpen(false);
@@ -115,8 +123,8 @@ const RecebimentoPage = () => {
     setStatusKanban("");
   };
 
-  const handleSalvar = () => {
-    if (!ordemCorte) {
+  const handleSalvar = async () => {
+    if (!ordemCorte || !currentOrdemCorteId) {
       toast({ title: "Nenhuma ordem carregada", description: "Busque uma ordem primeiro.", variant: "destructive" });
       return;
     }
@@ -124,7 +132,23 @@ const RecebimentoPage = () => {
       toast({ title: "Campo obrigatório", description: "Preencha a data de recebimento.", variant: "destructive" });
       return;
     }
-    toast({ title: "Recebimento salvo", description: `Recebimento da ordem ${ordemCorte} salvo com sucesso.` });
+
+    const result = await salvarRecebimento({
+      expedicao_id: currentOrdemCorteId, // Will need proper link later
+      ordem_corte_id: currentOrdemCorteId,
+      oficina_nome: oficina || null,
+      data_envio: dataEnvio || null,
+      data_recebimento: dataRecebimento || null,
+      total_sem_defeitos: qtdRecebida - defeitos,
+      defeitos: defeitos,
+      total_pagar: 0,
+      observacoes: observacoes || null,
+      status: statusKanban || "pendente",
+    });
+
+    if (result) {
+      toast({ title: "Recebimento salvo", description: `Recebimento da ordem ${ordemCorte} salvo com sucesso.` });
+    }
   };
 
   const handleLimpar = () => {
@@ -171,11 +195,11 @@ const RecebimentoPage = () => {
                   <Input placeholder="Número ou modelo..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9" />
                 </div>
                 <div className="space-y-1 max-h-[70vh] overflow-y-auto">
-                  {filteredOrdens.map((oc) => (
+                  {filteredOrdens.map((oc: any) => (
                     <button key={oc.id} onClick={() => loadOrdem(oc)} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
                       <div className="font-mono text-xs font-semibold text-primary">{oc.numero}</div>
-                      <div className="text-muted-foreground text-xs">{oc.modeloRef} — {oc.tecido}</div>
-                      <div className="text-muted-foreground text-[10px]">{statusLabel(oc.status)} • {oc.quantidadePecas} peças</div>
+                      <div className="text-muted-foreground text-xs">{oc.modelo_ref} — {oc.tecido_nome}</div>
+                      <div className="text-muted-foreground text-[10px]">{statusLabel(oc.status)} • {oc.quantidade_pecas} peças</div>
                     </button>
                   ))}
                   {filteredOrdens.length === 0 && (

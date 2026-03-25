@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
-import { ordensCorte, fornecedores, cadastroAviamentos, modelos } from "@/lib/mock-data";
+import { useOrdensCorte, useExpedicao, useFornecedores, useModelos } from "@/hooks/useSupabaseData";
 import { Search, Truck, Printer, PackageCheck, ImageOff } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
@@ -34,6 +34,11 @@ interface GradacaoRow {
 }
 
 const ExpedicaoPage = () => {
+  const { ordens: ordensCorteDb } = useOrdensCorte();
+  const { salvarExpedicao } = useExpedicao();
+  const { fornecedores: fornecedoresDb } = useFornecedores();
+  const { modelos: modelosDb } = useModelos();
+  const [currentOrdemCorteId, setCurrentOrdemCorteId] = useState<string | null>(null);
   // Dados da ordem (consulta - read only)
   const [numero, setNumero] = useState("");
   const [modeloRef, setModeloRef] = useState("");
@@ -70,10 +75,10 @@ const ExpedicaoPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const filteredOrdens = ordensCorte.filter(
-    (oc) =>
-    oc.numero.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    oc.modeloRef.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredOrdens = ordensCorteDb.filter(
+    (oc: any) =>
+    (oc.numero || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (oc.modelo_ref || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const statusLabel = (s: string) => {
@@ -86,48 +91,46 @@ const ExpedicaoPage = () => {
     }
   };
 
-  const loadOrdem = (oc: typeof ordensCorte[0]) => {
+  const loadOrdem = (oc: any) => {
+    setCurrentOrdemCorteId(oc.id);
     setNumero(oc.numero);
-    setModeloRef(oc.modeloRef);
-    const foundModelo = modelos.find(m => m.referencia === oc.modeloRef);
+    setModeloRef(oc.modelo_ref || "");
+    const foundModelo = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
     setModeloNome(foundModelo?.descricao || "");
-    setTecido(oc.tecido);
-    setDataCorte(oc.dataCorte);
-    setCortador(oc.cortador);
-    setStatusOrdem(oc.status);
-    setCliente("Cliente Exemplo");
+    setTecido(oc.tecido_nome || "");
+    setDataCorte(oc.data_corte || "");
+    setCortador(oc.cortador || "");
+    setStatusOrdem(oc.status || "");
+    setCliente("");
 
-    const mockRow1: GradeExpRow = {
-      id: "1",
-      cor: "Preto",
-      qtdProduzida: Object.fromEntries(TAMANHOS.map((t, i) => [t, i < 5 ? Math.floor(oc.quantidadePecas / 10) : 0]))
-    };
-    const mockRow2: GradeExpRow = {
-      id: "2",
-      cor: "Branco",
-      qtdProduzida: Object.fromEntries(TAMANHOS.map((t, i) => [t, i < 4 ? Math.floor(oc.quantidadePecas / 12) : 0]))
-    };
-    setGradeRows([mockRow1, mockRow2]);
+    // Load grade from ordem corte
+    if (oc.grade_corte && oc.grade_corte.length > 0) {
+      setGradeRows(oc.grade_corte.map((g: any) => ({
+        id: g.id || crypto.randomUUID(),
+        cor: g.cor || "",
+        qtdProduzida: {
+          PP: g.pp || 0, P: g.p || 0, M: g.m || 0, G: g.g || 0,
+          GG: g.gg || 0, G1: g.g1 || 0, G2: g.g2 || 0, G3: g.g3 || 0,
+        }
+      })));
+    } else {
+      setGradeRows([]);
+    }
 
-    const allItems = cadastroAviamentos.flatMap((cat) =>
-    cat.itens.map((item) => ({ ...item, tipo: cat.tipo }))
-    );
-    const mockAviamentos = allItems.slice(0, 5).map((a) => ({
-      id: a.id,
-      descricao: a.descricao,
-      tipo: a.tipo,
-      qtdModelo: Math.floor(Math.random() * 10) + 1,
-      qtdEnvio: ""
-    }));
-    setAviamentosExp(mockAviamentos);
+    // Load aviamentos from ordem
+    if (oc.aviamentos_ordem && oc.aviamentos_ordem.length > 0) {
+      setAviamentosExp(oc.aviamentos_ordem.map((a: any) => ({
+        id: a.id || crypto.randomUUID(),
+        descricao: a.descricao || "",
+        tipo: "",
+        qtdModelo: a.quantidade || 0,
+        qtdEnvio: "",
+      })));
+    } else {
+      setAviamentosExp([]);
+    }
 
-    // Mock gradação de aviamentos from Modelos
-    setGradacaoRows([
-    { descricao: "Comprimento Total", aumentoCm: "1.50", pp: "58.50", p: "60.00", m: "61.50", g: "63.00", gg: "64.50", g1: "66.00", g2: "67.50", g3: "69.00" },
-    { descricao: "Largura Busto", aumentoCm: "2.00", pp: "44.00", p: "46.00", m: "48.00", g: "50.00", gg: "52.00", g1: "54.00", g2: "56.00", g3: "58.00" },
-    { descricao: "Largura Cintura", aumentoCm: "2.00", pp: "38.00", p: "40.00", m: "42.00", g: "44.00", gg: "46.00", g1: "48.00", g2: "50.00", g3: "52.00" }]
-    );
-
+    setGradacaoRows([]);
     setRefImage(null);
     setSearchOpen(false);
     setIsLoaded(true);
@@ -144,8 +147,8 @@ const ExpedicaoPage = () => {
   const updateAviamentoEnvio = (id: string, val: string) =>
   setAviamentosExp((prev) => prev.map((a) => a.id === id ? { ...a, qtdEnvio: val } : a));
 
-  const handleRegistrarSaida = () => {
-    if (!numero) {
+  const handleRegistrarSaida = async () => {
+    if (!numero || !currentOrdemCorteId) {
       toast({ title: "Nenhuma ordem carregada", description: "Busque uma ordem de corte primeiro.", variant: "destructive" });
       return;
     }
@@ -153,7 +156,32 @@ const ExpedicaoPage = () => {
       toast({ title: "Campo obrigatório", description: "Preencha a data de saída.", variant: "destructive" });
       return;
     }
-    toast({ title: "Saída registrada", description: `Expedição da ordem ${numero} registrada com sucesso.` });
+
+    const gradeData = gradeRows.map((row) => ({
+      cor: row.cor,
+      pp_prod: row.qtdProduzida.PP || 0, p_prod: row.qtdProduzida.P || 0,
+      m_prod: row.qtdProduzida.M || 0, g_prod: row.qtdProduzida.G || 0,
+      gg_prod: row.qtdProduzida.GG || 0, g1_prod: row.qtdProduzida.G1 || 0,
+      g2_prod: row.qtdProduzida.G2 || 0, g3_prod: row.qtdProduzida.G3 || 0,
+      pp_exp: row.qtdProduzida.PP || 0, p_exp: row.qtdProduzida.P || 0,
+      m_exp: row.qtdProduzida.M || 0, g_exp: row.qtdProduzida.G || 0,
+      gg_exp: row.qtdProduzida.GG || 0, g1_exp: row.qtdProduzida.G1 || 0,
+      g2_exp: row.qtdProduzida.G2 || 0, g3_exp: row.qtdProduzida.G3 || 0,
+    }));
+
+    const result = await salvarExpedicao({
+      ordem_corte_id: currentOrdemCorteId,
+      data_saida: dataSaida || null,
+      oficina_nome: oficina || null,
+      destino: cliente || null,
+      preco_peca: parseFloat(preco) || 0,
+      observacoes: observacoes || null,
+      status: statusKanban || "pendente",
+    }, gradeData);
+
+    if (result) {
+      toast({ title: "Expedição registrada", description: `Saída da ordem ${numero} registrada com sucesso.` });
+    }
   };
 
   const handlePrint = useCallback(() => {window.print();}, []);
@@ -191,11 +219,11 @@ const ExpedicaoPage = () => {
                   <Input placeholder="Número ou modelo..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9" />
                 </div>
                 <div className="space-y-1 max-h-[70vh] overflow-y-auto">
-                  {filteredOrdens.map((oc) =>
+                  {filteredOrdens.map((oc: any) =>
                   <button key={oc.id} onClick={() => loadOrdem(oc)} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
                       <div className="font-mono text-xs font-semibold text-primary">{oc.numero}</div>
-                      <div className="text-muted-foreground text-xs">{oc.modeloRef} — {oc.tecido}</div>
-                      <div className="text-muted-foreground text-[10px]">{statusLabel(oc.status)} • {oc.quantidadePecas} peças</div>
+                      <div className="text-muted-foreground text-xs">{oc.modelo_ref} — {oc.tecido_nome}</div>
+                      <div className="text-muted-foreground text-[10px]">{statusLabel(oc.status)} • {oc.quantidade_pecas} peças</div>
                     </button>
                   )}
                   {filteredOrdens.length === 0 &&
@@ -294,14 +322,14 @@ const ExpedicaoPage = () => {
                           <div className="mt-4 space-y-3">
                             <Input placeholder="Razão social ou cidade..." value={oficinaSearchTerm} onChange={(e) => setOficinaSearchTerm(e.target.value)} />
                             <div className="space-y-1 max-h-[60vh] overflow-y-auto">
-                              {fornecedores.
-                              filter((f) =>
-                              f.razaoSocial.toLowerCase().includes(oficinaSearchTerm.toLowerCase()) ||
-                              f.cidade.toLowerCase().includes(oficinaSearchTerm.toLowerCase())
+                              {fornecedoresDb.
+                              filter((f: any) =>
+                              (f.razao_social || "").toLowerCase().includes(oficinaSearchTerm.toLowerCase()) ||
+                              (f.cidade || "").toLowerCase().includes(oficinaSearchTerm.toLowerCase())
                               ).
-                              map((f) =>
-                              <button key={f.id} onClick={() => {setOficina(f.razaoSocial);setOficinaSearchOpen(false);}} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
-                                    <div className="font-mono text-xs font-semibold text-primary">{f.razaoSocial}</div>
+                              map((f: any) =>
+                              <button key={f.id} onClick={() => {setOficina(f.razao_social);setOficinaSearchOpen(false);}} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
+                                    <div className="font-mono text-xs font-semibold text-primary">{f.razao_social}</div>
                                     <div className="text-muted-foreground text-xs">{f.cidade}/{f.uf} — {f.tipo}</div>
                                     <div className="text-muted-foreground text-[10px]">{f.contato} • {f.telefone}</div>
                                   </button>

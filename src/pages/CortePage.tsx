@@ -10,11 +10,10 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from
 "@/components/ui/alert-dialog";
-import { ordensCorte, modelos, tecidos, cadastroAviamentos, clientes } from "@/lib/mock-data";
+import { useOrdensCorte, useModelos, useTecidos, useClientes, useAviamentos } from "@/hooks/useSupabaseData";
 import { Plus, Save, Trash2, Printer, Search, ImageOff, Scissors, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { useEstoque } from "@/contexts/EstoqueContext";
 
 const TAMANHOS = ["PP", "P", "M", "G", "GG", "G1", "G2", "G3"];
 
@@ -34,8 +33,13 @@ const createEmptyGradeRow = (): GradeRow => ({
 
 const CortePage = () => {
   const navigate = useNavigate();
-  const { tecidosEstoque, reservarEstoque, confirmarBaixa, cancelarReserva, getEstoqueDisponivel, getEstoqueReservado } = useEstoque();
+  const { ordens: ordensCorteDb, salvarOrdem, deletarOrdem } = useOrdensCorte();
+  const { modelos: modelosDb } = useModelos();
+  const { tecidos: tecidosDb, refetch: refetchTecidos } = useTecidos();
+  const { clientes: clientesDb } = useClientes();
+  const { aviamentos: aviamentosDb } = useAviamentos();
   const [selectedTecidoId, setSelectedTecidoId] = useState("");
+  const [currentOrdemId, setCurrentOrdemId] = useState<string | null>(null);
   const [numero, setNumero] = useState("");
   const [modeloRef, setModeloRef] = useState("");
   const [modeloNome, setModeloNome] = useState("");
@@ -82,69 +86,95 @@ const CortePage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isLoadedFromSearch, setIsLoadedFromSearch] = useState(false);
 
-  const filteredOrdens = ordensCorte.filter(
-    (oc) =>
-    oc.numero.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    oc.modeloRef.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredOrdens = ordensCorteDb.filter(
+    (oc: any) =>
+    (oc.numero || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (oc.modelo_ref || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredModelos = modelos.filter(
-    (m) =>
+  const filteredModelos = modelosDb.filter(
+    (m: any) =>
     m.referencia.toLowerCase().includes(modeloSearchTerm.toLowerCase()) ||
     m.descricao.toLowerCase().includes(modeloSearchTerm.toLowerCase())
   );
 
   // Filtra tecidos pelo cliente selecionado
-  const clienteNomeSelecionado = clientes.find((c) => c.id === selectedClienteId)?.razaoSocial || "";
-  const filteredTecidos = tecidos.filter(
-    (t) =>
-    t.cliente === clienteNomeSelecionado && (
+  const filteredTecidos = tecidosDb.filter(
+    (t: any) =>
+    t.cliente_id === selectedClienteId && (
     t.nome.toLowerCase().includes(tecidoSearchTerm.toLowerCase()) ||
-    t.cor.toLowerCase().includes(tecidoSearchTerm.toLowerCase()))
+    (t.cor || "").toLowerCase().includes(tecidoSearchTerm.toLowerCase()))
   );
 
   // Cores disponíveis: tecidos do mesmo cliente e mesmo nome de tecido selecionado
-  const coresDisponiveisData = tecidos.
-  filter((t) => t.cliente === clienteNomeSelecionado && t.nome === tecido);
-
-  const filteredCores = coresDisponiveisData.filter((t) =>
-  t.cor.toLowerCase().includes(corSearchTerm.toLowerCase())
+  const coresDisponiveisData = tecidosDb.filter(
+    (t: any) => t.cliente_id === selectedClienteId && t.nome === tecido
   );
 
-  const filteredClientes = clientes.filter(
-    (c) =>
-    c.razaoSocial.toLowerCase().includes(clienteSearchTerm.toLowerCase()) ||
-    c.cnpj.includes(clienteSearchTerm)
+  const filteredCores = coresDisponiveisData.filter((t: any) =>
+    (t.cor || "").toLowerCase().includes(corSearchTerm.toLowerCase())
   );
 
-  const allAviamentoItems = cadastroAviamentos.flatMap((cat) =>
-  cat.itens.map((item) => ({ ...item, tipo: cat.tipo }))
+  const filteredClientes = clientesDb.filter(
+    (c: any) =>
+    (c.razao_social || "").toLowerCase().includes(clienteSearchTerm.toLowerCase()) ||
+    (c.cnpj || "").includes(clienteSearchTerm)
   );
 
-  const filteredAviamentos = allAviamentoItems.filter(
-    (a) =>
-    a.descricao.toLowerCase().includes(aviamentoSearchTerm.toLowerCase()) ||
-    a.tipo.toLowerCase().includes(aviamentoSearchTerm.toLowerCase())
+  const filteredAviamentosItems = aviamentosDb.filter(
+    (a: any) =>
+    (a.descricao || "").toLowerCase().includes(aviamentoSearchTerm.toLowerCase()) ||
+    (a.tipo || "").toLowerCase().includes(aviamentoSearchTerm.toLowerCase())
   );
 
-  const loadOrdem = (oc: typeof ordensCorte[0]) => {
+  const loadOrdem = (oc: any) => {
+    setCurrentOrdemId(oc.id);
     setNumero(oc.numero);
-    setModeloRef(oc.modeloRef);
-    const foundModelo = modelos.find(m => m.referencia === oc.modeloRef);
+    setModeloRef(oc.modelo_ref || "");
+    const foundModelo = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
     setModeloNome(foundModelo?.descricao || "");
-    setTecido(oc.tecido);
-    setDataCorte(oc.dataCorte);
-    setCortador(oc.cortador);
-    setEnfestos(String(oc.enfestos));
-    setStatus(oc.status);
+    setTecido(oc.tecido_nome || "");
+    setSelectedTecidoId(oc.tecido_id || "");
+    setSelectedClienteId(oc.cliente_id || "");
+    const foundCliente = clientesDb.find((c: any) => c.id === oc.cliente_id);
+    setClienteNome(foundCliente?.razao_social || "");
+    setDataCorte(oc.data_corte || "");
+    setCortador(oc.cortador || "");
+    setEnfestos(String(oc.enfestos || ""));
+    setConsumoPorPeca(String(oc.consumo_por_peca || ""));
+    setObservacoes(oc.observacoes || "");
+    setStatus(oc.status || "");
+    // Load grade
+    if (oc.grade_corte && oc.grade_corte.length > 0) {
+      setGradeRows(oc.grade_corte.map((g: any) => ({
+        id: g.id || crypto.randomUUID(),
+        cor: g.cor || "",
+        tecidoId: g.tecido_id || "",
+        quantidades: {
+          PP: String(g.pp || ""), P: String(g.p || ""), M: String(g.m || ""),
+          G: String(g.g || ""), GG: String(g.gg || ""), G1: String(g.g1 || ""),
+          G2: String(g.g2 || ""), G3: String(g.g3 || ""),
+        }
+      })));
+    } else {
+      setGradeRows([createEmptyGradeRow()]);
+    }
+    // Load aviamentos
+    if (oc.aviamentos_ordem && oc.aviamentos_ordem.length > 0) {
+      setAviamentos(oc.aviamentos_ordem.map((a: any) => ({
+        id: a.id || crypto.randomUUID(),
+        descricao: a.descricao || "",
+        quantidade: String(a.quantidade || ""),
+      })));
+    } else {
+      setAviamentos([]);
+    }
     setSearchOpen(false);
     setIsLoadedFromSearch(true);
   };
 
   const limparCampos = () => {
-    if (reservaAtiva && numero) {
-      cancelarReserva(numero);
-    }
+    setCurrentOrdemId(null);
     setNumero("");setModeloRef("");setModeloNome("");setTecido("");setSelectedTecidoId("");
     setDataCorte("");setCortador("");
     setEnfestos("");setStatus("");
@@ -164,19 +194,13 @@ const CortePage = () => {
 
   const consumoTotal = totalGeral * (parseFloat(consumoPorPeca) || 0);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!numero || !modeloRef || !tecido) {
       toast({ title: "Campos obrigatórios", description: "Preencha ao menos Nº Ordem, Modelo e Tecido.", variant: "destructive" });
       return;
     }
     if (!selectedClienteId) {
       toast({ title: "Cliente não selecionado", description: "Selecione um cliente antes de salvar.", variant: "destructive" });
-      return;
-    }
-
-    const consumoPorPecaNum = parseFloat(consumoPorPeca) || 0;
-    if (consumoPorPecaNum <= 0) {
-      toast({ title: "Consumo inválido", description: "Preencha o consumo por peça.", variant: "destructive" });
       return;
     }
 
@@ -197,52 +221,54 @@ const CortePage = () => {
       return;
     }
 
-    // Reserve stock per color row
-    let allOk = true;
-    for (const row of rowsComQtd) {
-      const rowTotal = TAMANHOS.reduce((sum, t) => sum + (parseInt(row.quantidades[t]) || 0), 0);
-      const consumoRow = rowTotal * consumoPorPecaNum;
-      const disponivel = getEstoqueDisponivel(row.tecidoId);
+    const foundModelo = modelosDb.find((m: any) => m.referencia === modeloRef);
 
-      if (consumoRow > disponivel) {
-        toast({
-          title: "Estoque insuficiente",
-          description: `Cor "${row.cor}": Disponível ${disponivel.toFixed(2)} Kg, necessário ${consumoRow.toFixed(2)} Kg.`,
-          variant: "destructive"
-        });
-        allOk = false;
-        break;
-      }
+    const ordemData = {
+      numero,
+      modelo_ref: modeloRef,
+      modelo_id: foundModelo?.id || null,
+      tecido_nome: tecido,
+      tecido_id: selectedTecidoId || null,
+      cliente_id: selectedClienteId || null,
+      quantidade_pecas: totalGeral,
+      data_corte: dataCorte || null,
+      cortador: cortador || null,
+      enfestos: parseInt(enfestos) || 0,
+      perda_percent: 0,
+      consumo_por_peca: parseFloat(consumoPorPeca) || 0,
+      observacoes: observacoes || null,
+      status: status || "pendente",
+    };
 
-      const ok = reservarEstoque(numero, row.tecidoId, `${tecido} - ${row.cor}`, consumoRow);
-      if (!ok) {
-        allOk = false;
-        toast({ title: "Erro na reserva", description: `Não foi possível reservar estoque para cor "${row.cor}".`, variant: "destructive" });
-        break;
-      }
-    }
+    const gradeData = rowsComQtd.map((row) => ({
+      cor: row.cor,
+      tecido_id: row.tecidoId || null,
+      pp: parseInt(row.quantidades.PP) || 0,
+      p: parseInt(row.quantidades.P) || 0,
+      m: parseInt(row.quantidades.M) || 0,
+      g: parseInt(row.quantidades.G) || 0,
+      gg: parseInt(row.quantidades.GG) || 0,
+      g1: parseInt(row.quantidades.G1) || 0,
+      g2: parseInt(row.quantidades.G2) || 0,
+      g3: parseInt(row.quantidades.G3) || 0,
+    }));
 
-    if (allOk) {
-      setReservaAtiva(true);
+    const aviamentosData = aviamentos
+      .filter(a => a.descricao && parseInt(a.quantidade) > 0)
+      .map(a => ({ descricao: a.descricao, quantidade: parseInt(a.quantidade) || 0 }));
+
+    const result = await salvarOrdem(ordemData, gradeData, aviamentosData, currentOrdemId || undefined);
+    if (result) {
+      setCurrentOrdemId(result);
       toast({
-        title: "Ordem salva — Estoque reservado",
-        description: `${consumoTotal.toFixed(2)} Kg reservados para a ordem ${numero} (${rowsComQtd.length} cor(es)).`
+        title: currentOrdemId ? "Ordem atualizada" : "Ordem salva",
+        description: `Ordem ${numero} salva com sucesso. ${totalGeral} peças.`
       });
     }
   };
 
   const handleStatusChange = (newStatus: string) => {
     setStatus(newStatus);
-    if (newStatus === "concluido" && reservaAtiva && numero) {
-      const ok = confirmarBaixa(numero, 0);
-      if (ok) {
-        setReservaAtiva(false);
-        toast({
-          title: "Baixa de estoque confirmada",
-          description: `Corte concluído. Baixa de ${consumoTotal.toFixed(2)} Kg efetivada no estoque.`
-        });
-      }
-    }
   };
 
   const handleIncluir = () => {
@@ -325,11 +351,11 @@ const CortePage = () => {
                   <Input placeholder="Número ou modelo..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9" />
                 </div>
                 <div className="space-y-1 max-h-[70vh] overflow-y-auto">
-                  {filteredOrdens.map((oc) =>
+                  {filteredOrdens.map((oc: any) =>
                   <button key={oc.id} onClick={() => loadOrdem(oc)} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
                       <div className="font-mono text-xs font-semibold text-primary">{oc.numero}</div>
-                      <div className="text-muted-foreground text-xs">{oc.modeloRef} — {oc.tecido}</div>
-                      <div className="text-muted-foreground text-[10px]">{statusLabel(oc.status)} • {oc.quantidadePecas} peças</div>
+                      <div className="text-muted-foreground text-xs">{oc.modelo_ref} — {oc.tecido_nome}</div>
+                      <div className="text-muted-foreground text-[10px]">{statusLabel(oc.status)} • {oc.quantidade_pecas} peças</div>
                     </button>
                   )}
                   {filteredOrdens.length === 0 &&
@@ -398,16 +424,16 @@ const CortePage = () => {
                         <div className="mt-4 space-y-3">
                           <Input placeholder="Razão Social ou CNPJ..." value={clienteSearchTerm} onChange={(e) => setClienteSearchTerm(e.target.value)} />
                           <div className="space-y-1 max-h-[60vh] overflow-y-auto">
-                            {filteredClientes.map((c) =>
+                            {filteredClientes.map((c: any) =>
                             <button key={c.id} onClick={() => {
                               setSelectedClienteId(c.id);
-                              setClienteNome(c.razaoSocial);
+                              setClienteNome(c.razao_social);
                               setClienteSearchOpen(false);
                               // Limpa tecido ao trocar cliente
                               setTecido("");
                               setSelectedTecidoId("");
                             }} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
-                                <div className="font-mono text-xs font-semibold text-primary">{c.razaoSocial}</div>
+                                <div className="font-mono text-xs font-semibold text-primary">{c.razao_social}</div>
                                 <div className="text-muted-foreground text-xs">{c.cnpj} — {c.cidade}/{c.uf}</div>
                               </button>
                             )}
@@ -462,11 +488,11 @@ const CortePage = () => {
                         <div className="mt-4 space-y-3">
                           <Input placeholder="Nome ou cor..." value={tecidoSearchTerm} onChange={(e) => setTecidoSearchTerm(e.target.value)} />
                           <div className="space-y-1 max-h-[60vh] overflow-y-auto">
-                            {filteredTecidos.map((t) =>
+                            {filteredTecidos.map((t: any) =>
                             <button key={t.id} onClick={() => {setTecido(t.nome);setSelectedTecidoId(t.id);setTecidoSearchOpen(false);}} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
                                 <div className="font-mono text-xs font-semibold text-primary">{t.nome}</div>
-                                <div className="text-muted-foreground text-xs">{t.cor} — {t.cliente}</div>
-                                <div className="text-muted-foreground text-[10px]">Estoque: {t.estoqueKg} Kg</div>
+                                <div className="text-muted-foreground text-xs">{t.cor} — {t.clientes?.razao_social || ""}</div>
+                                <div className="text-muted-foreground text-[10px]">Estoque: {t.estoque_kg} Kg</div>
                               </button>
                             )}
                           </div>
@@ -522,26 +548,20 @@ const CortePage = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  {selectedTecidoId &&
-                  <div className="space-y-1 col-span-2 md:col-span-3">
+                  {selectedTecidoId && (() => {
+                    const tecidoSel = tecidosDb.find((t: any) => t.id === selectedTecidoId);
+                    const estoqueDisp = tecidoSel?.estoque_kg || 0;
+                    return (
+                    <div className="space-y-1 col-span-2 md:col-span-3">
                       <div className="flex items-center gap-2 text-xs">
                         <span className="font-semibold">Estoque disponível:</span>
                         <span className="font-mono font-bold text-primary">
-                          {getEstoqueDisponivel(selectedTecidoId).toFixed(2)} Kg
+                          {Number(estoqueDisp).toFixed(2)} Kg
                         </span>
-                        {getEstoqueReservado(selectedTecidoId) > 0 &&
-                      <span className="text-[hsl(38,92%,50%)] flex items-center gap-1">
-                            <AlertTriangle className="w-3 h-3" />
-                            {getEstoqueReservado(selectedTecidoId).toFixed(2)} Kg reservado
-                          </span>
-                      }
-                        {reservaAtiva &&
-                      <span className="bg-[hsl(142,71%,35%/0.15)] text-[hsl(142,71%,35%)] px-2 py-0.5 rounded-full text-[10px] font-medium">
-                            ✓ Reserva ativa nesta ordem
-                          </span>
-                      }
                       </div>
                     </div>
+                    );
+                  })()
                   }
                 </div>
               </CardContent>
@@ -680,17 +700,17 @@ const CortePage = () => {
                   <div className="mt-4 space-y-3">
                     <Input placeholder="Descrição ou tipo..." value={aviamentoSearchTerm} onChange={(e) => setAviamentoSearchTerm(e.target.value)} />
                     <div className="space-y-1 max-h-[60vh] overflow-y-auto">
-                      {filteredAviamentos.map((a) =>
+                      {filteredAviamentosItems.map((a: any) =>
                       <button
                         key={a.id}
                         onClick={() => addAviamento(a.descricao)}
                         className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
                         
                           <div className="font-mono text-xs font-semibold text-primary">{a.descricao}</div>
-                          <div className="text-muted-foreground text-xs">{a.tipo} — {a.cor} — R$ {a.precoUn.toFixed(2)}</div>
+                          <div className="text-muted-foreground text-xs">{a.tipo} — {a.cor} — R$ {Number(a.preco_un || 0).toFixed(2)}</div>
                         </button>
                       )}
-                      {filteredAviamentos.length === 0 &&
+                      {filteredAviamentosItems.length === 0 &&
                       <p className="text-sm text-muted-foreground text-center py-4">Nenhum aviamento encontrado</p>
                       }
                     </div>
@@ -779,7 +799,7 @@ const CortePage = () => {
             <Input placeholder="Buscar cor..." value={corSearchTerm} onChange={(e) => setCorSearchTerm(e.target.value)} />
             <div className="space-y-1 max-h-[60vh] overflow-y-auto">
               {filteredCores.map((t, idx) => {
-                const disponivel = getEstoqueDisponivel(t.id);
+                const disponivel = Number(t.estoque_kg || 0);
                 return (
                   <button
                     key={`${t.id}-${idx}`}
