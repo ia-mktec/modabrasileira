@@ -75,44 +75,51 @@ function SidebarContent({ collapsed, setCollapsed, onNavigate }: { collapsed: bo
       <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto overflow-x-hidden">
         {accessibleItems.map((item) => {
           const isEditMode = canEditRoute(item.to, roles);
-          return (
-            <Tooltip key={item.to} delayDuration={300}>
-              <TooltipTrigger asChild>
-                <NavLink
-                  to={item.to}
-                  end={item.to === "/"}
-                  onClick={onNavigate}
-                  className={({ isActive }) =>
-                    cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap",
-                      "hover:bg-[hsl(var(--sidebar-accent))] hover:text-[hsl(var(--sidebar-accent-foreground))]",
-                      isActive
-                        ? "bg-[hsl(var(--sidebar-accent))] text-[hsl(var(--sidebar-primary))] shadow-sm"
-                        : "text-[hsl(var(--sidebar-foreground))]",
-                      collapsed && "justify-center px-2"
-                    )
-                  }
-                >
-                  <item.icon className="w-5 h-5 shrink-0" />
-                  {!collapsed && (
-                    <>
-                      <span className="flex-1 truncate">{item.label}</span>
-                      {isEditMode ? (
-                        <Settings className="w-3.5 h-3.5 opacity-40 shrink-0" />
-                      ) : (
-                        <Eye className="w-3.5 h-3.5 opacity-40 shrink-0" />
-                      )}
-                    </>
+          const link = (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === "/"}
+              onClick={onNavigate}
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 w-full whitespace-nowrap",
+                  "hover:bg-[hsl(var(--sidebar-accent))] hover:text-[hsl(var(--sidebar-accent-foreground))]",
+                  isActive
+                    ? "bg-[hsl(var(--sidebar-accent))] text-[hsl(var(--sidebar-primary))] shadow-sm"
+                    : "text-[hsl(var(--sidebar-foreground))]",
+                  collapsed && "justify-center px-2"
+                )
+              }
+            >
+              <item.icon className="w-5 h-5 shrink-0" />
+              {!collapsed && (
+                <>
+                  <span className="flex-1 truncate">{item.label}</span>
+                  {isEditMode ? (
+                    <Settings className="w-3.5 h-3.5 opacity-40 shrink-0" />
+                  ) : (
+                    <Eye className="w-3.5 h-3.5 opacity-40 shrink-0" />
                   )}
-                </NavLink>
-              </TooltipTrigger>
-              {collapsed && (
+                </>
+              )}
+            </NavLink>
+          );
+
+          if (collapsed) {
+            return (
+              <Tooltip key={item.to} delayDuration={300}>
+                <TooltipTrigger asChild>
+                  <div>{link}</div>
+                </TooltipTrigger>
                 <TooltipContent side="right">
                   {item.label} {isEditMode ? "(edição)" : "(visualização)"}
                 </TooltipContent>
-              )}
-            </Tooltip>
-          );
+              </Tooltip>
+            );
+          }
+
+          return link;
         })}
       </nav>
 
