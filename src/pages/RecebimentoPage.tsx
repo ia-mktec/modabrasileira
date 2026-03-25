@@ -123,8 +123,8 @@ const RecebimentoPage = () => {
     setStatusKanban("");
   };
 
-  const handleSalvar = () => {
-    if (!ordemCorte) {
+  const handleSalvar = async () => {
+    if (!ordemCorte || !currentOrdemCorteId) {
       toast({ title: "Nenhuma ordem carregada", description: "Busque uma ordem primeiro.", variant: "destructive" });
       return;
     }
@@ -132,7 +132,23 @@ const RecebimentoPage = () => {
       toast({ title: "Campo obrigatório", description: "Preencha a data de recebimento.", variant: "destructive" });
       return;
     }
-    toast({ title: "Recebimento salvo", description: `Recebimento da ordem ${ordemCorte} salvo com sucesso.` });
+
+    const result = await salvarRecebimento({
+      expedicao_id: currentOrdemCorteId, // Will need proper link later
+      ordem_corte_id: currentOrdemCorteId,
+      oficina_nome: oficina || null,
+      data_envio: dataEnvio || null,
+      data_recebimento: dataRecebimento || null,
+      total_sem_defeitos: qtdRecebida - defeitos,
+      defeitos: defeitos,
+      total_pagar: 0,
+      observacoes: observacoes || null,
+      status: statusKanban || "pendente",
+    });
+
+    if (result) {
+      toast({ title: "Recebimento salvo", description: `Recebimento da ordem ${ordemCorte} salvo com sucesso.` });
+    }
   };
 
   const handleLimpar = () => {
