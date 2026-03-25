@@ -33,8 +33,13 @@ const createEmptyGradeRow = (): GradeRow => ({
 
 const CortePage = () => {
   const navigate = useNavigate();
-  const { tecidosEstoque, reservarEstoque, confirmarBaixa, cancelarReserva, getEstoqueDisponivel, getEstoqueReservado } = useEstoque();
+  const { ordens: ordensCorteDb, salvarOrdem, deletarOrdem } = useOrdensCorte();
+  const { modelos: modelosDb } = useModelos();
+  const { tecidos: tecidosDb, refetch: refetchTecidos } = useTecidos();
+  const { clientes: clientesDb } = useClientes();
+  const { aviamentos: aviamentosDb } = useAviamentos();
   const [selectedTecidoId, setSelectedTecidoId] = useState("");
+  const [currentOrdemId, setCurrentOrdemId] = useState<string | null>(null);
   const [numero, setNumero] = useState("");
   const [modeloRef, setModeloRef] = useState("");
   const [modeloNome, setModeloNome] = useState("");
