@@ -76,8 +76,11 @@ export default function GerenciarUsuariosPage() {
     const role = selectedRole[userId];
     if (!role) return;
 
-    // Clear selection immediately to unmount Select portal before refetch
-    setSelectedRole((prev) => ({ ...prev, [userId]: undefined as unknown as AppRole }));
+    setSelectedRole((prev) => {
+      const next = { ...prev };
+      delete next[userId];
+      return next;
+    });
 
     const { error } = await supabase.from("user_roles").insert({ user_id: userId, role });
     if (error) {
@@ -85,7 +88,8 @@ export default function GerenciarUsuariosPage() {
     } else {
       toast({ title: "Perfil adicionado" });
     }
-    await fetchUsers();
+    // Delay refetch to allow Radix portal to fully unmount
+    setTimeout(() => fetchUsers(), 100);
   };
 
   const removeRole = async (userId: string, role: AppRole) => {
@@ -95,7 +99,7 @@ export default function GerenciarUsuariosPage() {
     } else {
       toast({ title: "Perfil removido" });
     }
-    await fetchUsers();
+    setTimeout(() => fetchUsers(), 100);
   };
 
   return (
