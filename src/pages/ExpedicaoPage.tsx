@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
-import { ordensCorte, fornecedores, cadastroAviamentos, modelos } from "@/lib/mock-data";
+import { useOrdensCorte, useExpedicao, useFornecedores, useModelos } from "@/hooks/useSupabaseData";
 import { Search, Truck, Printer, PackageCheck, ImageOff } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
