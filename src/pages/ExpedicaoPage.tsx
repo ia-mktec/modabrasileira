@@ -91,48 +91,46 @@ const ExpedicaoPage = () => {
     }
   };
 
-  const loadOrdem = (oc: typeof ordensCorte[0]) => {
+  const loadOrdem = (oc: any) => {
+    setCurrentOrdemCorteId(oc.id);
     setNumero(oc.numero);
-    setModeloRef(oc.modeloRef);
-    const foundModelo = modelos.find(m => m.referencia === oc.modeloRef);
+    setModeloRef(oc.modelo_ref || "");
+    const foundModelo = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
     setModeloNome(foundModelo?.descricao || "");
-    setTecido(oc.tecido);
-    setDataCorte(oc.dataCorte);
-    setCortador(oc.cortador);
-    setStatusOrdem(oc.status);
-    setCliente("Cliente Exemplo");
+    setTecido(oc.tecido_nome || "");
+    setDataCorte(oc.data_corte || "");
+    setCortador(oc.cortador || "");
+    setStatusOrdem(oc.status || "");
+    setCliente("");
 
-    const mockRow1: GradeExpRow = {
-      id: "1",
-      cor: "Preto",
-      qtdProduzida: Object.fromEntries(TAMANHOS.map((t, i) => [t, i < 5 ? Math.floor(oc.quantidadePecas / 10) : 0]))
-    };
-    const mockRow2: GradeExpRow = {
-      id: "2",
-      cor: "Branco",
-      qtdProduzida: Object.fromEntries(TAMANHOS.map((t, i) => [t, i < 4 ? Math.floor(oc.quantidadePecas / 12) : 0]))
-    };
-    setGradeRows([mockRow1, mockRow2]);
+    // Load grade from ordem corte
+    if (oc.grade_corte && oc.grade_corte.length > 0) {
+      setGradeRows(oc.grade_corte.map((g: any) => ({
+        id: g.id || crypto.randomUUID(),
+        cor: g.cor || "",
+        qtdProduzida: {
+          PP: g.pp || 0, P: g.p || 0, M: g.m || 0, G: g.g || 0,
+          GG: g.gg || 0, G1: g.g1 || 0, G2: g.g2 || 0, G3: g.g3 || 0,
+        }
+      })));
+    } else {
+      setGradeRows([]);
+    }
 
-    const allItems = cadastroAviamentos.flatMap((cat) =>
-    cat.itens.map((item) => ({ ...item, tipo: cat.tipo }))
-    );
-    const mockAviamentos = allItems.slice(0, 5).map((a) => ({
-      id: a.id,
-      descricao: a.descricao,
-      tipo: a.tipo,
-      qtdModelo: Math.floor(Math.random() * 10) + 1,
-      qtdEnvio: ""
-    }));
-    setAviamentosExp(mockAviamentos);
+    // Load aviamentos from ordem
+    if (oc.aviamentos_ordem && oc.aviamentos_ordem.length > 0) {
+      setAviamentosExp(oc.aviamentos_ordem.map((a: any) => ({
+        id: a.id || crypto.randomUUID(),
+        descricao: a.descricao || "",
+        tipo: "",
+        qtdModelo: a.quantidade || 0,
+        qtdEnvio: "",
+      })));
+    } else {
+      setAviamentosExp([]);
+    }
 
-    // Mock gradação de aviamentos from Modelos
-    setGradacaoRows([
-    { descricao: "Comprimento Total", aumentoCm: "1.50", pp: "58.50", p: "60.00", m: "61.50", g: "63.00", gg: "64.50", g1: "66.00", g2: "67.50", g3: "69.00" },
-    { descricao: "Largura Busto", aumentoCm: "2.00", pp: "44.00", p: "46.00", m: "48.00", g: "50.00", gg: "52.00", g1: "54.00", g2: "56.00", g3: "58.00" },
-    { descricao: "Largura Cintura", aumentoCm: "2.00", pp: "38.00", p: "40.00", m: "42.00", g: "44.00", gg: "46.00", g1: "48.00", g2: "50.00", g3: "52.00" }]
-    );
-
+    setGradacaoRows([]);
     setRefImage(null);
     setSearchOpen(false);
     setIsLoaded(true);
