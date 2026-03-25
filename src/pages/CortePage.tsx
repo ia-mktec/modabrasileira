@@ -269,16 +269,6 @@ const CortePage = () => {
 
   const handleStatusChange = (newStatus: string) => {
     setStatus(newStatus);
-    if (newStatus === "concluido" && reservaAtiva && numero) {
-      const ok = confirmarBaixa(numero, 0);
-      if (ok) {
-        setReservaAtiva(false);
-        toast({
-          title: "Baixa de estoque confirmada",
-          description: `Corte concluído. Baixa de ${consumoTotal.toFixed(2)} Kg efetivada no estoque.`
-        });
-      }
-    }
   };
 
   const handleIncluir = () => {
