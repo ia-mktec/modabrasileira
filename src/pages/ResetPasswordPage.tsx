@@ -20,7 +20,7 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     // Check if there's a recovery session from the URL hash
-    supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") {
         setValidSession(true);
       }
@@ -32,6 +32,8 @@ export default function ResetPasswordPage() {
       if (session) setValidSession(true);
       setChecking(false);
     });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
