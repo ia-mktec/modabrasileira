@@ -297,14 +297,14 @@ const ExpedicaoPage = () => {
                           <div className="mt-4 space-y-3">
                             <Input placeholder="Razão social ou cidade..." value={oficinaSearchTerm} onChange={(e) => setOficinaSearchTerm(e.target.value)} />
                             <div className="space-y-1 max-h-[60vh] overflow-y-auto">
-                              {fornecedores.
-                              filter((f) =>
-                              f.razaoSocial.toLowerCase().includes(oficinaSearchTerm.toLowerCase()) ||
-                              f.cidade.toLowerCase().includes(oficinaSearchTerm.toLowerCase())
+                              {fornecedoresDb.
+                              filter((f: any) =>
+                              (f.razao_social || "").toLowerCase().includes(oficinaSearchTerm.toLowerCase()) ||
+                              (f.cidade || "").toLowerCase().includes(oficinaSearchTerm.toLowerCase())
                               ).
-                              map((f) =>
-                              <button key={f.id} onClick={() => {setOficina(f.razaoSocial);setOficinaSearchOpen(false);}} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
-                                    <div className="font-mono text-xs font-semibold text-primary">{f.razaoSocial}</div>
+                              map((f: any) =>
+                              <button key={f.id} onClick={() => {setOficina(f.razao_social);setOficinaSearchOpen(false);}} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
+                                    <div className="font-mono text-xs font-semibold text-primary">{f.razao_social}</div>
                                     <div className="text-muted-foreground text-xs">{f.cidade}/{f.uf} — {f.tipo}</div>
                                     <div className="text-muted-foreground text-[10px]">{f.contato} • {f.telefone}</div>
                                   </button>
