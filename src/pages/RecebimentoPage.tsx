@@ -25,6 +25,10 @@ interface GradeRecRow {
 }
 
 const RecebimentoPage = () => {
+  const { ordens: ordensCorteDb } = useOrdensCorte();
+  const { salvarRecebimento } = useRecebimento();
+  const { modelos: modelosDb } = useModelos();
+  const [currentOrdemCorteId, setCurrentOrdemCorteId] = useState<string | null>(null);
   // Consulta (read-only) - dados da ordem
   const [referencia, setReferencia] = useState("");
   const [ordemCorte, setOrdemCorte] = useState("");
