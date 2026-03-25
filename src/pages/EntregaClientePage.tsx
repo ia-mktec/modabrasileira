@@ -205,11 +205,11 @@ const EntregaClientePage = () => {
                   <Input placeholder="Número ou modelo..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9" />
                 </div>
                 <div className="space-y-1 max-h-[70vh] overflow-y-auto">
-                  {filteredOrdens.map((oc) =>
+                  {filteredOrdens.map((oc: any) =>
                   <button key={oc.id} onClick={() => loadOrdem(oc)} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
                       <div className="font-mono text-xs font-semibold text-primary">{oc.numero}</div>
-                      <div className="text-muted-foreground text-xs">{oc.modeloRef} — {oc.tecido}</div>
-                      <div className="text-muted-foreground text-[10px]">{statusLabel(oc.status)} • {oc.quantidadePecas} peças</div>
+                      <div className="text-muted-foreground text-xs">{oc.modelo_ref} — {oc.tecido_nome}</div>
+                      <div className="text-muted-foreground text-[10px]">{statusLabel(oc.status)} • {oc.quantidade_pecas} peças</div>
                     </button>
                   )}
                   {filteredOrdens.length === 0 &&
