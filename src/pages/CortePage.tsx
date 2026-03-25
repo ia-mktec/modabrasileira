@@ -10,11 +10,10 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from
 "@/components/ui/alert-dialog";
-import { ordensCorte, modelos, tecidos, cadastroAviamentos, clientes } from "@/lib/mock-data";
+import { useOrdensCorte, useModelos, useTecidos, useClientes, useAviamentos } from "@/hooks/useSupabaseData";
 import { Plus, Save, Trash2, Printer, Search, ImageOff, Scissors, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { useEstoque } from "@/contexts/EstoqueContext";
 
 const TAMANHOS = ["PP", "P", "M", "G", "GG", "G1", "G2", "G3"];
 
