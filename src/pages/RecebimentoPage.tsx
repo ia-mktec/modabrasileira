@@ -88,28 +88,32 @@ const RecebimentoPage = () => {
     }
   }, [dataEnvio, dataRecebimento]);
 
-  const loadOrdem = (oc: typeof ordensCorte[0]) => {
-    setReferencia(oc.modeloRef);
+  const loadOrdem = (oc: any) => {
+    setCurrentOrdemCorteId(oc.id);
+    setReferencia(oc.modelo_ref || "");
     setOrdemCorte(oc.numero);
-    setCliente("Cliente Exemplo");
-    const foundModelo = modelos.find(m => m.referencia === oc.modeloRef);
-    setModelo(foundModelo?.descricao || oc.modeloRef);
-    setOficina("Oficina Exemplo");
-    setDataEnvio(oc.dataCorte);
+    setCliente("");
+    const foundModelo = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
+    setModelo(foundModelo?.descricao || oc.modelo_ref || "");
+    setOficina("");
+    setDataEnvio(oc.data_corte || "");
 
-    const cores = ["Preto", "Off", "Rosa"];
-    const mockRows: GradeRecRow[] = cores.map((cor, i) => ({
-      id: String(i + 1),
-      cor,
-      qtdCortada: Object.fromEntries(TAMANHOS.map((t, j) => [t, j >= 1 && j <= 3 ? Math.floor(oc.quantidadePecas / 15) : 0])),
-      totalPecas: 0,
-      totalDefeitos: "",
-      totalRecebido: "",
-    }));
-    mockRows.forEach((r) => {
-      r.totalPecas = TAMANHOS.reduce((s, t) => s + (r.qtdCortada[t] || 0), 0);
-    });
-    setGradeRows(mockRows);
+    // Load grade from ordem corte
+    if (oc.grade_corte && oc.grade_corte.length > 0) {
+      setGradeRows(oc.grade_corte.map((g: any) => ({
+        id: g.id || crypto.randomUUID(),
+        cor: g.cor || "",
+        qtdCortada: {
+          PP: g.pp || 0, P: g.p || 0, M: g.m || 0, G: g.g || 0,
+          GG: g.gg || 0, G1: g.g1 || 0, G2: g.g2 || 0, G3: g.g3 || 0,
+        },
+        totalPecas: (g.pp || 0) + (g.p || 0) + (g.m || 0) + (g.g || 0) + (g.gg || 0) + (g.g1 || 0) + (g.g2 || 0) + (g.g3 || 0),
+        totalDefeitos: "",
+        totalRecebido: "",
+      })));
+    } else {
+      setGradeRows([]);
+    }
 
     setRefImage(null);
     setSearchOpen(false);
