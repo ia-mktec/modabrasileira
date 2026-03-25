@@ -75,10 +75,10 @@ const ExpedicaoPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const filteredOrdens = ordensCorte.filter(
-    (oc) =>
-    oc.numero.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    oc.modeloRef.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredOrdens = ordensCorteDb.filter(
+    (oc: any) =>
+    (oc.numero || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (oc.modelo_ref || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const statusLabel = (s: string) => {
