@@ -83,7 +83,7 @@ function SidebarContent({ collapsed, setCollapsed, onNavigate }: { collapsed: bo
               onClick={onNavigate}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 w-full whitespace-nowrap",
+                  "flex flex-row items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 w-full whitespace-nowrap min-w-0",
                   "hover:bg-[hsl(var(--sidebar-accent))] hover:text-[hsl(var(--sidebar-accent-foreground))]",
                   isActive
                     ? "bg-[hsl(var(--sidebar-accent))] text-[hsl(var(--sidebar-primary))] shadow-sm"
@@ -94,14 +94,14 @@ function SidebarContent({ collapsed, setCollapsed, onNavigate }: { collapsed: bo
             >
               <item.icon className="w-5 h-5 shrink-0" />
               {!collapsed && (
-                <>
-                  <span className="flex-1 truncate">{item.label}</span>
-                  {isEditMode ? (
-                    <Settings className="w-3.5 h-3.5 opacity-40 shrink-0" />
-                  ) : (
-                    <Eye className="w-3.5 h-3.5 opacity-40 shrink-0" />
-                  )}
-                </>
+                <span className="flex-1 truncate">{item.label}</span>
+              )}
+              {!collapsed && (
+                isEditMode ? (
+                  <Settings className="w-3.5 h-3.5 opacity-40 shrink-0" />
+                ) : (
+                  <Eye className="w-3.5 h-3.5 opacity-40 shrink-0" />
+                )
               )}
             </NavLink>
           );
