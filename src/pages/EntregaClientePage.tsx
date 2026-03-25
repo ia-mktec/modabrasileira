@@ -80,40 +80,44 @@ const EntregaClientePage = () => {
     }
   };
 
-  const loadOrdem = (oc: typeof ordensCorte[0]) => {
+  const loadOrdem = (oc: any) => {
+    setCurrentOrdemCorteId(oc.id);
     setOrdemCorte(oc.numero);
-    setReferencia(oc.modeloRef);
-    const foundModelo = modelos.find(m => m.referencia === oc.modeloRef);
+    setReferencia(oc.modelo_ref || "");
+    const foundModelo = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
     setModeloNome(foundModelo?.descricao || "");
-    setCliente("Cliente Exemplo");
-    setDataCorte(oc.dataCorte);
-    setOficina("Oficina Costura Fina");
-    setDataEnvio("2025-03-08");
+    setCliente("");
+    setDataCorte(oc.data_corte || "");
+    setOficina("");
+    setDataEnvio("");
     setDataEntrega(undefined);
     setTempoProducao("");
 
-    // Grade cortada (consulta)
-    const cores = ["Preto", "Off", "Rosa"];
-    const mockCortada: GradeCortadaRow[] = cores.map((cor, i) => ({
-      id: String(i + 1),
-      cor,
-      qtdCortada: Object.fromEntries(TAMANHOS.map((t, j) => [t, j >= 1 && j <= 3 ? Math.floor(oc.quantidadePecas / 15) : 0])),
-      totalPecasRecebido: 0,
-      totalDefeitos: 0
-    }));
-    mockCortada.forEach((r) => {
-      r.totalPecasRecebido = TAMANHOS.reduce((s, t) => s + (r.qtdCortada[t] || 0), 0);
-    });
-    setGradeCortada(mockCortada);
+    // Grade cortada from ordem
+    if (oc.grade_corte && oc.grade_corte.length > 0) {
+      const cortada = oc.grade_corte.map((g: any) => ({
+        id: g.id || crypto.randomUUID(),
+        cor: g.cor || "",
+        qtdCortada: {
+          PP: g.pp || 0, P: g.p || 0, M: g.m || 0, G: g.g || 0,
+          GG: g.gg || 0, G1: g.g1 || 0, G2: g.g2 || 0, G3: g.g3 || 0,
+        },
+        totalPecasRecebido: (g.pp || 0) + (g.p || 0) + (g.m || 0) + (g.g || 0) + (g.gg || 0) + (g.g1 || 0) + (g.g2 || 0) + (g.g3 || 0),
+        totalDefeitos: 0,
+      }));
+      setGradeCortada(cortada);
 
-    // Grade entregue (editável)
-    const mockEntregue: GradeEntregueRow[] = cores.map((cor, i) => ({
-      id: String(i + 1),
-      cor,
-      qtdEntregue: Object.fromEntries(TAMANHOS.map((t) => [t, ""])),
-      segundaQualidade: ""
-    }));
-    setGradeEntregue(mockEntregue);
+      const entregue = oc.grade_corte.map((g: any) => ({
+        id: g.id || crypto.randomUUID(),
+        cor: g.cor || "",
+        qtdEntregue: Object.fromEntries(TAMANHOS.map((t: string) => [t, ""])),
+        segundaQualidade: "",
+      }));
+      setGradeEntregue(entregue);
+    } else {
+      setGradeCortada([]);
+      setGradeEntregue([]);
+    }
 
     setRefImage(null);
     setSearchOpen(false);
