@@ -799,7 +799,7 @@ const CortePage = () => {
             <Input placeholder="Buscar cor..." value={corSearchTerm} onChange={(e) => setCorSearchTerm(e.target.value)} />
             <div className="space-y-1 max-h-[60vh] overflow-y-auto">
               {filteredCores.map((t, idx) => {
-                const disponivel = getEstoqueDisponivel(t.id);
+                const disponivel = Number(t.estoque_kg || 0);
                 return (
                   <button
                     key={`${t.id}-${idx}`}
