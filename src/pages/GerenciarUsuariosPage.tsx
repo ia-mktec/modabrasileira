@@ -150,6 +150,7 @@ export default function GerenciarUsuariosPage() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Select
+                          key={`select-${u.id}-${u.roles.join(",")}`}
                           value={selectedRole[u.id] || ""}
                           onValueChange={(v) =>
                             setSelectedRole((prev) => ({ ...prev, [u.id]: v as AppRole }))
