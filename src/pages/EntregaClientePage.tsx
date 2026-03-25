@@ -149,12 +149,26 @@ const EntregaClientePage = () => {
     return gradeEntregue.reduce((sum, row) => sum + (parseInt(row.segundaQualidade) || 0), 0);
   }, [gradeEntregue]);
 
-  const handleRegistrarEntrega = () => {
-    if (!ordemCorte) {
+  const handleRegistrarEntrega = async () => {
+    if (!ordemCorte || !currentOrdemCorteId) {
       toast({ title: "Nenhuma ordem carregada", description: "Busque uma ordem primeiro.", variant: "destructive" });
       return;
     }
-    toast({ title: "Entrega registrada", description: `Entrega da ordem ${ordemCorte} registrada com sucesso.` });
+
+    const result = await salvarEntrega({
+      ordem_corte_id: currentOrdemCorteId,
+      data_entrega: dataEntrega ? format(dataEntrega, "yyyy-MM-dd") : null,
+      qtd_entregue: qtdEntregueAuto,
+      segunda_qualidade: segundaQualidadeAuto,
+      oficina_nome: oficina || null,
+      tempo_producao: tempoProducao || null,
+      observacoes: observacoes || null,
+      status: statusKanban || "pendente",
+    });
+
+    if (result) {
+      toast({ title: "Entrega registrada", description: `Entrega da ordem ${ordemCorte} registrada com sucesso.` });
+    }
   };
 
   const handlePrint = useCallback(() => {window.print();}, []);
