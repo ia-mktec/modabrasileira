@@ -210,9 +210,9 @@ export function AppSidebar() {
   return (
     <aside
       className={cn(
-        "flex flex-col h-screen sticky top-0 border-r transition-all duration-300",
+        "flex flex-col h-screen sticky top-0 border-r transition-all duration-300 overflow-hidden",
         "bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] border-[hsl(var(--sidebar-border))]",
-        collapsed ? "w-[68px]" : "w-[240px]"
+        collapsed ? "w-[68px] min-w-[68px]" : "w-[240px] min-w-[240px]"
       )}
     >
       <SidebarContent collapsed={collapsed} setCollapsed={setCollapsed} />
