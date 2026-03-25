@@ -548,26 +548,20 @@ const CortePage = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  {selectedTecidoId &&
-                  <div className="space-y-1 col-span-2 md:col-span-3">
+                  {selectedTecidoId && (() => {
+                    const tecidoSel = tecidosDb.find((t: any) => t.id === selectedTecidoId);
+                    const estoqueDisp = tecidoSel?.estoque_kg || 0;
+                    return (
+                    <div className="space-y-1 col-span-2 md:col-span-3">
                       <div className="flex items-center gap-2 text-xs">
                         <span className="font-semibold">Estoque disponível:</span>
                         <span className="font-mono font-bold text-primary">
-                          {getEstoqueDisponivel(selectedTecidoId).toFixed(2)} Kg
+                          {Number(estoqueDisp).toFixed(2)} Kg
                         </span>
-                        {getEstoqueReservado(selectedTecidoId) > 0 &&
-                      <span className="text-[hsl(38,92%,50%)] flex items-center gap-1">
-                            <AlertTriangle className="w-3 h-3" />
-                            {getEstoqueReservado(selectedTecidoId).toFixed(2)} Kg reservado
-                          </span>
-                      }
-                        {reservaAtiva &&
-                      <span className="bg-[hsl(142,71%,35%/0.15)] text-[hsl(142,71%,35%)] px-2 py-0.5 rounded-full text-[10px] font-medium">
-                            ✓ Reserva ativa nesta ordem
-                          </span>
-                      }
                       </div>
                     </div>
+                    );
+                  })()
                   }
                 </div>
               </CardContent>
