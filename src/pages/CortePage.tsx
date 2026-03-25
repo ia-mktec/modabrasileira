@@ -424,16 +424,16 @@ const CortePage = () => {
                         <div className="mt-4 space-y-3">
                           <Input placeholder="Razão Social ou CNPJ..." value={clienteSearchTerm} onChange={(e) => setClienteSearchTerm(e.target.value)} />
                           <div className="space-y-1 max-h-[60vh] overflow-y-auto">
-                            {filteredClientes.map((c) =>
+                            {filteredClientes.map((c: any) =>
                             <button key={c.id} onClick={() => {
                               setSelectedClienteId(c.id);
-                              setClienteNome(c.razaoSocial);
+                              setClienteNome(c.razao_social);
                               setClienteSearchOpen(false);
                               // Limpa tecido ao trocar cliente
                               setTecido("");
                               setSelectedTecidoId("");
                             }} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
-                                <div className="font-mono text-xs font-semibold text-primary">{c.razaoSocial}</div>
+                                <div className="font-mono text-xs font-semibold text-primary">{c.razao_social}</div>
                                 <div className="text-muted-foreground text-xs">{c.cnpj} — {c.cidade}/{c.uf}</div>
                               </button>
                             )}
