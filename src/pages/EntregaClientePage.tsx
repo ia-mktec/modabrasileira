@@ -33,6 +33,10 @@ interface GradeEntregueRow {
 }
 
 const EntregaClientePage = () => {
+  const { ordens: ordensCorteDb } = useOrdensCorte();
+  const { salvarEntrega } = useEntregaCliente();
+  const { modelos: modelosDb } = useModelos();
+  const [currentOrdemCorteId, setCurrentOrdemCorteId] = useState<string | null>(null);
   // Consulta (read-only)
   const [ordemCorte, setOrdemCorte] = useState("");
   const [referencia, setReferencia] = useState("");
