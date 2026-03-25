@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       if (!mounted) return;
       // Only update if onAuthStateChange hasn't already fired
-      setSession(session);
+      setSession(currentSession);
       setUser(currentSession?.user ?? null);
       if (currentSession?.user) {
         fetchRoles(currentSession.user.id);
