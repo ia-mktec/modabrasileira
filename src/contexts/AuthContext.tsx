@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
@@ -24,7 +24,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [loading, setLoading] = useState(true);
-  const initializedRef = useRef(false);
 
   const fetchRoles = useCallback(async (userId: string) => {
     const { data, error } = await supabase.rpc("get_user_roles", { _user_id: userId });
@@ -36,10 +35,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // Prevent double-initialization in strict mode
-    if (initializedRef.current) return;
-    initializedRef.current = true;
-
     let mounted = true;
 
     // 1. Set up listener FIRST (before getSession)
