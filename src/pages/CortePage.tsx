@@ -700,17 +700,17 @@ const CortePage = () => {
                   <div className="mt-4 space-y-3">
                     <Input placeholder="Descrição ou tipo..." value={aviamentoSearchTerm} onChange={(e) => setAviamentoSearchTerm(e.target.value)} />
                     <div className="space-y-1 max-h-[60vh] overflow-y-auto">
-                      {filteredAviamentos.map((a) =>
+                      {filteredAviamentosItems.map((a: any) =>
                       <button
                         key={a.id}
                         onClick={() => addAviamento(a.descricao)}
                         className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
                         
                           <div className="font-mono text-xs font-semibold text-primary">{a.descricao}</div>
-                          <div className="text-muted-foreground text-xs">{a.tipo} — {a.cor} — R$ {a.precoUn.toFixed(2)}</div>
+                          <div className="text-muted-foreground text-xs">{a.tipo} — {a.cor} — R$ {Number(a.preco_un || 0).toFixed(2)}</div>
                         </button>
                       )}
-                      {filteredAviamentos.length === 0 &&
+                      {filteredAviamentosItems.length === 0 &&
                       <p className="text-sm text-muted-foreground text-center py-4">Nenhum aviamento encontrado</p>
                       }
                     </div>
