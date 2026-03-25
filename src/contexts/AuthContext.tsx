@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
@@ -24,6 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [loading, setLoading] = useState(true);
+  const initializedRef = useRef(false);
 
   const fetchRoles = useCallback(async (userId: string) => {
     const { data, error } = await supabase.rpc("get_user_roles", { _user_id: userId });
@@ -35,12 +36,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // Prevent double-initialization in strict mode
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
+    let mounted = true;
+
+    // 1. Set up listener FIRST (before getSession)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        if (!mounted) return;
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          setTimeout(() => fetchRoles(session.user.id), 0);
+          // Use setTimeout to avoid deadlock in onAuthStateChange
+          setTimeout(() => {
+            if (mounted) fetchRoles(session.user.id);
+          }, 0);
         } else {
           setRoles([]);
         }
@@ -48,16 +60,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchRoles(session.user.id);
+    // 2. Then restore session from storage
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      if (!mounted) return;
+      // Only update if onAuthStateChange hasn't already fired
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      if (currentSession?.user) {
+        fetchRoles(currentSession.user.id);
       }
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [fetchRoles]);
 
   const signIn = async (email: string, password: string) => {
