@@ -233,7 +233,7 @@ const ModelosPage = () => {
   };
 
   // ── Save / Clone ──
-  const handleSaveClick = () => {
+  const handleSaveClick = async () => {
     if (isLoadedFromSearch) {
       // First ask: save or clone?
       setSaveDialogOpen(true);
