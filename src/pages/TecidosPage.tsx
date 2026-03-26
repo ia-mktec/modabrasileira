@@ -170,10 +170,10 @@ const TecidosPage = () => {
     }
   };
 
-  const loadTecido = (t: (typeof tecidos)[0]) => {
+  const loadTecido = (t: any) => {
     setTecido(t.nome);
-    setComposicao(t.composicao);
-    setCliente(t.cliente);
+    setComposicao(t.composicao || "");
+    setCliente(t.clientes?.razao_social || "");
     setSearchOpen(false);
   };
 
