@@ -11,7 +11,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from
 "@/components/ui/alert-dialog";
-import { modelos, cadastroAviamentos, clientes, type AviamentoItem } from "@/lib/mock-data";
+import { useModelos, useClientes, useAviamentos } from "@/hooks/useSupabaseData";
 
 // Modelos from Cadastro module
 const cadastroModelosList = [
