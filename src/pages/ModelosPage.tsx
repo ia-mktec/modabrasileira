@@ -331,9 +331,9 @@ const ModelosPage = () => {
                     <div className="mt-4 space-y-3">
                       <Input placeholder="Razão Social ou CNPJ..." value={clienteSearchTerm} onChange={(e) => setClienteSearchTerm(e.target.value)} />
                       <div className="space-y-1 max-h-[60vh] overflow-y-auto">
-                        {clientes.filter(c => c.razaoSocial.toLowerCase().includes(clienteSearchTerm.toLowerCase()) || c.cnpj.includes(clienteSearchTerm)).map((c) =>
-                        <button key={c.id} onClick={() => {setCliente(c.razaoSocial);setClienteSearchOpen(false);}} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
-                            <div className="font-mono text-xs font-semibold text-primary">{c.razaoSocial}</div>
+                        {clientes.filter((c: any) => (c.razao_social || "").toLowerCase().includes(clienteSearchTerm.toLowerCase()) || (c.cnpj || "").includes(clienteSearchTerm)).map((c: any) =>
+                        <button key={c.id} onClick={() => {setCliente(c.razao_social);setClienteSearchOpen(false);}} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
+                            <div className="font-mono text-xs font-semibold text-primary">{c.razao_social}</div>
                             <div className="text-muted-foreground text-xs">{c.cnpj} — {c.cidade}/{c.uf}</div>
                           </button>
                         )}
