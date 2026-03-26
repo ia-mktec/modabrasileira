@@ -260,9 +260,18 @@ const ModelosPage = () => {
     setSaveOverwriteDialogOpen(true);
   };
 
-  const handleSaveOverwriteConfirm = () => {
+  const handleSaveOverwriteConfirm = async () => {
     setSaveOverwriteDialogOpen(false);
-    toast({ title: "Modelo atualizado", description: `Referência ${referencia} foi sobrescrita com sucesso.` });
+    const existingModel = modelos.find((m: any) => m.referencia === referencia);
+    const result = await salvarModelo({
+      referencia,
+      descricao: modelo,
+      consumo_tecido: parseFloat(consumoMetros) || 0,
+      status: statusKanban === "concluido" ? "ativo" : statusKanban === "pendente" ? "desenvolvimento" : "ativo",
+    }, existingModel?.id);
+    if (result) {
+      toast({ title: "Modelo atualizado", description: `Referência ${referencia} foi sobrescrita com sucesso.` });
+    }
   };
 
   const handleClone = () => {
