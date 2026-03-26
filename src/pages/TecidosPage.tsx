@@ -394,7 +394,7 @@ const TecidosPage = () => {
                   />
                 </div>
                 <div className="space-y-1 max-h-[70vh] overflow-y-auto">
-                  {filteredTecidos.map((t) => (
+                  {filteredTecidos.map((t: any) => (
                     <button
                       key={t.id}
                       onClick={() => loadTecido(t)}
@@ -402,7 +402,7 @@ const TecidosPage = () => {
                     >
                       <div className="font-mono text-xs font-semibold text-primary">{t.nome}</div>
                       <div className="text-muted-foreground text-xs">
-                        {t.cor} — {t.cliente}
+                        {t.cor} — {t.clientes?.razao_social || ""}
                       </div>
                     </button>
                   ))}
