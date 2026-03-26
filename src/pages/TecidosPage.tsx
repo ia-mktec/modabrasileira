@@ -201,10 +201,23 @@ const TecidosPage = () => {
     setConfirmDialogOpen(true);
   };
 
-  const handleConfirmRegistrar = () => {
+  const handleConfirmRegistrar = async () => {
     setConfirmDialogOpen(false);
-    toast({ title: "Tecido registrado", description: "As informações foram salvas com sucesso." });
-    limparRegistro();
+    // Save tecido to DB
+    const clienteMatch = clientes.find((c: any) => (c.razao_social || "").toLowerCase() === cliente.toLowerCase());
+    const totalMetragem = cores.reduce((s, c) => s + (parseFloat(c.metragemTotal) || 0), 0);
+    const result = await salvarTecido({
+      nome: tecido,
+      composicao: composicao || undefined,
+      cor: cores.map(c => c.cor).join(", ") || undefined,
+      cliente_id: clienteMatch?.id || undefined,
+      estoque_kg: totalMetragem,
+      preco_kg: 0,
+    });
+    if (result) {
+      toast({ title: "Tecido registrado", description: "As informações foram salvas no banco de dados." });
+      limparRegistro();
+    }
   };
 
   const handlePrint = useCallback(() => {
