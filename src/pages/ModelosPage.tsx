@@ -142,13 +142,13 @@ const ModelosPage = () => {
     (m.descricao || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const loadModelo = (m: typeof modelos[0]) => {
-    setReferencia(m.referencia);
-    setModelo(m.descricao);
+  const loadModelo = (m: any) => {
+    setReferencia(m.referencia || "");
+    setModelo(m.descricao || "");
     setCliente("");
     setPilotoEntregue("");
     setDataPedido("");
-    setConsumoMetros(m.consumoTecido.toFixed(2));
+    setConsumoMetros(m.consumo_tecido ? Number(m.consumo_tecido).toFixed(2) : "");
     setConsumoGramas("");
     setEntretela(false);
     setForroTecido2(false);
