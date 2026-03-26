@@ -14,9 +14,36 @@ export function useClientes() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetch(); }, [fetch]);
+  const salvarCliente = useCallback(async (cliente: {
+    razao_social: string; cnpj?: string; contato?: string; telefone?: string;
+    cidade?: string; uf?: string; prazo_recebimento?: number; status?: string;
+  }, existingId?: string) => {
+    try {
+      if (existingId) {
+        const { error } = await supabase.from("clientes").update(cliente).eq("id", existingId);
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase.from("clientes").insert(cliente).select("id").single();
+        if (error) throw error;
+        existingId = data.id;
+      }
+      await fetch();
+      return existingId;
+    } catch (error: any) {
+      toast({ title: "Erro ao salvar cliente", description: error.message, variant: "destructive" });
+      return null;
+    }
+  }, [fetch]);
 
-  return { clientes, loading, refetch: fetch };
+  const deletarCliente = useCallback(async (id: string) => {
+    const { error } = await supabase.from("clientes").delete().eq("id", id);
+    if (error) { toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" }); return false; }
+    await fetch();
+    return true;
+  }, [fetch]);
+
+  useEffect(() => { fetch(); }, [fetch]);
+  return { clientes, loading, refetch: fetch, salvarCliente, deletarCliente };
 }
 
 // ===== FORNECEDORES =====
@@ -31,9 +58,37 @@ export function useFornecedores() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetch(); }, [fetch]);
+  const salvarFornecedor = useCallback(async (fornecedor: {
+    razao_social: string; cnpj?: string; contato?: string; telefone?: string;
+    email?: string; cidade?: string; uf?: string; tipo?: string;
+    prazo_pagamento?: number; status?: string;
+  }, existingId?: string) => {
+    try {
+      if (existingId) {
+        const { error } = await supabase.from("fornecedores").update(fornecedor).eq("id", existingId);
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase.from("fornecedores").insert(fornecedor).select("id").single();
+        if (error) throw error;
+        existingId = data.id;
+      }
+      await fetch();
+      return existingId;
+    } catch (error: any) {
+      toast({ title: "Erro ao salvar fornecedor", description: error.message, variant: "destructive" });
+      return null;
+    }
+  }, [fetch]);
 
-  return { fornecedores, loading, refetch: fetch };
+  const deletarFornecedor = useCallback(async (id: string) => {
+    const { error } = await supabase.from("fornecedores").delete().eq("id", id);
+    if (error) { toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" }); return false; }
+    await fetch();
+    return true;
+  }, [fetch]);
+
+  useEffect(() => { fetch(); }, [fetch]);
+  return { fornecedores, loading, refetch: fetch, salvarFornecedor, deletarFornecedor };
 }
 
 // ===== TECIDOS =====
@@ -48,15 +103,43 @@ export function useTecidos() {
     setLoading(false);
   }, []);
 
+  const salvarTecido = useCallback(async (tecido: {
+    nome: string; composicao?: string; cor?: string; cliente_id?: string;
+    estoque_kg?: number; preco_kg?: number; largura?: number; peso?: number; status?: string;
+  }, existingId?: string) => {
+    try {
+      if (existingId) {
+        const { error } = await supabase.from("tecidos").update(tecido).eq("id", existingId);
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase.from("tecidos").insert(tecido).select("id").single();
+        if (error) throw error;
+        existingId = data.id;
+      }
+      await fetch();
+      return existingId;
+    } catch (error: any) {
+      toast({ title: "Erro ao salvar tecido", description: error.message, variant: "destructive" });
+      return null;
+    }
+  }, [fetch]);
+
   const updateEstoque = useCallback(async (tecidoId: string, novoEstoque: number) => {
     const { error } = await supabase.from("tecidos").update({ estoque_kg: novoEstoque }).eq("id", tecidoId);
     if (error) { toast({ title: "Erro ao atualizar estoque", description: error.message, variant: "destructive" }); return false; }
+    await fetch();
     return true;
-  }, []);
+  }, [fetch]);
+
+  const deletarTecido = useCallback(async (id: string) => {
+    const { error } = await supabase.from("tecidos").delete().eq("id", id);
+    if (error) { toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" }); return false; }
+    await fetch();
+    return true;
+  }, [fetch]);
 
   useEffect(() => { fetch(); }, [fetch]);
-
-  return { tecidos, loading, refetch: fetch, updateEstoque };
+  return { tecidos, loading, refetch: fetch, salvarTecido, updateEstoque, deletarTecido };
 }
 
 // ===== MODELOS =====
@@ -71,9 +154,37 @@ export function useModelos() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetch(); }, [fetch]);
+  const salvarModelo = useCallback(async (modelo: {
+    referencia: string; descricao: string; colecao?: string;
+    tecido_principal?: string; consumo_tecido?: number; tamanhos_grade?: string;
+    status?: string; imagem_url?: string;
+  }, existingId?: string) => {
+    try {
+      if (existingId) {
+        const { error } = await supabase.from("modelos").update(modelo).eq("id", existingId);
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase.from("modelos").insert(modelo).select("id").single();
+        if (error) throw error;
+        existingId = data.id;
+      }
+      await fetch();
+      return existingId;
+    } catch (error: any) {
+      toast({ title: "Erro ao salvar modelo", description: error.message, variant: "destructive" });
+      return null;
+    }
+  }, [fetch]);
 
-  return { modelos, loading, refetch: fetch };
+  const deletarModelo = useCallback(async (id: string) => {
+    const { error } = await supabase.from("modelos").delete().eq("id", id);
+    if (error) { toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" }); return false; }
+    await fetch();
+    return true;
+  }, [fetch]);
+
+  useEffect(() => { fetch(); }, [fetch]);
+  return { modelos, loading, refetch: fetch, salvarModelo, deletarModelo };
 }
 
 // ===== AVIAMENTOS =====
@@ -82,15 +193,42 @@ export function useAviamentos() {
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
-    const { data, error } = await supabase.from("aviamentos").select("*").order("tipo, descricao");
+    const { data, error } = await supabase.from("aviamentos").select("*, fornecedores(razao_social)").order("tipo, descricao");
     if (error) { toast({ title: "Erro ao buscar aviamentos", description: error.message, variant: "destructive" }); }
     else setAviamentos(data || []);
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetch(); }, [fetch]);
+  const salvarAviamento = useCallback(async (aviamento: {
+    tipo: string; descricao: string; tamanho?: string; cor?: string;
+    preco_un?: number; fornecedor_id?: string;
+  }, existingId?: string) => {
+    try {
+      if (existingId) {
+        const { error } = await supabase.from("aviamentos").update(aviamento).eq("id", existingId);
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase.from("aviamentos").insert(aviamento).select("id").single();
+        if (error) throw error;
+        existingId = data.id;
+      }
+      await fetch();
+      return existingId;
+    } catch (error: any) {
+      toast({ title: "Erro ao salvar aviamento", description: error.message, variant: "destructive" });
+      return null;
+    }
+  }, [fetch]);
 
-  return { aviamentos, loading, refetch: fetch };
+  const deletarAviamento = useCallback(async (id: string) => {
+    const { error } = await supabase.from("aviamentos").delete().eq("id", id);
+    if (error) { toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" }); return false; }
+    await fetch();
+    return true;
+  }, [fetch]);
+
+  useEffect(() => { fetch(); }, [fetch]);
+  return { aviamentos, loading, refetch: fetch, salvarAviamento, deletarAviamento };
 }
 
 // ===== ORDENS DE CORTE =====
@@ -109,28 +247,17 @@ export function useOrdensCorte() {
   }, []);
 
   const salvarOrdem = useCallback(async (ordem: {
-    numero: string;
-    modelo_ref: string;
-    tecido_nome: string;
-    tecido_id?: string;
-    modelo_id?: string;
-    cliente_id?: string;
-    quantidade_pecas: number;
-    data_corte?: string;
-    cortador?: string;
-    enfestos?: number;
-    perda_percent?: number;
-    consumo_por_peca?: number;
-    observacoes?: string;
-    status: string;
+    numero: string; modelo_ref: string; tecido_nome: string;
+    tecido_id?: string; modelo_id?: string; cliente_id?: string;
+    quantidade_pecas: number; data_corte?: string; cortador?: string;
+    enfestos?: number; perda_percent?: number; consumo_por_peca?: number;
+    observacoes?: string; status: string;
   }, grade: { cor: string; tecido_id?: string; pp: number; p: number; m: number; g: number; gg: number; g1: number; g2: number; g3: number; }[], aviamentos: { descricao: string; quantidade: number; }[], existingId?: string) => {
     try {
       let ordemId = existingId;
-
       if (existingId) {
         const { error } = await supabase.from("ordens_corte").update(ordem).eq("id", existingId);
         if (error) throw error;
-        // Delete old grade and aviamentos
         await supabase.from("grade_corte").delete().eq("ordem_corte_id", existingId);
         await supabase.from("aviamentos_ordem").delete().eq("ordem_corte_id", existingId);
       } else {
@@ -138,21 +265,16 @@ export function useOrdensCorte() {
         if (error) throw error;
         ordemId = data.id;
       }
-
-      // Insert grade
       if (grade.length > 0 && ordemId) {
         const gradeRows = grade.map(g => ({ ordem_corte_id: ordemId, ...g }));
         const { error } = await supabase.from("grade_corte").insert(gradeRows);
         if (error) throw error;
       }
-
-      // Insert aviamentos
       if (aviamentos.length > 0 && ordemId) {
         const avRows = aviamentos.map(a => ({ ordem_corte_id: ordemId, descricao: a.descricao, quantidade: a.quantidade }));
         const { error } = await supabase.from("aviamentos_ordem").insert(avRows);
         if (error) throw error;
       }
-
       await fetch();
       return ordemId;
     } catch (error: any) {
@@ -169,7 +291,6 @@ export function useOrdensCorte() {
   }, [fetch]);
 
   useEffect(() => { fetch(); }, [fetch]);
-
   return { ordens, loading, refetch: fetch, salvarOrdem, deletarOrdem };
 }
 
@@ -189,19 +310,12 @@ export function useExpedicao() {
   }, []);
 
   const salvarExpedicao = useCallback(async (exp: {
-    ordem_corte_id: string;
-    data_saida?: string;
-    oficina_id?: string;
-    oficina_nome?: string;
-    destino?: string;
-    nota_fiscal?: string;
-    preco_peca?: number;
-    observacoes?: string;
-    status: string;
+    ordem_corte_id: string; data_saida?: string; oficina_id?: string;
+    oficina_nome?: string; destino?: string; nota_fiscal?: string;
+    preco_peca?: number; observacoes?: string; status: string;
   }, grade: { cor: string; pp_prod: number; p_prod: number; m_prod: number; g_prod: number; gg_prod: number; g1_prod: number; g2_prod: number; g3_prod: number; pp_exp: number; p_exp: number; m_exp: number; g_exp: number; gg_exp: number; g1_exp: number; g2_exp: number; g3_exp: number; }[], existingId?: string) => {
     try {
       let expId = existingId;
-
       if (existingId) {
         const { error } = await supabase.from("expedicao").update(exp).eq("id", existingId);
         if (error) throw error;
@@ -211,13 +325,11 @@ export function useExpedicao() {
         if (error) throw error;
         expId = data.id;
       }
-
       if (grade.length > 0 && expId) {
         const rows = grade.map(g => ({ expedicao_id: expId, ...g }));
         const { error } = await supabase.from("grade_expedicao").insert(rows);
         if (error) throw error;
       }
-
       await fetch();
       return expId;
     } catch (error: any) {
@@ -227,7 +339,6 @@ export function useExpedicao() {
   }, [fetch]);
 
   useEffect(() => { fetch(); }, [fetch]);
-
   return { expedicoes, loading, refetch: fetch, salvarExpedicao };
 }
 
@@ -247,17 +358,10 @@ export function useRecebimento() {
   }, []);
 
   const salvarRecebimento = useCallback(async (rec: {
-    expedicao_id: string;
-    ordem_corte_id: string;
-    oficina_nome?: string;
-    data_envio?: string;
-    data_recebimento?: string;
-    total_sem_defeitos?: number;
-    defeitos?: number;
-    segunda_qualidade?: number;
-    total_pagar?: number;
-    observacoes?: string;
-    status: string;
+    expedicao_id: string; ordem_corte_id: string; oficina_nome?: string;
+    data_envio?: string; data_recebimento?: string; total_sem_defeitos?: number;
+    defeitos?: number; segunda_qualidade?: number; total_pagar?: number;
+    observacoes?: string; status: string;
   }, existingId?: string) => {
     try {
       if (existingId) {
@@ -277,7 +381,6 @@ export function useRecebimento() {
   }, [fetch]);
 
   useEffect(() => { fetch(); }, [fetch]);
-
   return { recebimentos, loading, refetch: fetch, salvarRecebimento };
 }
 
@@ -297,16 +400,9 @@ export function useEntregaCliente() {
   }, []);
 
   const salvarEntrega = useCallback(async (ent: {
-    ordem_corte_id: string;
-    recebimento_id?: string;
-    cliente_id?: string;
-    data_entrega?: string;
-    qtd_entregue?: number;
-    segunda_qualidade?: number;
-    oficina_nome?: string;
-    tempo_producao?: string;
-    observacoes?: string;
-    status: string;
+    ordem_corte_id: string; recebimento_id?: string; cliente_id?: string;
+    data_entrega?: string; qtd_entregue?: number; segunda_qualidade?: number;
+    oficina_nome?: string; tempo_producao?: string; observacoes?: string; status: string;
   }, existingId?: string) => {
     try {
       if (existingId) {
@@ -326,7 +422,6 @@ export function useEntregaCliente() {
   }, [fetch]);
 
   useEffect(() => { fetch(); }, [fetch]);
-
   return { entregas, loading, refetch: fetch, salvarEntrega };
 }
 
@@ -344,11 +439,8 @@ export function useEstoqueMovimentacoes() {
   }, []);
 
   const registrarMovimentacao = useCallback(async (mov: {
-    tecido_id: string;
-    tipo: string;
-    quantidade_kg: number;
-    ordem_corte_id?: string;
-    descricao?: string;
+    tecido_id: string; tipo: string; quantidade_kg: number;
+    ordem_corte_id?: string; descricao?: string;
   }) => {
     const { error } = await supabase.from("estoque_movimentacoes").insert(mov);
     if (error) { toast({ title: "Erro ao registrar movimentação", description: error.message, variant: "destructive" }); return false; }
@@ -357,6 +449,5 @@ export function useEstoqueMovimentacoes() {
   }, [fetch]);
 
   useEffect(() => { fetch(); }, [fetch]);
-
   return { movimentacoes, refetch: fetch, registrarMovimentacao };
 }

@@ -11,7 +11,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from
 "@/components/ui/alert-dialog";
-import { modelos, cadastroAviamentos, clientes, type AviamentoItem } from "@/lib/mock-data";
+import { useModelos, useClientes, useAviamentos } from "@/hooks/useSupabaseData";
 
 // Modelos from Cadastro module
 const cadastroModelosList = [
@@ -26,7 +26,7 @@ import { toast } from "@/hooks/use-toast";
 // ── Types ──
 interface AviamentoRow {
   tipo: string;
-  selectedItem: AviamentoItem | null;
+  selectedItem: any | null;
   partesQtde: string;
 }
 
@@ -91,6 +91,9 @@ const calcGradacao = (p: string, aumento: string): Partial<GradacaoRow> => {
 const ACCEPTED_FILE_FORMATS = ".dxf,.ads,.dwg,.plt,.hpgl,.svg,.pdf,.ai,.zip,.cdr";
 
 const ModelosPage = () => {
+  const { modelos, salvarModelo } = useModelos();
+  const { clientes } = useClientes();
+  const { aviamentos: dbAviamentos } = useAviamentos();
   const [referencia, setReferencia] = useState("");
   const [modelo, setModelo] = useState("");
   const [cliente, setCliente] = useState("");
@@ -134,18 +137,18 @@ const ModelosPage = () => {
   const printRef = useRef<HTMLDivElement>(null);
 
   const filteredModelos = modelos.filter(
-    (m) =>
-    m.referencia.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    m.descricao.toLowerCase().includes(searchTerm.toLowerCase())
+    (m: any) =>
+    (m.referencia || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (m.descricao || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const loadModelo = (m: typeof modelos[0]) => {
-    setReferencia(m.referencia);
-    setModelo(m.descricao);
+  const loadModelo = (m: any) => {
+    setReferencia(m.referencia || "");
+    setModelo(m.descricao || "");
     setCliente("");
     setPilotoEntregue("");
     setDataPedido("");
-    setConsumoMetros(m.consumoTecido.toFixed(2));
+    setConsumoMetros(m.consumo_tecido ? Number(m.consumo_tecido).toFixed(2) : "");
     setConsumoGramas("");
     setEntretela(false);
     setForroTecido2(false);
@@ -196,7 +199,7 @@ const ModelosPage = () => {
   };
 
   // ── Aviamentos handlers ──
-  const selectAviamentoItem = (idx: number, item: AviamentoItem) => {
+  const selectAviamentoItem = (idx: number, item: any) => {
     setAviamentos((prev) => prev.map((a, i) => i === idx ? { ...a, selectedItem: item } : a));
     setAviamentoSearchOpen(null);
     setAviamentoSearchTerm("");
@@ -230,7 +233,7 @@ const ModelosPage = () => {
   };
 
   // ── Save / Clone ──
-  const handleSaveClick = () => {
+  const handleSaveClick = async () => {
     if (isLoadedFromSearch) {
       // First ask: save or clone?
       setSaveDialogOpen(true);
@@ -239,7 +242,15 @@ const ModelosPage = () => {
         toast({ title: "Campos obrigatórios", description: "Preencha todos os campos editáveis antes de salvar.", variant: "destructive" });
         return;
       }
-      toast({ title: "Modelo salvo", description: `Referência ${referencia} salva com sucesso.` });
+      const result = await salvarModelo({
+        referencia,
+        descricao: modelo,
+        consumo_tecido: parseFloat(consumoMetros) || 0,
+        status: statusKanban === "concluido" ? "ativo" : statusKanban === "pendente" ? "desenvolvimento" : "ativo",
+      });
+      if (result) {
+        toast({ title: "Modelo salvo", description: `Referência ${referencia} salva com sucesso.` });
+      }
     }
   };
 
@@ -249,9 +260,18 @@ const ModelosPage = () => {
     setSaveOverwriteDialogOpen(true);
   };
 
-  const handleSaveOverwriteConfirm = () => {
+  const handleSaveOverwriteConfirm = async () => {
     setSaveOverwriteDialogOpen(false);
-    toast({ title: "Modelo atualizado", description: `Referência ${referencia} foi sobrescrita com sucesso.` });
+    const existingModel = modelos.find((m: any) => m.referencia === referencia);
+    const result = await salvarModelo({
+      referencia,
+      descricao: modelo,
+      consumo_tecido: parseFloat(consumoMetros) || 0,
+      status: statusKanban === "concluido" ? "ativo" : statusKanban === "pendente" ? "desenvolvimento" : "ativo",
+    }, existingModel?.id);
+    if (result) {
+      toast({ title: "Modelo atualizado", description: `Referência ${referencia} foi sobrescrita com sucesso.` });
+    }
   };
 
   const handleClone = () => {
@@ -328,9 +348,9 @@ const ModelosPage = () => {
                     <div className="mt-4 space-y-3">
                       <Input placeholder="Razão Social ou CNPJ..." value={clienteSearchTerm} onChange={(e) => setClienteSearchTerm(e.target.value)} />
                       <div className="space-y-1 max-h-[60vh] overflow-y-auto">
-                        {clientes.filter(c => c.razaoSocial.toLowerCase().includes(clienteSearchTerm.toLowerCase()) || c.cnpj.includes(clienteSearchTerm)).map((c) =>
-                        <button key={c.id} onClick={() => {setCliente(c.razaoSocial);setClienteSearchOpen(false);}} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
-                            <div className="font-mono text-xs font-semibold text-primary">{c.razaoSocial}</div>
+                        {clientes.filter((c: any) => (c.razao_social || "").toLowerCase().includes(clienteSearchTerm.toLowerCase()) || (c.cnpj || "").includes(clienteSearchTerm)).map((c: any) =>
+                        <button key={c.id} onClick={() => {setCliente(c.razao_social);setClienteSearchOpen(false);}} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
+                            <div className="font-mono text-xs font-semibold text-primary">{c.razao_social}</div>
                             <div className="text-muted-foreground text-xs">{c.cnpj} — {c.cidade}/{c.uf}</div>
                           </button>
                         )}
@@ -457,11 +477,11 @@ const ModelosPage = () => {
                 </thead>
                 <tbody>
                   {aviamentos.map((av, idx) => {
-                  const tipoData = cadastroAviamentos.find((c) => c.tipo === av.tipo);
-                  const filteredItems = tipoData?.itens.filter((it) =>
-                  it.descricao.toLowerCase().includes(aviamentoSearchTerm.toLowerCase()) ||
-                  it.tamanho.toLowerCase().includes(aviamentoSearchTerm.toLowerCase())
-                  ) || [];
+                  const filteredItems = dbAviamentos.filter((it: any) =>
+                  it.tipo === av.tipo &&
+                  ((it.descricao || "").toLowerCase().includes(aviamentoSearchTerm.toLowerCase()) ||
+                  (it.tamanho || "").toLowerCase().includes(aviamentoSearchTerm.toLowerCase()))
+                  );
 
                   return (
                     <tr key={idx} className="border-b last:border-0">
@@ -501,7 +521,7 @@ const ModelosPage = () => {
                                     className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm"
                                   >
                                     <div className="font-medium text-xs">{item.descricao}</div>
-                                    <div className="text-muted-foreground text-xs">{item.tamanho} — R$ {item.precoUn.toFixed(2)}</div>
+                                    <div className="text-muted-foreground text-xs">{item.tamanho} — R$ {Number(item.preco_un || 0).toFixed(2)}</div>
                                   </button>
                                 ))}
                                 {filteredItems.length === 0 && (

@@ -10,7 +10,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
 } from "@/components/ui/alert-dialog";
-import { tecidos } from "@/lib/mock-data";
+import { useTecidos, useClientes, useEstoqueMovimentacoes } from "@/hooks/useSupabaseData";
 
 // Modelos from Cadastro module
 const cadastroModelos = [
@@ -103,6 +103,9 @@ const mockRegistros: RegistroTecido[] = [
 type ViewMode = "ficha" | "historico";
 
 const TecidosPage = () => {
+  const { tecidos, salvarTecido } = useTecidos();
+  const { clientes } = useClientes();
+  const { registrarMovimentacao } = useEstoqueMovimentacoes();
   const [viewMode, setViewMode] = useState<ViewMode>("ficha");
 
   // Ficha state
@@ -131,10 +134,10 @@ const TecidosPage = () => {
   const [filtroCor, setFiltroCor] = useState("");
 
   const filteredTecidos = tecidos.filter(
-    (t) =>
-      t.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.cor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.cliente.toLowerCase().includes(searchTerm.toLowerCase())
+    (t: any) =>
+      (t.nome || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (t.cor || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (t.clientes?.razao_social || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const filteredRegistros = mockRegistros.filter((r) => {
@@ -167,10 +170,10 @@ const TecidosPage = () => {
     }
   };
 
-  const loadTecido = (t: (typeof tecidos)[0]) => {
+  const loadTecido = (t: any) => {
     setTecido(t.nome);
-    setComposicao(t.composicao);
-    setCliente(t.cliente);
+    setComposicao(t.composicao || "");
+    setCliente(t.clientes?.razao_social || "");
     setSearchOpen(false);
   };
 
@@ -201,10 +204,23 @@ const TecidosPage = () => {
     setConfirmDialogOpen(true);
   };
 
-  const handleConfirmRegistrar = () => {
+  const handleConfirmRegistrar = async () => {
     setConfirmDialogOpen(false);
-    toast({ title: "Tecido registrado", description: "As informações foram salvas com sucesso." });
-    limparRegistro();
+    // Save tecido to DB
+    const clienteMatch = clientes.find((c: any) => (c.razao_social || "").toLowerCase() === cliente.toLowerCase());
+    const totalMetragem = cores.reduce((s, c) => s + (parseFloat(c.metragemTotal) || 0), 0);
+    const result = await salvarTecido({
+      nome: tecido,
+      composicao: composicao || undefined,
+      cor: cores.map(c => c.cor).join(", ") || undefined,
+      cliente_id: clienteMatch?.id || undefined,
+      estoque_kg: totalMetragem,
+      preco_kg: 0,
+    });
+    if (result) {
+      toast({ title: "Tecido registrado", description: "As informações foram salvas no banco de dados." });
+      limparRegistro();
+    }
   };
 
   const handlePrint = useCallback(() => {
@@ -378,7 +394,7 @@ const TecidosPage = () => {
                   />
                 </div>
                 <div className="space-y-1 max-h-[70vh] overflow-y-auto">
-                  {filteredTecidos.map((t) => (
+                  {filteredTecidos.map((t: any) => (
                     <button
                       key={t.id}
                       onClick={() => loadTecido(t)}
@@ -386,7 +402,7 @@ const TecidosPage = () => {
                     >
                       <div className="font-mono text-xs font-semibold text-primary">{t.nome}</div>
                       <div className="text-muted-foreground text-xs">
-                        {t.cor} — {t.cliente}
+                        {t.cor} — {t.clientes?.razao_social || ""}
                       </div>
                     </button>
                   ))}
