@@ -91,6 +91,9 @@ const calcGradacao = (p: string, aumento: string): Partial<GradacaoRow> => {
 const ACCEPTED_FILE_FORMATS = ".dxf,.ads,.dwg,.plt,.hpgl,.svg,.pdf,.ai,.zip,.cdr";
 
 const ModelosPage = () => {
+  const { modelos, salvarModelo } = useModelos();
+  const { clientes } = useClientes();
+  const { aviamentos: dbAviamentos } = useAviamentos();
   const [referencia, setReferencia] = useState("");
   const [modelo, setModelo] = useState("");
   const [cliente, setCliente] = useState("");
