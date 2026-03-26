@@ -460,11 +460,11 @@ const ModelosPage = () => {
                 </thead>
                 <tbody>
                   {aviamentos.map((av, idx) => {
-                  const tipoData = cadastroAviamentos.find((c) => c.tipo === av.tipo);
-                  const filteredItems = tipoData?.itens.filter((it) =>
-                  it.descricao.toLowerCase().includes(aviamentoSearchTerm.toLowerCase()) ||
-                  it.tamanho.toLowerCase().includes(aviamentoSearchTerm.toLowerCase())
-                  ) || [];
+                  const filteredItems = dbAviamentos.filter((it: any) =>
+                  it.tipo === av.tipo &&
+                  ((it.descricao || "").toLowerCase().includes(aviamentoSearchTerm.toLowerCase()) ||
+                  (it.tamanho || "").toLowerCase().includes(aviamentoSearchTerm.toLowerCase()))
+                  );
 
                   return (
                     <tr key={idx} className="border-b last:border-0">
