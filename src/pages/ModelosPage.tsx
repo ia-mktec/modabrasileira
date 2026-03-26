@@ -137,9 +137,9 @@ const ModelosPage = () => {
   const printRef = useRef<HTMLDivElement>(null);
 
   const filteredModelos = modelos.filter(
-    (m) =>
-    m.referencia.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    m.descricao.toLowerCase().includes(searchTerm.toLowerCase())
+    (m: any) =>
+    (m.referencia || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (m.descricao || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const loadModelo = (m: typeof modelos[0]) => {
