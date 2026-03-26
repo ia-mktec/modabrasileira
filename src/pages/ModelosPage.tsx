@@ -26,7 +26,7 @@ import { toast } from "@/hooks/use-toast";
 // ── Types ──
 interface AviamentoRow {
   tipo: string;
-  selectedItem: AviamentoItem | null;
+  selectedItem: any | null;
   partesQtde: string;
 }
 
