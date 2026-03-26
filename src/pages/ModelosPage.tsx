@@ -242,7 +242,15 @@ const ModelosPage = () => {
         toast({ title: "Campos obrigatórios", description: "Preencha todos os campos editáveis antes de salvar.", variant: "destructive" });
         return;
       }
-      toast({ title: "Modelo salvo", description: `Referência ${referencia} salva com sucesso.` });
+      const result = await salvarModelo({
+        referencia,
+        descricao: modelo,
+        consumo_tecido: parseFloat(consumoMetros) || 0,
+        status: statusKanban === "concluido" ? "ativo" : statusKanban === "pendente" ? "desenvolvimento" : "ativo",
+      });
+      if (result) {
+        toast({ title: "Modelo salvo", description: `Referência ${referencia} salva com sucesso.` });
+      }
     }
   };
 
