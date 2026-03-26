@@ -504,7 +504,7 @@ const ModelosPage = () => {
                                     className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm"
                                   >
                                     <div className="font-medium text-xs">{item.descricao}</div>
-                                    <div className="text-muted-foreground text-xs">{item.tamanho} — R$ {item.precoUn.toFixed(2)}</div>
+                                    <div className="text-muted-foreground text-xs">{item.tamanho} — R$ {Number(item.preco_un || 0).toFixed(2)}</div>
                                   </button>
                                 ))}
                                 {filteredItems.length === 0 && (
