@@ -103,6 +103,9 @@ const mockRegistros: RegistroTecido[] = [
 type ViewMode = "ficha" | "historico";
 
 const TecidosPage = () => {
+  const { tecidos, salvarTecido } = useTecidos();
+  const { clientes } = useClientes();
+  const { registrarMovimentacao } = useEstoqueMovimentacoes();
   const [viewMode, setViewMode] = useState<ViewMode>("ficha");
 
   // Ficha state
