@@ -199,7 +199,7 @@ const ModelosPage = () => {
   };
 
   // ── Aviamentos handlers ──
-  const selectAviamentoItem = (idx: number, item: AviamentoItem) => {
+  const selectAviamentoItem = (idx: number, item: any) => {
     setAviamentos((prev) => prev.map((a, i) => i === idx ? { ...a, selectedItem: item } : a));
     setAviamentoSearchOpen(null);
     setAviamentoSearchTerm("");
