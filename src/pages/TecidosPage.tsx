@@ -134,10 +134,10 @@ const TecidosPage = () => {
   const [filtroCor, setFiltroCor] = useState("");
 
   const filteredTecidos = tecidos.filter(
-    (t) =>
-      t.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.cor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.cliente.toLowerCase().includes(searchTerm.toLowerCase())
+    (t: any) =>
+      (t.nome || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (t.cor || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (t.clientes?.razao_social || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const filteredRegistros = mockRegistros.filter((r) => {
