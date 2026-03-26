@@ -10,7 +10,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
 } from "@/components/ui/alert-dialog";
-import { tecidos } from "@/lib/mock-data";
+import { useTecidos, useClientes, useEstoqueMovimentacoes } from "@/hooks/useSupabaseData";
 
 // Modelos from Cadastro module
 const cadastroModelos = [
