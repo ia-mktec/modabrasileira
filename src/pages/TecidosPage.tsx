@@ -558,11 +558,11 @@ const TecidosPage = () => {
                             </SelectTrigger>
                             <SelectContent>
                               {cadastroCores.map((cc) => (
-                                <SelectItem key={cc.cod} value={cc.cor}>
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-3 h-3 rounded-full border border-border shrink-0" style={{ backgroundColor: cc.hex }} />
-                                    {cc.cor}
-                                  </div>
+                                <SelectItem key={cc.cod} value={cc.cor} textValue={cc.cor}>
+                                  <span className="inline-flex items-center gap-2">
+                                    <span className="w-3 h-3 rounded-full border border-border shrink-0 inline-block" style={{ backgroundColor: cc.hex }} />
+                                    <span>{cc.cor}</span>
+                                  </span>
                                 </SelectItem>
                               ))}
                             </SelectContent>
