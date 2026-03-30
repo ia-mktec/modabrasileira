@@ -92,7 +92,16 @@ const RecebimentoPage = () => {
 
   const loadOrdem = (oc: any) => {
     setCurrentOrdemCorteId(oc.id);
-    setReferencia(oc.modelo_ref || "");
+    // Find linked expedição for this ordem
+    const linkedExp = expedicoes.find((e: any) => e.ordem_corte_id === oc.id);
+    setCurrentExpedicaoId(linkedExp?.id || null);
+    if (linkedExp) {
+      setOficina(linkedExp.oficina_nome || "");
+      setDataEnvio(linkedExp.data_saida || oc.data_corte || "");
+    } else {
+      setOficina("");
+      setDataEnvio(oc.data_corte || "");
+    }
     setOrdemCorte(oc.numero);
     setCliente("");
     const foundModelo = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
