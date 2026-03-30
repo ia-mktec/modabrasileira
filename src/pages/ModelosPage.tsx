@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -158,6 +159,7 @@ const ModelosPage = () => {
     setServicos(defaultServicos.map((s) => ({ ...s })));
     setGradacao(Array.from({ length: 6 }, emptyGradacao));
     setModelagemFile(null);
+    setModelImage(m.imagem_url || null);
     setSearchOpen(false);
     setIsLoadedFromSearch(true);
   };
@@ -189,12 +191,18 @@ const ModelosPage = () => {
     }
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setModelImage(url);
-      toast({ title: "Imagem carregada", description: `${file.name} carregada com sucesso.` });
+      const fileName = `modelos/${Date.now()}-${file.name}`;
+      const { error } = await supabase.storage.from("produtos").upload(fileName, file, { upsert: true });
+      if (error) {
+        toast({ title: "Erro ao enviar imagem", description: error.message, variant: "destructive" });
+        return;
+      }
+      const { data: urlData } = supabase.storage.from("produtos").getPublicUrl(fileName);
+      setModelImage(urlData.publicUrl);
+      toast({ title: "Imagem carregada", description: `${file.name} enviada com sucesso.` });
     }
   };
 
@@ -247,6 +255,7 @@ const ModelosPage = () => {
         descricao: modelo,
         consumo_tecido: parseFloat(consumoMetros) || 0,
         status: statusKanban === "concluido" ? "ativo" : statusKanban === "pendente" ? "desenvolvimento" : "ativo",
+        imagem_url: modelImage || undefined,
       });
       if (result) {
         toast({ title: "Modelo salvo", description: `Referência ${referencia} salva com sucesso.` });
@@ -268,6 +277,7 @@ const ModelosPage = () => {
       descricao: modelo,
       consumo_tecido: parseFloat(consumoMetros) || 0,
       status: statusKanban === "concluido" ? "ativo" : statusKanban === "pendente" ? "desenvolvimento" : "ativo",
+      imagem_url: modelImage || undefined,
     }, existingModel?.id);
     if (result) {
       toast({ title: "Modelo atualizado", description: `Referência ${referencia} foi sobrescrita com sucesso.` });
