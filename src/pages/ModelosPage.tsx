@@ -191,12 +191,18 @@ const ModelosPage = () => {
     }
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setModelImage(url);
-      toast({ title: "Imagem carregada", description: `${file.name} carregada com sucesso.` });
+      const fileName = `modelos/${Date.now()}-${file.name}`;
+      const { error } = await supabase.storage.from("produtos").upload(fileName, file, { upsert: true });
+      if (error) {
+        toast({ title: "Erro ao enviar imagem", description: error.message, variant: "destructive" });
+        return;
+      }
+      const { data: urlData } = supabase.storage.from("produtos").getPublicUrl(fileName);
+      setModelImage(urlData.publicUrl);
+      toast({ title: "Imagem carregada", description: `${file.name} enviada com sucesso.` });
     }
   };
 
