@@ -378,16 +378,16 @@ const ModelosPage = () => {
             </div>
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Status</Label>
-              <Select value={statusKanban} onValueChange={setStatusKanban}>
-                <SelectTrigger className={yellowInput}>
-                  <SelectValue placeholder="Selecionar" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="em_andamento">Em Andamento</SelectItem>
-                  <SelectItem value="pendente">Pendente</SelectItem>
-                  <SelectItem value="concluido">Concluído</SelectItem>
-                </SelectContent>
-              </Select>
+              <select
+                value={statusKanban}
+                onChange={(e) => setStatusKanban(e.target.value)}
+                className={`flex h-10 w-full items-center rounded-md border px-3 py-2 text-sm ${yellowInput}`}
+              >
+                <option value="">Selecionar</option>
+                <option value="em_andamento">Em Andamento</option>
+                <option value="pendente">Pendente</option>
+                <option value="concluido">Concluído</option>
+              </select>
             </div>
           </div>
         </CardContent>
