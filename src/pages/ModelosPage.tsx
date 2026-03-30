@@ -255,6 +255,7 @@ const ModelosPage = () => {
         descricao: modelo,
         consumo_tecido: parseFloat(consumoMetros) || 0,
         status: statusKanban === "concluido" ? "ativo" : statusKanban === "pendente" ? "desenvolvimento" : "ativo",
+        imagem_url: modelImage || undefined,
       });
       if (result) {
         toast({ title: "Modelo salvo", description: `Referência ${referencia} salva com sucesso.` });
