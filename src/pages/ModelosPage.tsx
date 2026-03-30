@@ -362,15 +362,15 @@ const ModelosPage = () => {
             </div>
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Piloto Entregue?</Label>
-              <Select value={pilotoEntregue} onValueChange={setPilotoEntregue}>
-                <SelectTrigger className={yellowInput}>
-                  <SelectValue placeholder="Selecionar" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sim">SIM</SelectItem>
-                  <SelectItem value="nao">NÃO</SelectItem>
-                </SelectContent>
-              </Select>
+              <select
+                value={pilotoEntregue}
+                onChange={(e) => setPilotoEntregue(e.target.value)}
+                className={`flex h-10 w-full items-center rounded-md border px-3 py-2 text-sm ${yellowInput}`}
+              >
+                <option value="">Selecionar</option>
+                <option value="sim">SIM</option>
+                <option value="nao">NÃO</option>
+              </select>
             </div>
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Data do Pedido</Label>
