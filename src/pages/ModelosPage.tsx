@@ -158,6 +158,7 @@ const ModelosPage = () => {
     setServicos(defaultServicos.map((s) => ({ ...s })));
     setGradacao(Array.from({ length: 6 }, emptyGradacao));
     setModelagemFile(null);
+    setModelImage(m.imagem_url || null);
     setSearchOpen(false);
     setIsLoadedFromSearch(true);
   };
