@@ -133,6 +133,7 @@ const CortePage = () => {
     setModeloRef(oc.modelo_ref || "");
     const foundModelo = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
     setModeloNome(foundModelo?.descricao || "");
+    setRefImage(foundModelo?.imagem_url || null);
     setTecido(oc.tecido_nome || "");
     setSelectedTecidoId(oc.tecido_id || "");
     setSelectedClienteId(oc.cliente_id || "");
@@ -460,7 +461,7 @@ const CortePage = () => {
                           <Input placeholder="Referência ou descrição..." value={modeloSearchTerm} onChange={(e) => setModeloSearchTerm(e.target.value)} />
                           <div className="space-y-1 max-h-[60vh] overflow-y-auto">
                             {filteredModelos.map((m) =>
-                            <button key={m.id} onClick={() => {setModeloRef(m.referencia);setModeloNome(m.descricao);setModeloSearchOpen(false);}} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
+                            <button key={m.id} onClick={() => {setModeloRef(m.referencia);setModeloNome(m.descricao);setRefImage(m.imagem_url || null);setModeloSearchOpen(false);}} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
                                 <div className="font-mono text-xs font-semibold text-primary">{m.referencia}</div>
                                 <div className="text-muted-foreground text-xs">{m.descricao}</div>
                               </button>

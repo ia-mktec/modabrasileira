@@ -119,7 +119,7 @@ const EntregaClientePage = () => {
       setGradeEntregue([]);
     }
 
-    setRefImage(null);
+    setRefImage(foundModelo?.imagem_url || null);
     setSearchOpen(false);
     setIsLoaded(true);
     setObservacoes("");

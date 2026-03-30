@@ -125,7 +125,7 @@ const RecebimentoPage = () => {
       setGradeRows([]);
     }
 
-    setRefImage(null);
+    setRefImage(foundModelo?.imagem_url || null);
     setSearchOpen(false);
     setIsLoaded(true);
     setDataRecebimento("");

@@ -131,7 +131,8 @@ const ExpedicaoPage = () => {
     }
 
     setGradacaoRows([]);
-    setRefImage(null);
+    const foundModeloImg = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
+    setRefImage(foundModeloImg?.imagem_url || null);
     setSearchOpen(false);
     setIsLoaded(true);
     setDataSaida("");
