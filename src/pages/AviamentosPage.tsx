@@ -176,7 +176,7 @@ const AviamentosPage = () => {
                   <Select value={fornecedorId} onValueChange={setFornecedorId}>
                     <SelectTrigger className={yellowInput}><SelectValue placeholder="Selecione o fornecedor" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Nenhum</SelectItem>
+                      <SelectItem value="nenhum">Nenhum</SelectItem>
                       {fornecedores.map((f: any) => <SelectItem key={f.id} value={f.id}>{f.razao_social}</SelectItem>)}
                     </SelectContent>
                   </Select>
