@@ -8,7 +8,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { useOrdensCorte, useRecebimento, useModelos } from "@/hooks/useSupabaseData";
+import { useOrdensCorte, useRecebimento, useModelos, useExpedicao } from "@/hooks/useSupabaseData";
 import { Search, Printer, PackageCheck, ImageOff, Eraser, Save } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { differenceInDays, parseISO } from "date-fns";
@@ -26,9 +26,11 @@ interface GradeRecRow {
 
 const RecebimentoPage = () => {
   const { ordens: ordensCorteDb } = useOrdensCorte();
+  const { expedicoes } = useExpedicao();
   const { salvarRecebimento } = useRecebimento();
   const { modelos: modelosDb } = useModelos();
   const [currentOrdemCorteId, setCurrentOrdemCorteId] = useState<string | null>(null);
+  const [currentExpedicaoId, setCurrentExpedicaoId] = useState<string | null>(null);
   // Consulta (read-only) - dados da ordem
   const [referencia, setReferencia] = useState("");
   const [ordemCorte, setOrdemCorte] = useState("");
@@ -90,13 +92,21 @@ const RecebimentoPage = () => {
 
   const loadOrdem = (oc: any) => {
     setCurrentOrdemCorteId(oc.id);
+    // Find linked expedição for this ordem
+    const linkedExp = expedicoes.find((e: any) => e.ordem_corte_id === oc.id);
+    setCurrentExpedicaoId(linkedExp?.id || null);
+    if (linkedExp) {
+      setOficina(linkedExp.oficina_nome || "");
+      setDataEnvio(linkedExp.data_saida || oc.data_corte || "");
+    } else {
+      setOficina("");
+      setDataEnvio(oc.data_corte || "");
+    }
     setReferencia(oc.modelo_ref || "");
     setOrdemCorte(oc.numero);
     setCliente("");
     const foundModelo = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
     setModelo(foundModelo?.descricao || oc.modelo_ref || "");
-    setOficina("");
-    setDataEnvio(oc.data_corte || "");
 
     // Load grade from ordem corte
     if (oc.grade_corte && oc.grade_corte.length > 0) {
@@ -133,8 +143,13 @@ const RecebimentoPage = () => {
       return;
     }
 
+    if (!currentExpedicaoId) {
+      toast({ title: "Sem expedição vinculada", description: "Esta ordem não possui expedição registrada. Registre uma expedição primeiro.", variant: "destructive" });
+      return;
+    }
+
     const result = await salvarRecebimento({
-      expedicao_id: currentOrdemCorteId, // Will need proper link later
+      expedicao_id: currentExpedicaoId,
       ordem_corte_id: currentOrdemCorteId,
       oficina_nome: oficina || null,
       data_envio: dataEnvio || null,
