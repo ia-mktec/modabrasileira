@@ -133,6 +133,7 @@ const CortePage = () => {
     setModeloRef(oc.modelo_ref || "");
     const foundModelo = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
     setModeloNome(foundModelo?.descricao || "");
+    setRefImage(foundModelo?.imagem_url || null);
     setTecido(oc.tecido_nome || "");
     setSelectedTecidoId(oc.tecido_id || "");
     setSelectedClienteId(oc.cliente_id || "");
