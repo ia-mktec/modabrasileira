@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -362,15 +362,15 @@ const ModelosPage = () => {
             </div>
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Piloto Entregue?</Label>
-              <Select value={pilotoEntregue} onValueChange={setPilotoEntregue}>
-                <SelectTrigger className={yellowInput}>
-                  <SelectValue placeholder="Selecionar" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sim">SIM</SelectItem>
-                  <SelectItem value="nao">NÃO</SelectItem>
-                </SelectContent>
-              </Select>
+              <select
+                value={pilotoEntregue}
+                onChange={(e) => setPilotoEntregue(e.target.value)}
+                className={`flex h-10 w-full items-center rounded-md border px-3 py-2 text-sm ${yellowInput}`}
+              >
+                <option value="">Selecionar</option>
+                <option value="sim">SIM</option>
+                <option value="nao">NÃO</option>
+              </select>
             </div>
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Data do Pedido</Label>
@@ -378,16 +378,16 @@ const ModelosPage = () => {
             </div>
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Status</Label>
-              <Select value={statusKanban} onValueChange={setStatusKanban}>
-                <SelectTrigger className={yellowInput}>
-                  <SelectValue placeholder="Selecionar" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="em_andamento">Em Andamento</SelectItem>
-                  <SelectItem value="pendente">Pendente</SelectItem>
-                  <SelectItem value="concluido">Concluído</SelectItem>
-                </SelectContent>
-              </Select>
+              <select
+                value={statusKanban}
+                onChange={(e) => setStatusKanban(e.target.value)}
+                className={`flex h-10 w-full items-center rounded-md border px-3 py-2 text-sm ${yellowInput}`}
+              >
+                <option value="">Selecionar</option>
+                <option value="em_andamento">Em Andamento</option>
+                <option value="pendente">Pendente</option>
+                <option value="concluido">Concluído</option>
+              </select>
             </div>
           </div>
         </CardContent>
