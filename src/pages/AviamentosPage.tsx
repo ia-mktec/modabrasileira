@@ -73,7 +73,7 @@ const AviamentosPage = () => {
       tamanho: tamanho || null,
       cor: cor || null,
       preco_un: precoUnMt ? parseFloat(precoUnMt) : null,
-      fornecedor_id: fornecedorId || null,
+      fornecedor_id: fornecedorId && fornecedorId !== "nenhum" ? fornecedorId : null,
     };
     const result = await salvarAviamento(data, editingId || undefined);
     if (result) {
@@ -176,7 +176,7 @@ const AviamentosPage = () => {
                   <Select value={fornecedorId} onValueChange={setFornecedorId}>
                     <SelectTrigger className={yellowInput}><SelectValue placeholder="Selecione o fornecedor" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Nenhum</SelectItem>
+                      <SelectItem value="nenhum">Nenhum</SelectItem>
                       {fornecedores.map((f: any) => <SelectItem key={f.id} value={f.id}>{f.razao_social}</SelectItem>)}
                     </SelectContent>
                   </Select>
