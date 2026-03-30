@@ -102,12 +102,11 @@ const RecebimentoPage = () => {
       setOficina("");
       setDataEnvio(oc.data_corte || "");
     }
+    setReferencia(oc.modelo_ref || "");
     setOrdemCorte(oc.numero);
     setCliente("");
     const foundModelo = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
     setModelo(foundModelo?.descricao || oc.modelo_ref || "");
-    setOficina("");
-    setDataEnvio(oc.data_corte || "");
 
     // Load grade from ordem corte
     if (oc.grade_corte && oc.grade_corte.length > 0) {
