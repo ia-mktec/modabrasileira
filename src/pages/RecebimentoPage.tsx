@@ -143,8 +143,13 @@ const RecebimentoPage = () => {
       return;
     }
 
+    if (!currentExpedicaoId) {
+      toast({ title: "Sem expedição vinculada", description: "Esta ordem não possui expedição registrada. Registre uma expedição primeiro.", variant: "destructive" });
+      return;
+    }
+
     const result = await salvarRecebimento({
-      expedicao_id: currentOrdemCorteId, // Will need proper link later
+      expedicao_id: currentExpedicaoId,
       ordem_corte_id: currentOrdemCorteId,
       oficina_nome: oficina || null,
       data_envio: dataEnvio || null,
