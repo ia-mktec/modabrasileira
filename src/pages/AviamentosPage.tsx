@@ -73,7 +73,7 @@ const AviamentosPage = () => {
       tamanho: tamanho || null,
       cor: cor || null,
       preco_un: precoUnMt ? parseFloat(precoUnMt) : null,
-      fornecedor_id: fornecedorId || null,
+      fornecedor_id: fornecedorId && fornecedorId !== "nenhum" ? fornecedorId : null,
     };
     const result = await salvarAviamento(data, editingId || undefined);
     if (result) {
