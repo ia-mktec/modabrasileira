@@ -5,9 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogIn, UserPlus } from "lucide-react";
+import { Factory, LogIn, UserPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import mktecLogo from "@/assets/mktec-logo.jpg";
 
 export default function LoginPage() {
   const { user, loading, signIn, signUp } = useAuth();
@@ -52,8 +51,8 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-3">
-          <div className="mx-auto w-20 h-20 rounded-xl overflow-hidden bg-muted flex items-center justify-center p-2">
-            <img src={mktecLogo} alt="MKTEC Logo" className="w-full h-full object-contain" />
+          <div className="mx-auto flex items-center justify-center w-14 h-14 rounded-xl bg-primary">
+            <Factory className="w-7 h-7 text-primary-foreground" />
           </div>
           <CardTitle className="text-2xl font-bold">MKTEC Flow</CardTitle>
           <CardDescription>
