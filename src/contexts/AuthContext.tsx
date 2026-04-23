@@ -25,13 +25,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchRoles = useCallback(async (userId: string) => {
+  const fetchRoles = useCallback(async (userId: string): Promise<AppRole[]> => {
     const { data, error } = await supabase.rpc("get_user_roles", { _user_id: userId });
     if (!error && data) {
-      setRoles(data as AppRole[]);
-    } else {
-      setRoles([]);
+      const r = data as AppRole[];
+      setRoles(r);
+      return r;
     }
+    setRoles([]);
+    return [];
   }, []);
 
   useEffect(() => {
@@ -44,27 +46,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          // Use setTimeout to avoid deadlock in onAuthStateChange
-          setTimeout(() => {
-            if (mounted) fetchRoles(session.user.id);
+          // Defer to avoid deadlock; only mark loaded AFTER roles are fetched
+          setTimeout(async () => {
+            if (!mounted) return;
+            await fetchRoles(session.user.id);
+            if (mounted) setLoading(false);
           }, 0);
         } else {
           setRoles([]);
+          setLoading(false);
         }
-        setLoading(false);
       }
     );
 
     // 2. Then restore session from storage
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+    supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
       if (!mounted) return;
-      // Only update if onAuthStateChange hasn't already fired
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       if (currentSession?.user) {
-        fetchRoles(currentSession.user.id);
+        await fetchRoles(currentSession.user.id);
       }
-      setLoading(false);
+      if (mounted) setLoading(false);
     });
 
     return () => {
