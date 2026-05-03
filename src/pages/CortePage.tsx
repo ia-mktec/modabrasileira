@@ -1,4 +1,5 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,6 +42,10 @@ const CortePage = () => {
   const [selectedTecidoId, setSelectedTecidoId] = useState("");
   const [currentOrdemId, setCurrentOrdemId] = useState<string | null>(null);
   const [numero, setNumero] = useState("");
+  const [numeroPedido, setNumeroPedido] = useState("");
+  const [pedidoSearchOpen, setPedidoSearchOpen] = useState(false);
+  const [pedidoSearchTerm, setPedidoSearchTerm] = useState("");
+  const [pedidos, setPedidos] = useState<any[]>([]);
   const [modeloRef, setModeloRef] = useState("");
   const [modeloNome, setModeloNome] = useState("");
   const [tecido, setTecido] = useState("");
@@ -130,6 +135,7 @@ const CortePage = () => {
   const loadOrdem = (oc: any) => {
     setCurrentOrdemId(oc.id);
     setNumero(oc.numero);
+    setNumeroPedido(oc.numero_pedido || "");
     setModeloRef(oc.modelo_ref || "");
     const foundModelo = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
     setModeloNome(foundModelo?.descricao || "");
@@ -176,7 +182,7 @@ const CortePage = () => {
 
   const limparCampos = () => {
     setCurrentOrdemId(null);
-    setNumero("");setModeloRef("");setModeloNome("");setTecido("");setSelectedTecidoId("");
+    setNumero("");setNumeroPedido("");setModeloRef("");setModeloNome("");setTecido("");setSelectedTecidoId("");
     setDataCorte("");setCortador("");
     setEnfestos("");setStatus("");
     setObservacoes("");setConsumoPorPeca("");
@@ -186,6 +192,48 @@ const CortePage = () => {
     setRefImage(null);
     setIsLoadedFromSearch(false);
     setReservaAtiva(false);
+  };
+
+  // Carrega pedidos de modelos
+  useEffect(() => {
+    const loadPedidos = async () => {
+      const { data } = await supabase
+        .from("modelo_pedidos")
+        .select("*")
+        .order("created_at", { ascending: false });
+      setPedidos(data || []);
+    };
+    loadPedidos();
+  }, []);
+
+  const filteredPedidos = pedidos.filter(
+    (p: any) =>
+      (p.numero_pedido || "").toLowerCase().includes(pedidoSearchTerm.toLowerCase()) ||
+      (p.modelo_ref || "").toLowerCase().includes(pedidoSearchTerm.toLowerCase()) ||
+      (p.cliente || "").toLowerCase().includes(pedidoSearchTerm.toLowerCase())
+  );
+
+  const aplicarPedido = (p: any) => {
+    setNumeroPedido(p.numero_pedido);
+    setModeloRef(p.modelo_ref || "");
+    const foundModelo = modelosDb.find((m: any) => m.referencia === p.modelo_ref);
+    if (foundModelo) {
+      setModeloNome(foundModelo.descricao || "");
+      setRefImage(foundModelo.imagem_url || null);
+    }
+    if (p.tecido) setTecido(p.tecido);
+    if (p.consumo_tecido) setConsumoPorPeca(String(p.consumo_tecido));
+    if (p.cliente) {
+      const cli = clientesDb.find((c: any) => c.razao_social === p.cliente);
+      if (cli) {
+        setSelectedClienteId(cli.id);
+        setClienteNome(cli.razao_social);
+      } else {
+        setClienteNome(p.cliente);
+      }
+    }
+    setPedidoSearchOpen(false);
+    toast({ title: "Pedido carregado", description: `Dados do pedido ${p.numero_pedido} aplicados.` });
   };
 
   // Total geral vem da grade de tamanhos
@@ -239,6 +287,7 @@ const CortePage = () => {
       consumo_por_peca: parseFloat(consumoPorPeca) || 0,
       observacoes: observacoes || null,
       status: status || "pendente",
+      numero_pedido: numeroPedido || null,
     };
 
     const gradeData = rowsComQtd.map((row) => ({
@@ -407,10 +456,39 @@ const CortePage = () => {
           {/* Basic Info */}
           <Card>
             <CardContent className="p-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Nº Ordem</Label>
                   <Input value={numero} onChange={(e) => setNumero(e.target.value)} className={yellowInput} placeholder="OC-0000" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Nº Pedido</Label>
+                  <div className="flex gap-1">
+                    <Input value={numeroPedido} onChange={(e) => setNumeroPedido(e.target.value)} className={`flex-1 ${yellowInput}`} placeholder="Buscar pedido" />
+                    <Sheet open={pedidoSearchOpen} onOpenChange={(open) => { setPedidoSearchOpen(open); setPedidoSearchTerm(""); }}>
+                      <SheetTrigger asChild>
+                        <Button variant="outline" size="icon" className="h-10 w-10 shrink-0"><Search className="w-4 h-4" /></Button>
+                      </SheetTrigger>
+                      <SheetContent side="right" className="w-80">
+                        <SheetHeader><SheetTitle>Buscar Nº de Pedido</SheetTitle></SheetHeader>
+                        <div className="mt-4 space-y-3">
+                          <Input placeholder="Pedido, modelo ou cliente..." value={pedidoSearchTerm} onChange={(e) => setPedidoSearchTerm(e.target.value)} />
+                          <div className="space-y-1 max-h-[60vh] overflow-y-auto">
+                            {filteredPedidos.map((p: any) => (
+                              <button key={p.numero_pedido} onClick={() => aplicarPedido(p)} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
+                                <div className="font-mono text-xs font-semibold text-primary">{p.numero_pedido}</div>
+                                <div className="text-muted-foreground text-xs">{p.modelo_ref} — {p.cliente || "—"}</div>
+                                <div className="text-muted-foreground text-[10px]">{p.tecido || ""} {p.cor ? `• ${p.cor}` : ""}</div>
+                              </button>
+                            ))}
+                            {filteredPedidos.length === 0 && (
+                              <p className="text-sm text-muted-foreground text-center py-4">Nenhum pedido encontrado</p>
+                            )}
+                          </div>
+                        </div>
+                      </SheetContent>
+                    </Sheet>
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Cliente</Label>

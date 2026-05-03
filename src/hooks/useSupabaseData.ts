@@ -251,7 +251,7 @@ export function useOrdensCorte() {
     tecido_id?: string; modelo_id?: string; cliente_id?: string;
     quantidade_pecas: number; data_corte?: string; cortador?: string;
     enfestos?: number; perda_percent?: number; consumo_por_peca?: number;
-    observacoes?: string; status: string;
+    observacoes?: string; status: string; numero_pedido?: string;
   }, grade: { cor: string; tecido_id?: string; pp: number; p: number; m: number; g: number; gg: number; g1: number; g2: number; g3: number; }[], aviamentos: { descricao: string; quantidade: number; }[], existingId?: string) => {
     try {
       let ordemId = existingId;
@@ -274,6 +274,30 @@ export function useOrdensCorte() {
         const avRows = aviamentos.map(a => ({ ordem_corte_id: ordemId, descricao: a.descricao, quantidade: a.quantidade }));
         const { error } = await supabase.from("aviamentos_ordem").insert(avRows);
         if (error) throw error;
+      }
+      // Baixa de estoque ao concluir (apenas uma vez: quando o status muda para concluido)
+      if (ordem.status === "concluido" && ordem.tecido_id && ordem.consumo_por_peca && ordem.quantidade_pecas) {
+        const consumoTotal = Number(ordem.consumo_por_peca) * Number(ordem.quantidade_pecas);
+        // Verifica se já existe movimentação de saída para esta ordem
+        const { data: movExistente } = await supabase
+          .from("estoque_movimentacoes")
+          .select("id")
+          .eq("ordem_corte_id", ordemId!)
+          .eq("tipo", "saida")
+          .maybeSingle();
+        if (!movExistente && consumoTotal > 0) {
+          const { data: tecidoData } = await supabase
+            .from("tecidos").select("estoque_kg").eq("id", ordem.tecido_id).single();
+          const novoEstoque = Math.max(0, Number(tecidoData?.estoque_kg || 0) - consumoTotal);
+          await supabase.from("tecidos").update({ estoque_kg: novoEstoque }).eq("id", ordem.tecido_id);
+          await supabase.from("estoque_movimentacoes").insert({
+            tecido_id: ordem.tecido_id,
+            quantidade_kg: consumoTotal,
+            ordem_corte_id: ordemId!,
+            tipo: "saida",
+            descricao: `Baixa OC ${ordem.numero} — ${ordem.quantidade_pecas} peças`,
+          });
+        }
       }
       await fetch();
       return ordemId;
