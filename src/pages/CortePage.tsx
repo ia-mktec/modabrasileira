@@ -41,6 +41,10 @@ const CortePage = () => {
   const [selectedTecidoId, setSelectedTecidoId] = useState("");
   const [currentOrdemId, setCurrentOrdemId] = useState<string | null>(null);
   const [numero, setNumero] = useState("");
+  const [numeroPedido, setNumeroPedido] = useState("");
+  const [pedidoSearchOpen, setPedidoSearchOpen] = useState(false);
+  const [pedidoSearchTerm, setPedidoSearchTerm] = useState("");
+  const [pedidos, setPedidos] = useState<any[]>([]);
   const [modeloRef, setModeloRef] = useState("");
   const [modeloNome, setModeloNome] = useState("");
   const [tecido, setTecido] = useState("");
