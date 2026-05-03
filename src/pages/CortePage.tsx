@@ -194,6 +194,48 @@ const CortePage = () => {
     setReservaAtiva(false);
   };
 
+  // Carrega pedidos de modelos
+  useEffect(() => {
+    const loadPedidos = async () => {
+      const { data } = await supabase
+        .from("modelo_pedidos")
+        .select("*")
+        .order("created_at", { ascending: false });
+      setPedidos(data || []);
+    };
+    loadPedidos();
+  }, []);
+
+  const filteredPedidos = pedidos.filter(
+    (p: any) =>
+      (p.numero_pedido || "").toLowerCase().includes(pedidoSearchTerm.toLowerCase()) ||
+      (p.modelo_ref || "").toLowerCase().includes(pedidoSearchTerm.toLowerCase()) ||
+      (p.cliente || "").toLowerCase().includes(pedidoSearchTerm.toLowerCase())
+  );
+
+  const aplicarPedido = (p: any) => {
+    setNumeroPedido(p.numero_pedido);
+    setModeloRef(p.modelo_ref || "");
+    const foundModelo = modelosDb.find((m: any) => m.referencia === p.modelo_ref);
+    if (foundModelo) {
+      setModeloNome(foundModelo.descricao || "");
+      setRefImage(foundModelo.imagem_url || null);
+    }
+    if (p.tecido) setTecido(p.tecido);
+    if (p.consumo_tecido) setConsumoPorPeca(String(p.consumo_tecido));
+    if (p.cliente) {
+      const cli = clientesDb.find((c: any) => c.razao_social === p.cliente);
+      if (cli) {
+        setSelectedClienteId(cli.id);
+        setClienteNome(cli.razao_social);
+      } else {
+        setClienteNome(p.cliente);
+      }
+    }
+    setPedidoSearchOpen(false);
+    toast({ title: "Pedido carregado", description: `Dados do pedido ${p.numero_pedido} aplicados.` });
+  };
+
   // Total geral vem da grade de tamanhos
   const totalBySize = (tam: string) =>
   gradeRows.reduce((sum, r) => sum + (parseInt(r.quantidades[tam]) || 0), 0);
