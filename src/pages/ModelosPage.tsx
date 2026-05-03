@@ -147,6 +147,8 @@ const ModelosPage = () => {
 
   const loadModelo = (m: any) => {
     setReferencia(m.referencia || "");
+    setNumeroPedido("");
+    setTecido(m.tecido_principal || "");
     setModelo(m.descricao || "");
     setCliente("");
     setPilotoEntregue("");
@@ -167,7 +169,7 @@ const ModelosPage = () => {
   };
 
   const limparCampos = () => {
-    setReferencia("");setModelo("");setCliente("");setStatusKanban("");
+    setReferencia("");setNumeroPedido("");setTecido("");setModelo("");setCliente("");setStatusKanban("");
     setPilotoEntregue("");setDataPedido("");
     setEntretela(false);setEntreTelaDescricao("");setEntreTelaQtde("");
     setForroTecido2(false);setForroDescricao("");setForroQtde("");
@@ -178,6 +180,35 @@ const ModelosPage = () => {
     setModelagemFile(null);
     setModelImage(null);
     setIsLoadedFromSearch(false);
+  };
+
+  // Gera número de pedido: REFERENCIA-AAAAMMDD e cria registro em modelo_pedidos
+  const handleGerarNumeroPedido = async () => {
+    if (!referencia) {
+      toast({ title: "Referência obrigatória", description: "Informe a referência antes de gerar o número do pedido.", variant: "destructive" });
+      return;
+    }
+    const dataBase = dataPedido || new Date().toISOString().slice(0, 10);
+    const yyyymmdd = dataBase.replaceAll("-", "");
+    const numero = `${referencia}-${yyyymmdd}`;
+    setNumeroPedido(numero);
+    if (!dataPedido) setDataPedido(dataBase);
+
+    const { error } = await supabase.from("modelo_pedidos").upsert({
+      numero_pedido: numero,
+      cliente: cliente || null,
+      modelo_ref: referencia,
+      data_pedido: dataBase,
+      tecido: tecido || null,
+      consumo_tecido: parseFloat(consumoMetros) || 0,
+      status_kanban: statusKanban || "pendente",
+    } as any, { onConflict: "numero_pedido" });
+
+    if (error) {
+      toast({ title: "Erro ao gerar pedido", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Nº de Pedido gerado", description: numero });
   };
 
   const allFieldsFilled = () => {
