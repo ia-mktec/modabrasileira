@@ -456,7 +456,7 @@ const CortePage = () => {
           {/* Basic Info */}
           <Card>
             <CardContent className="p-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Nº Ordem</Label>
                   <Input value={numero} onChange={(e) => setNumero(e.target.value)} className={yellowInput} placeholder="OC-0000" />
