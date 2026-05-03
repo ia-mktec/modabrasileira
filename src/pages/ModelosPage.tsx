@@ -378,12 +378,12 @@ const ModelosPage = () => {
                 </Sheet>
               </div>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 col-span-2">
               <Label className="text-xs font-semibold">Nº de Pedido</Label>
               <div className="flex gap-1">
-                <Input value={numeroPedido} readOnly className={`flex-1 ${yellowInput} font-mono`} placeholder="REF-AAAAMMDD" />
-                <Button variant="outline" size="sm" className="h-10 shrink-0 text-xs whitespace-nowrap" onClick={handleGerarNumeroPedido}>
-                  Gerar
+                <Input value={numeroPedido} readOnly className={`flex-1 min-w-0 ${yellowInput} font-mono text-xs`} placeholder="REF-AAAAMMDD" />
+                <Button variant="default" size="sm" className="h-10 shrink-0 px-3 text-xs whitespace-nowrap" onClick={handleGerarNumeroPedido}>
+                  Gerar Nº Pedido
                 </Button>
               </div>
             </div>
