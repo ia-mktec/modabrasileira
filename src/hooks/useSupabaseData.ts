@@ -251,7 +251,7 @@ export function useOrdensCorte() {
     tecido_id?: string; modelo_id?: string; cliente_id?: string;
     quantidade_pecas: number; data_corte?: string; cortador?: string;
     enfestos?: number; perda_percent?: number; consumo_por_peca?: number;
-    observacoes?: string; status: string;
+    observacoes?: string; status: string; numero_pedido?: string;
   }, grade: { cor: string; tecido_id?: string; pp: number; p: number; m: number; g: number; gg: number; g1: number; g2: number; g3: number; }[], aviamentos: { descricao: string; quantidade: number; }[], existingId?: string) => {
     try {
       let ordemId = existingId;
