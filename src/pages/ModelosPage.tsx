@@ -96,6 +96,8 @@ const ModelosPage = () => {
   const { clientes } = useClientes();
   const { aviamentos: dbAviamentos } = useAviamentos();
   const [referencia, setReferencia] = useState("");
+  const [numeroPedido, setNumeroPedido] = useState("");
+  const [tecido, setTecido] = useState("");
   const [modelo, setModelo] = useState("");
   const [cliente, setCliente] = useState("");
   const [statusKanban, setStatusKanban] = useState("");
@@ -145,6 +147,8 @@ const ModelosPage = () => {
 
   const loadModelo = (m: any) => {
     setReferencia(m.referencia || "");
+    setNumeroPedido("");
+    setTecido(m.tecido_principal || "");
     setModelo(m.descricao || "");
     setCliente("");
     setPilotoEntregue("");
@@ -165,7 +169,7 @@ const ModelosPage = () => {
   };
 
   const limparCampos = () => {
-    setReferencia("");setModelo("");setCliente("");setStatusKanban("");
+    setReferencia("");setNumeroPedido("");setTecido("");setModelo("");setCliente("");setStatusKanban("");
     setPilotoEntregue("");setDataPedido("");
     setEntretela(false);setEntreTelaDescricao("");setEntreTelaQtde("");
     setForroTecido2(false);setForroDescricao("");setForroQtde("");
@@ -176,6 +180,35 @@ const ModelosPage = () => {
     setModelagemFile(null);
     setModelImage(null);
     setIsLoadedFromSearch(false);
+  };
+
+  // Gera número de pedido: REFERENCIA-AAAAMMDD e cria registro em modelo_pedidos
+  const handleGerarNumeroPedido = async () => {
+    if (!referencia) {
+      toast({ title: "Referência obrigatória", description: "Informe a referência antes de gerar o número do pedido.", variant: "destructive" });
+      return;
+    }
+    const dataBase = dataPedido || new Date().toISOString().slice(0, 10);
+    const yyyymmdd = dataBase.replace(/-/g, "");
+    const numero = `${referencia}-${yyyymmdd}`;
+    setNumeroPedido(numero);
+    if (!dataPedido) setDataPedido(dataBase);
+
+    const { error } = await supabase.from("modelo_pedidos").upsert({
+      numero_pedido: numero,
+      cliente: cliente || null,
+      modelo_ref: referencia,
+      data_pedido: dataBase,
+      tecido: tecido || null,
+      consumo_tecido: parseFloat(consumoMetros) || 0,
+      status_kanban: statusKanban || "pendente",
+    } as any, { onConflict: "numero_pedido" });
+
+    if (error) {
+      toast({ title: "Erro ao gerar pedido", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Nº de Pedido gerado", description: numero });
   };
 
   const allFieldsFilled = () => {
@@ -316,7 +349,7 @@ const ModelosPage = () => {
       {/* Header fields */}
       <Card>
         <CardContent className="p-4">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Referência</Label>
               <Input value={referencia} onChange={(e) => setReferencia(e.target.value)} className={yellowInput} placeholder="MK-2024-001" />
@@ -344,6 +377,19 @@ const ModelosPage = () => {
                   </SheetContent>
                 </Sheet>
               </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold">Nº de Pedido</Label>
+              <div className="flex gap-1">
+                <Input value={numeroPedido} readOnly className={`flex-1 ${yellowInput} font-mono`} placeholder="REF-AAAAMMDD" />
+                <Button variant="outline" size="sm" className="h-10 shrink-0 text-xs whitespace-nowrap" onClick={handleGerarNumeroPedido}>
+                  Gerar
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold">Tecido</Label>
+              <Input value={tecido} onChange={(e) => setTecido(e.target.value)} className={yellowInput} placeholder="Tecido principal" />
             </div>
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Cliente</Label>

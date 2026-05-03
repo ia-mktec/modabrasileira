@@ -502,6 +502,51 @@ export type Database = {
           },
         ]
       }
+      modelo_pedidos: {
+        Row: {
+          cliente: string | null
+          consumo_tecido: number | null
+          cor: string | null
+          created_at: string
+          created_by: string | null
+          data_pedido: string
+          modelo_ref: string
+          numero_pedido: string
+          observacoes: string | null
+          status_kanban: string
+          tecido: string | null
+          updated_at: string
+        }
+        Insert: {
+          cliente?: string | null
+          consumo_tecido?: number | null
+          cor?: string | null
+          created_at?: string
+          created_by?: string | null
+          data_pedido?: string
+          modelo_ref: string
+          numero_pedido: string
+          observacoes?: string | null
+          status_kanban?: string
+          tecido?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cliente?: string | null
+          consumo_tecido?: number | null
+          cor?: string | null
+          created_at?: string
+          created_by?: string | null
+          data_pedido?: string
+          modelo_ref?: string
+          numero_pedido?: string
+          observacoes?: string | null
+          status_kanban?: string
+          tecido?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       modelos: {
         Row: {
           colecao: string | null
@@ -557,6 +602,7 @@ export type Database = {
           modelo_id: string | null
           modelo_ref: string | null
           numero: string
+          numero_pedido: string | null
           observacoes: string | null
           perda_percent: number | null
           quantidade_pecas: number
@@ -577,6 +623,7 @@ export type Database = {
           modelo_id?: string | null
           modelo_ref?: string | null
           numero: string
+          numero_pedido?: string | null
           observacoes?: string | null
           perda_percent?: number | null
           quantidade_pecas?: number
@@ -597,6 +644,7 @@ export type Database = {
           modelo_id?: string | null
           modelo_ref?: string | null
           numero?: string
+          numero_pedido?: string | null
           observacoes?: string | null
           perda_percent?: number | null
           quantidade_pecas?: number
