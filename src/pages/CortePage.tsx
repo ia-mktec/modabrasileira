@@ -287,6 +287,7 @@ const CortePage = () => {
       consumo_por_peca: parseFloat(consumoPorPeca) || 0,
       observacoes: observacoes || null,
       status: status || "pendente",
+      numero_pedido: numeroPedido || null,
     };
 
     const gradeData = rowsComQtd.map((row) => ({
