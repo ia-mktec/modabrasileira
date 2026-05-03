@@ -135,6 +135,7 @@ const CortePage = () => {
   const loadOrdem = (oc: any) => {
     setCurrentOrdemId(oc.id);
     setNumero(oc.numero);
+    setNumeroPedido(oc.numero_pedido || "");
     setModeloRef(oc.modelo_ref || "");
     const foundModelo = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
     setModeloNome(foundModelo?.descricao || "");
