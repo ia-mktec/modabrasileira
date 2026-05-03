@@ -41,6 +41,7 @@ const ExpedicaoPage = () => {
   const [currentOrdemCorteId, setCurrentOrdemCorteId] = useState<string | null>(null);
   // Dados da ordem (consulta - read only)
   const [numero, setNumero] = useState("");
+  const [numeroPedido, setNumeroPedido] = useState("");
   const [modeloRef, setModeloRef] = useState("");
   const [modeloNome, setModeloNome] = useState("");
   const [tecido, setTecido] = useState("");
@@ -94,6 +95,7 @@ const ExpedicaoPage = () => {
   const loadOrdem = (oc: any) => {
     setCurrentOrdemCorteId(oc.id);
     setNumero(oc.numero);
+    setNumeroPedido(oc.numero_pedido || "");
     setModeloRef(oc.modelo_ref || "");
     const foundModelo = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
     setModeloNome(foundModelo?.descricao || "");
@@ -265,6 +267,10 @@ const ExpedicaoPage = () => {
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Nº Ordem</Label>
                   <Input value={numero} readOnly className={readOnlyInput} placeholder="—" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Nº Pedido</Label>
+                  <Input value={numeroPedido} readOnly className={readOnlyInput} placeholder="—" />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Referência</Label>

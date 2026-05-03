@@ -299,6 +299,13 @@ export function useOrdensCorte() {
           });
         }
       }
+      // Sincroniza status_kanban do pedido (Fase 4)
+      if (ordem.numero_pedido) {
+        const novoStatus = ordem.status === "concluido" ? "em_producao" : "em_corte";
+        await supabase.from("modelo_pedidos")
+          .update({ status_kanban: novoStatus })
+          .eq("numero_pedido", ordem.numero_pedido);
+      }
       await fetch();
       return ordemId;
     } catch (error: any) {
@@ -354,6 +361,14 @@ export function useExpedicao() {
         const { error } = await supabase.from("grade_expedicao").insert(rows);
         if (error) throw error;
       }
+      // Sincroniza status_kanban (Fase 4)
+      const { data: ocData } = await supabase.from("ordens_corte")
+        .select("numero_pedido").eq("id", exp.ordem_corte_id).single();
+      if (ocData?.numero_pedido) {
+        await supabase.from("modelo_pedidos")
+          .update({ status_kanban: "em_producao" })
+          .eq("numero_pedido", ocData.numero_pedido);
+      }
       await fetch();
       return expId;
     } catch (error: any) {
@@ -396,6 +411,14 @@ export function useRecebimento() {
         if (error) throw error;
         existingId = data.id;
       }
+      // Sincroniza status_kanban (Fase 4)
+      const { data: ocData } = await supabase.from("ordens_corte")
+        .select("numero_pedido").eq("id", rec.ordem_corte_id).single();
+      if (ocData?.numero_pedido) {
+        await supabase.from("modelo_pedidos")
+          .update({ status_kanban: "recebido" })
+          .eq("numero_pedido", ocData.numero_pedido);
+      }
       await fetch();
       return existingId;
     } catch (error: any) {
@@ -436,6 +459,14 @@ export function useEntregaCliente() {
         const { data, error } = await supabase.from("entrega_cliente").insert(ent).select("id").single();
         if (error) throw error;
         existingId = data.id;
+      }
+      // Sincroniza status_kanban (Fase 4)
+      const { data: ocData } = await supabase.from("ordens_corte")
+        .select("numero_pedido").eq("id", ent.ordem_corte_id).single();
+      if (ocData?.numero_pedido) {
+        await supabase.from("modelo_pedidos")
+          .update({ status_kanban: "entregue" })
+          .eq("numero_pedido", ocData.numero_pedido);
       }
       await fetch();
       return existingId;

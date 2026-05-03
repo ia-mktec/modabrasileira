@@ -34,6 +34,7 @@ const RecebimentoPage = () => {
   // Consulta (read-only) - dados da ordem
   const [referencia, setReferencia] = useState("");
   const [ordemCorte, setOrdemCorte] = useState("");
+  const [numeroPedido, setNumeroPedido] = useState("");
   const [cliente, setCliente] = useState("");
   const [modelo, setModelo] = useState("");
   const [oficina, setOficina] = useState("");
@@ -104,6 +105,7 @@ const RecebimentoPage = () => {
     }
     setReferencia(oc.modelo_ref || "");
     setOrdemCorte(oc.numero);
+    setNumeroPedido(oc.numero_pedido || "");
     setCliente("");
     const foundModelo = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
     setModelo(foundModelo?.descricao || oc.modelo_ref || "");
@@ -279,6 +281,10 @@ const RecebimentoPage = () => {
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Ordem de Corte</Label>
                   <Input value={ordemCorte} readOnly className={readOnlyInput} placeholder="—" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Nº Pedido</Label>
+                  <Input value={numeroPedido} readOnly className={readOnlyInput} placeholder="—" />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Cliente</Label>
