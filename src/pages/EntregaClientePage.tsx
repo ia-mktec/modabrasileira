@@ -39,6 +39,7 @@ const EntregaClientePage = () => {
   const [currentOrdemCorteId, setCurrentOrdemCorteId] = useState<string | null>(null);
   // Consulta (read-only)
   const [ordemCorte, setOrdemCorte] = useState("");
+  const [numeroPedido, setNumeroPedido] = useState("");
   const [referencia, setReferencia] = useState("");
   const [modeloNome, setModeloNome] = useState("");
   const [cliente, setCliente] = useState("");
@@ -83,6 +84,7 @@ const EntregaClientePage = () => {
   const loadOrdem = (oc: any) => {
     setCurrentOrdemCorteId(oc.id);
     setOrdemCorte(oc.numero);
+    setNumeroPedido(oc.numero_pedido || "");
     setReferencia(oc.modelo_ref || "");
     const foundModelo = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
     setModeloNome(foundModelo?.descricao || "");
@@ -250,6 +252,10 @@ const EntregaClientePage = () => {
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Ordem de Corte</Label>
                   <Input value={ordemCorte} readOnly className={readOnlyInput} placeholder="—" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Nº Pedido</Label>
+                  <Input value={numeroPedido} readOnly className={readOnlyInput} placeholder="—" />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Cliente</Label>
