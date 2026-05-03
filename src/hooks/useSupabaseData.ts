@@ -275,6 +275,30 @@ export function useOrdensCorte() {
         const { error } = await supabase.from("aviamentos_ordem").insert(avRows);
         if (error) throw error;
       }
+      // Baixa de estoque ao concluir (apenas uma vez: quando o status muda para concluido)
+      if (ordem.status === "concluido" && ordem.tecido_id && ordem.consumo_por_peca && ordem.quantidade_pecas) {
+        const consumoTotal = Number(ordem.consumo_por_peca) * Number(ordem.quantidade_pecas);
+        // Verifica se já existe movimentação de saída para esta ordem
+        const { data: movExistente } = await supabase
+          .from("estoque_movimentacoes")
+          .select("id")
+          .eq("ordem_corte_id", ordemId!)
+          .eq("tipo", "saida")
+          .maybeSingle();
+        if (!movExistente && consumoTotal > 0) {
+          const { data: tecidoData } = await supabase
+            .from("tecidos").select("estoque_kg").eq("id", ordem.tecido_id).single();
+          const novoEstoque = Math.max(0, Number(tecidoData?.estoque_kg || 0) - consumoTotal);
+          await supabase.from("tecidos").update({ estoque_kg: novoEstoque }).eq("id", ordem.tecido_id);
+          await supabase.from("estoque_movimentacoes").insert({
+            tecido_id: ordem.tecido_id,
+            quantidade_kg: consumoTotal,
+            ordem_corte_id: ordemId!,
+            tipo: "saida",
+            descricao: `Baixa OC ${ordem.numero} — ${ordem.quantidade_pecas} peças`,
+          });
+        }
+      }
       await fetch();
       return ordemId;
     } catch (error: any) {
