@@ -96,6 +96,8 @@ const ModelosPage = () => {
   const { clientes } = useClientes();
   const { aviamentos: dbAviamentos } = useAviamentos();
   const [referencia, setReferencia] = useState("");
+  const [numeroPedido, setNumeroPedido] = useState("");
+  const [tecido, setTecido] = useState("");
   const [modelo, setModelo] = useState("");
   const [cliente, setCliente] = useState("");
   const [statusKanban, setStatusKanban] = useState("");
