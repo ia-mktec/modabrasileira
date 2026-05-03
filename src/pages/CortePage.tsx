@@ -462,6 +462,35 @@ const CortePage = () => {
                   <Input value={numero} onChange={(e) => setNumero(e.target.value)} className={yellowInput} placeholder="OC-0000" />
                 </div>
                 <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Nº Pedido</Label>
+                  <div className="flex gap-1">
+                    <Input value={numeroPedido} onChange={(e) => setNumeroPedido(e.target.value)} className={`flex-1 ${yellowInput}`} placeholder="Buscar pedido" />
+                    <Sheet open={pedidoSearchOpen} onOpenChange={(open) => { setPedidoSearchOpen(open); setPedidoSearchTerm(""); }}>
+                      <SheetTrigger asChild>
+                        <Button variant="outline" size="icon" className="h-10 w-10 shrink-0"><Search className="w-4 h-4" /></Button>
+                      </SheetTrigger>
+                      <SheetContent side="right" className="w-80">
+                        <SheetHeader><SheetTitle>Buscar Nº de Pedido</SheetTitle></SheetHeader>
+                        <div className="mt-4 space-y-3">
+                          <Input placeholder="Pedido, modelo ou cliente..." value={pedidoSearchTerm} onChange={(e) => setPedidoSearchTerm(e.target.value)} />
+                          <div className="space-y-1 max-h-[60vh] overflow-y-auto">
+                            {filteredPedidos.map((p: any) => (
+                              <button key={p.numero_pedido} onClick={() => aplicarPedido(p)} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
+                                <div className="font-mono text-xs font-semibold text-primary">{p.numero_pedido}</div>
+                                <div className="text-muted-foreground text-xs">{p.modelo_ref} — {p.cliente || "—"}</div>
+                                <div className="text-muted-foreground text-[10px]">{p.tecido || ""} {p.cor ? `• ${p.cor}` : ""}</div>
+                              </button>
+                            ))}
+                            {filteredPedidos.length === 0 && (
+                              <p className="text-sm text-muted-foreground text-center py-4">Nenhum pedido encontrado</p>
+                            )}
+                          </div>
+                        </div>
+                      </SheetContent>
+                    </Sheet>
+                  </div>
+                </div>
+                <div className="space-y-1">
                   <Label className="text-xs font-semibold">Cliente</Label>
                   <div className="flex gap-1">
                     <Input value={clienteNome} onChange={(e) => setClienteNome(e.target.value)} className={`flex-1 ${yellowInput}`} placeholder="Selecione o cliente" />
