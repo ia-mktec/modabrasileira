@@ -379,6 +379,19 @@ const ModelosPage = () => {
               </div>
             </div>
             <div className="space-y-1">
+              <Label className="text-xs font-semibold">Nº de Pedido</Label>
+              <div className="flex gap-1">
+                <Input value={numeroPedido} readOnly className={`flex-1 ${yellowInput} font-mono`} placeholder="REF-AAAAMMDD" />
+                <Button variant="outline" size="sm" className="h-10 shrink-0 text-xs whitespace-nowrap" onClick={handleGerarNumeroPedido}>
+                  Gerar
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold">Tecido</Label>
+              <Input value={tecido} onChange={(e) => setTecido(e.target.value)} className={yellowInput} placeholder="Tecido principal" />
+            </div>
+            <div className="space-y-1">
               <Label className="text-xs font-semibold">Cliente</Label>
               <div className="flex gap-1">
                 <Input value={cliente} onChange={(e) => setCliente(e.target.value)} className={`flex-1 ${yellowInput}`} placeholder="Cliente" />
