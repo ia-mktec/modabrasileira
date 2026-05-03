@@ -60,6 +60,7 @@ const App = () => (
                     <Route path="/relatorio-producao" element={<RelatorioProducaoPage />} />
                     <Route path="/cash-flow" element={<FluxoCaixaPage />} />
                     <Route path="/ficha-ziper" element={<FichaZiperPage />} />
+                    <Route path="/pedidos-kanban" element={<PedidosKanbanPage />} />
                     <Route path="/gerenciar-usuarios" element={<GerenciarUsuariosPage />} />
                   </Route>
                 </Route>
