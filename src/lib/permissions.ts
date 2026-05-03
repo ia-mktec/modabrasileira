@@ -84,6 +84,15 @@ const routePermissions: Record<string, Partial<Record<AppRole, Permission>>> = {
   "/ficha-ziper": {
     dev: "edit",
   },
+  "/pedidos-kanban": {
+    corte: "edit",
+    modelagem: "edit",
+    expedicao: "view",
+    recebimento: "view",
+    acabamento: "view",
+    gestao: "view",
+    dev: "edit",
+  },
   "/gerenciar-usuarios": {
     dev: "edit",
   },
