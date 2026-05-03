@@ -182,7 +182,7 @@ const CortePage = () => {
 
   const limparCampos = () => {
     setCurrentOrdemId(null);
-    setNumero("");setModeloRef("");setModeloNome("");setTecido("");setSelectedTecidoId("");
+    setNumero("");setNumeroPedido("");setModeloRef("");setModeloNome("");setTecido("");setSelectedTecidoId("");
     setDataCorte("");setCortador("");
     setEnfestos("");setStatus("");
     setObservacoes("");setConsumoPorPeca("");
