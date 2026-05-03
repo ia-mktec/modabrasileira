@@ -189,7 +189,7 @@ const ModelosPage = () => {
       return;
     }
     const dataBase = dataPedido || new Date().toISOString().slice(0, 10);
-    const yyyymmdd = dataBase.replaceAll("-", "");
+    const yyyymmdd = dataBase.replace(/-/g, "");
     const numero = `${referencia}-${yyyymmdd}`;
     setNumeroPedido(numero);
     if (!dataPedido) setDataPedido(dataBase);
