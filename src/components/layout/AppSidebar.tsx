@@ -22,7 +22,6 @@ import {
   ShieldCheck,
   Lock,
   Eye,
-  Kanban,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -37,7 +36,6 @@ const navItems = [
   { to: "/tecidos", icon: Layers, label: "Tecidos" },
   { to: "/estoque-tecidos", icon: Warehouse, label: "Estoque Tecidos" },
   { to: "/modelos", icon: Shirt, label: "Modelos" },
-  { to: "/pedidos-kanban", icon: Kanban, label: "Kanban Pedidos" },
   { to: "/corte", icon: Scissors, label: "Corte" },
   { to: "/expedicao", icon: TruckIcon, label: "Expedição" },
   { to: "/recebimento", icon: PackageCheck, label: "Recebimento" },
