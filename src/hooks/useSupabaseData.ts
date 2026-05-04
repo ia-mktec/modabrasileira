@@ -154,27 +154,61 @@ export function useModelos() {
     setLoading(false);
   }, []);
 
-  const salvarModelo = useCallback(async (modelo: {
-    referencia: string; descricao: string; colecao?: string;
-    tecido_principal?: string; consumo_tecido?: number; tamanhos_grade?: string;
-    status?: string; imagem_url?: string;
-  }, existingId?: string) => {
+  const salvarModelo = useCallback(async (
+    modelo: Record<string, any>,
+    existingId?: string,
+    children?: {
+      aviamentos?: { ordem: number; descricao?: string; quantidade?: number; unidade?: string; observacao?: string }[];
+      servicos?: { ordem: number; descricao?: string; valor_unitario?: number; observacao?: string }[];
+      gradacao?: { ordem: number; tamanho?: string; medida_a?: number; medida_b?: number; medida_c?: number; medida_d?: number; observacao?: string }[];
+    }
+  ) => {
     try {
+      let modeloId = existingId;
       if (existingId) {
         const { error } = await supabase.from("modelos").update(modelo).eq("id", existingId);
         if (error) throw error;
       } else {
-        const { data, error } = await supabase.from("modelos").insert(modelo).select("id").single();
+        const { data, error } = await supabase.from("modelos").insert(modelo as any).select("id").single();
         if (error) throw error;
-        existingId = data.id;
+        modeloId = data.id;
+      }
+      if (children && modeloId) {
+        if (children.aviamentos) {
+          await supabase.from("modelo_aviamentos" as any).delete().eq("modelo_id", modeloId);
+          if (children.aviamentos.length) {
+            await supabase.from("modelo_aviamentos" as any).insert(children.aviamentos.map(r => ({ ...r, modelo_id: modeloId })));
+          }
+        }
+        if (children.servicos) {
+          await supabase.from("modelo_servicos" as any).delete().eq("modelo_id", modeloId);
+          if (children.servicos.length) {
+            await supabase.from("modelo_servicos" as any).insert(children.servicos.map(r => ({ ...r, modelo_id: modeloId })));
+          }
+        }
+        if (children.gradacao) {
+          await supabase.from("modelo_gradacao" as any).delete().eq("modelo_id", modeloId);
+          if (children.gradacao.length) {
+            await supabase.from("modelo_gradacao" as any).insert(children.gradacao.map(r => ({ ...r, modelo_id: modeloId })));
+          }
+        }
       }
       await fetch();
-      return existingId;
+      return modeloId;
     } catch (error: any) {
       toast({ title: "Erro ao salvar modelo", description: error.message, variant: "destructive" });
       return null;
     }
   }, [fetch]);
+
+  const carregarModeloCompleto = useCallback(async (modeloId: string) => {
+    const [av, sv, gr] = await Promise.all([
+      supabase.from("modelo_aviamentos" as any).select("*").eq("modelo_id", modeloId).order("ordem"),
+      supabase.from("modelo_servicos" as any).select("*").eq("modelo_id", modeloId).order("ordem"),
+      supabase.from("modelo_gradacao" as any).select("*").eq("modelo_id", modeloId).order("ordem"),
+    ]);
+    return { aviamentos: av.data || [], servicos: sv.data || [], gradacao: gr.data || [] };
+  }, []);
 
   const deletarModelo = useCallback(async (id: string) => {
     const { error } = await supabase.from("modelos").delete().eq("id", id);
@@ -184,7 +218,7 @@ export function useModelos() {
   }, [fetch]);
 
   useEffect(() => { fetch(); }, [fetch]);
-  return { modelos, loading, refetch: fetch, salvarModelo, deletarModelo };
+  return { modelos, loading, refetch: fetch, salvarModelo, deletarModelo, carregarModeloCompleto };
 }
 
 // ===== AVIAMENTOS =====

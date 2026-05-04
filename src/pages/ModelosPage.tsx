@@ -92,7 +92,7 @@ const calcGradacao = (p: string, aumento: string): Partial<GradacaoRow> => {
 const ACCEPTED_FILE_FORMATS = ".dxf,.ads,.dwg,.plt,.hpgl,.svg,.pdf,.ai,.zip,.cdr";
 
 const ModelosPage = () => {
-  const { modelos, salvarModelo } = useModelos();
+  const { modelos, salvarModelo, carregarModeloCompleto } = useModelos();
   const { clientes } = useClientes();
   const { aviamentos: dbAviamentos } = useAviamentos();
   const [referencia, setReferencia] = useState("");
@@ -127,9 +127,11 @@ const ModelosPage = () => {
 
   // File upload
   const [modelagemFile, setModelagemFile] = useState<File | null>(null);
+  const [modelagemUrl, setModelagemUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [modelImage, setModelImage] = useState<string | null>(null);
+  const [currentModeloId, setCurrentModeloId] = useState<string | null>(null);
 
   // Dialogs
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
@@ -145,25 +147,48 @@ const ModelosPage = () => {
     (m.descricao || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const loadModelo = (m: any) => {
+  const loadModelo = async (m: any) => {
     setReferencia(m.referencia || "");
     setNumeroPedido("");
     setTecido(m.tecido_principal || "");
-    setModelo(m.descricao || "");
+    setModelo(m.modelo || m.descricao || "");
     setCliente("");
     setPilotoEntregue("");
     setDataPedido("");
-    setConsumoMetros(m.consumo_tecido ? Number(m.consumo_tecido).toFixed(2) : "");
-    setConsumoGramas("");
-    setEntretela(false);
-    setForroTecido2(false);
-    setEntreTelaDescricao("");setEntreTelaQtde("");
-    setForroDescricao("");setForroQtde("");
-    setAviamentos(defaultAviamentos.map((a) => ({ ...a })));
-    setServicos(defaultServicos.map((s) => ({ ...s })));
-    setGradacao(Array.from({ length: 6 }, emptyGradacao));
-    setModelagemFile(null);
+    setConsumoMetros(m.consumo_metros ? Number(m.consumo_metros).toFixed(2) : (m.consumo_tecido ? Number(m.consumo_tecido).toFixed(2) : ""));
+    setConsumoGramas(m.consumo_gramas ? Number(m.consumo_gramas).toFixed(2) : "");
+    setEntretela(!!m.entretela);
+    setEntreTelaDescricao(m.entretela_descricao || "");
+    setEntreTelaQtde(m.entretela_quantidade ? String(m.entretela_quantidade) : "");
+    setForroTecido2(!!m.forro_tecido2);
+    setForroDescricao(m.forro_tecido2_descricao || "");
+    setForroQtde(m.forro_tecido2_quantidade ? String(m.forro_tecido2_quantidade) : "");
     setModelImage(m.imagem_url || null);
+    setModelagemUrl(m.arquivo_modelagem_url || null);
+    setModelagemFile(null);
+    setCurrentModeloId(m.id);
+
+    // Carrega filhos
+    const { aviamentos: avs, servicos: svs, gradacao: grs } = await carregarModeloCompleto(m.id);
+    if (avs.length) {
+      setAviamentos(defaultAviamentos.map((d, i) => {
+        const r: any = avs[i];
+        return r ? { tipo: d.tipo, selectedItem: r.descricao ? { descricao: r.descricao, tamanho: r.unidade } : null, partesQtde: r.quantidade ? String(r.quantidade) : "" } : { ...d };
+      }));
+    } else {
+      setAviamentos(defaultAviamentos.map((a) => ({ ...a })));
+    }
+    if (svs.length) {
+      setServicos(svs.map((r: any) => ({ descricao: r.descricao || "", custoPorPeca: r.valor_unitario ? String(r.valor_unitario) : "" })));
+    } else {
+      setServicos(defaultServicos.map((s) => ({ ...s })));
+    }
+    if (grs.length) {
+      setGradacao(grs.map((r: any) => ({ descricao: r.tamanho || "", aumentoCm: "", pp: "", p: r.medida_a ? String(r.medida_a) : "", m: "", g: "", gg: "", g1: "", g2: "", g3: "" })));
+    } else {
+      setGradacao(Array.from({ length: 6 }, emptyGradacao));
+    }
+
     setSearchOpen(false);
     setIsLoadedFromSearch(true);
   };
@@ -178,7 +203,9 @@ const ModelosPage = () => {
     setConsumoMetros("");setConsumoGramas("");
     setGradacao(Array.from({ length: 6 }, emptyGradacao));
     setModelagemFile(null);
+    setModelagemUrl(null);
     setModelImage(null);
+    setCurrentModeloId(null);
     setIsLoadedFromSearch(false);
   };
 
@@ -202,6 +229,7 @@ const ModelosPage = () => {
       tecido: tecido || null,
       consumo_tecido: parseFloat(consumoMetros) || 0,
       status_kanban: statusKanban || "pendente",
+      piloto_entregue: pilotoEntregue === "sim",
     } as any, { onConflict: "numero_pedido" });
 
     if (error) {
@@ -216,27 +244,33 @@ const ModelosPage = () => {
   };
 
   // ── File upload handler ──
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setModelagemFile(file);
-      toast({ title: "Arquivo selecionado", description: `${file.name} carregado com sucesso.` });
+    if (!file) return;
+    setModelagemFile(file);
+    const fileName = `modelagem/${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage.from("modelos").upload(fileName, file, { upsert: true });
+    if (error) {
+      toast({ title: "Erro ao enviar arquivo", description: error.message, variant: "destructive" });
+      return;
     }
+    const { data: urlData } = supabase.storage.from("modelos").getPublicUrl(fileName);
+    setModelagemUrl(urlData.publicUrl);
+    toast({ title: "Arquivo enviado", description: file.name });
   };
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const fileName = `modelos/${Date.now()}-${file.name}`;
-      const { error } = await supabase.storage.from("produtos").upload(fileName, file, { upsert: true });
-      if (error) {
-        toast({ title: "Erro ao enviar imagem", description: error.message, variant: "destructive" });
-        return;
-      }
-      const { data: urlData } = supabase.storage.from("produtos").getPublicUrl(fileName);
-      setModelImage(urlData.publicUrl);
-      toast({ title: "Imagem carregada", description: `${file.name} enviada com sucesso.` });
+    if (!file) return;
+    const fileName = `imagens/${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage.from("modelos").upload(fileName, file, { upsert: true });
+    if (error) {
+      toast({ title: "Erro ao enviar imagem", description: error.message, variant: "destructive" });
+      return;
     }
+    const { data: urlData } = supabase.storage.from("modelos").getPublicUrl(fileName);
+    setModelImage(urlData.publicUrl);
+    toast({ title: "Imagem carregada", description: file.name });
   };
 
   // ── Aviamentos handlers ──
@@ -273,31 +307,69 @@ const ModelosPage = () => {
     }));
   };
 
+  // ── Build payload ──
+  const buildModeloPayload = () => ({
+    referencia,
+    descricao: modelo,
+    modelo,
+    tecido_principal: tecido || null,
+    consumo_tecido: parseFloat(consumoMetros) || 0,
+    consumo_metros: parseFloat(consumoMetros) || 0,
+    consumo_gramas: parseFloat(consumoGramas) || 0,
+    entretela,
+    entretela_descricao: entretelaDescricao || null,
+    entretela_quantidade: parseFloat(entreTelaQtde) || 0,
+    forro_tecido2: forroTecido2,
+    forro_tecido2_descricao: forroDescricao || null,
+    forro_tecido2_quantidade: parseFloat(forroQtde) || 0,
+    arquivo_modelagem_url: modelagemUrl || null,
+    status: statusKanban === "concluido" ? "ativo" : statusKanban === "pendente" ? "desenvolvimento" : "ativo",
+    imagem_url: modelImage || null,
+  });
+
+  const buildChildren = () => ({
+    aviamentos: aviamentos.map((a, i) => ({
+      ordem: i + 1,
+      descricao: a.selectedItem ? `${a.tipo} — ${a.selectedItem.descricao || ""}` : a.tipo,
+      quantidade: parseFloat(a.partesQtde) || 0,
+      unidade: a.selectedItem?.tamanho || null,
+      observacao: null,
+    })),
+    servicos: servicos.map((s, i) => ({
+      ordem: i + 1,
+      descricao: s.descricao,
+      valor_unitario: parseFloat(s.custoPorPeca) || 0,
+      observacao: null,
+    })),
+    gradacao: gradacao.map((g, i) => ({
+      ordem: i + 1,
+      tamanho: g.descricao || null,
+      medida_a: parseFloat(g.p) || 0,
+      medida_b: parseFloat(g.m) || 0,
+      medida_c: parseFloat(g.g) || 0,
+      medida_d: parseFloat(g.gg) || 0,
+      observacao: g.aumentoCm ? `Aumento: ${g.aumentoCm}cm` : null,
+    })),
+  });
+
   // ── Save / Clone ──
   const handleSaveClick = async () => {
     if (isLoadedFromSearch) {
-      // First ask: save or clone?
       setSaveDialogOpen(true);
     } else {
       if (!allFieldsFilled()) {
         toast({ title: "Campos obrigatórios", description: "Preencha todos os campos editáveis antes de salvar.", variant: "destructive" });
         return;
       }
-      const result = await salvarModelo({
-        referencia,
-        descricao: modelo,
-        consumo_tecido: parseFloat(consumoMetros) || 0,
-        status: statusKanban === "concluido" ? "ativo" : statusKanban === "pendente" ? "desenvolvimento" : "ativo",
-        imagem_url: modelImage || undefined,
-      });
+      const result = await salvarModelo(buildModeloPayload(), undefined, buildChildren());
       if (result) {
+        setCurrentModeloId(result);
         toast({ title: "Modelo salvo", description: `Referência ${referencia} salva com sucesso.` });
       }
     }
   };
 
   const handleSaveOverwriteStep1 = () => {
-    // Close first dialog, open overwrite confirmation
     setSaveDialogOpen(false);
     setSaveOverwriteDialogOpen(true);
   };
@@ -305,13 +377,7 @@ const ModelosPage = () => {
   const handleSaveOverwriteConfirm = async () => {
     setSaveOverwriteDialogOpen(false);
     const existingModel = modelos.find((m: any) => m.referencia === referencia);
-    const result = await salvarModelo({
-      referencia,
-      descricao: modelo,
-      consumo_tecido: parseFloat(consumoMetros) || 0,
-      status: statusKanban === "concluido" ? "ativo" : statusKanban === "pendente" ? "desenvolvimento" : "ativo",
-      imagem_url: modelImage || undefined,
-    }, existingModel?.id);
+    const result = await salvarModelo(buildModeloPayload(), existingModel?.id || currentModeloId || undefined, buildChildren());
     if (result) {
       toast({ title: "Modelo atualizado", description: `Referência ${referencia} foi sobrescrita com sucesso.` });
     }
@@ -503,9 +569,9 @@ const ModelosPage = () => {
                     <Upload className="w-4 h-4" />
                     Upload Arquivo
                   </Button>
-                  {modelagemFile && (
+                  {(modelagemFile || modelagemUrl) && (
                     <span className="text-xs text-foreground font-medium truncate max-w-[300px]">
-                      {modelagemFile.name}
+                      {modelagemFile?.name || (modelagemUrl ? <a href={modelagemUrl} target="_blank" rel="noreferrer" className="underline text-primary">{modelagemUrl.split("/").pop()}</a> : "")}
                     </span>
                   )}
                 </div>
