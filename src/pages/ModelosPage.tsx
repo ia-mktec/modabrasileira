@@ -568,9 +568,9 @@ const ModelosPage = () => {
                     <Upload className="w-4 h-4" />
                     Upload Arquivo
                   </Button>
-                  {modelagemFile && (
+                  {(modelagemFile || modelagemUrl) && (
                     <span className="text-xs text-foreground font-medium truncate max-w-[300px]">
-                      {modelagemFile.name}
+                      {modelagemFile?.name || (modelagemUrl ? <a href={modelagemUrl} target="_blank" rel="noreferrer" className="underline text-primary">{modelagemUrl.split("/").pop()}</a> : "")}
                     </span>
                   )}
                 </div>
