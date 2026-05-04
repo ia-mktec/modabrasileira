@@ -11,6 +11,10 @@ const statusStyles: Record<string, string> = {
   em_andamento: "bg-[hsl(217_71%_45%/0.15)] text-[hsl(217,71%,45%)] border-[hsl(217_71%_45%/0.3)]",
   concluido: "bg-[hsl(142_71%_35%/0.15)] text-[hsl(142,71%,35%)] border-[hsl(142_71%_35%/0.3)]",
   cancelado: "bg-[hsl(0_72%_51%/0.15)] text-[hsl(0,72%,51%)] border-[hsl(0_72%_51%/0.3)]",
+  em_corte: "bg-[hsl(217_71%_45%/0.15)] text-[hsl(217,71%,45%)] border-[hsl(217_71%_45%/0.3)]",
+  em_producao: "bg-[hsl(38_92%_50%/0.15)] text-[hsl(38,92%,50%)] border-[hsl(38_92%_50%/0.3)]",
+  recebido: "bg-[hsl(199_89%_48%/0.15)] text-[hsl(199,89%,48%)] border-[hsl(199_89%_48%/0.3)]",
+  entregue: "bg-[hsl(142_71%_35%/0.15)] text-[hsl(142,71%,35%)] border-[hsl(142_71%_35%/0.3)]",
 };
 
 const statusLabels: Record<string, string> = {
@@ -24,6 +28,10 @@ const statusLabels: Record<string, string> = {
   em_andamento: "Em Andamento",
   concluido: "Concluído",
   cancelado: "Cancelado",
+  em_corte: "Em Corte",
+  em_producao: "Em Produção",
+  recebido: "Recebido",
+  entregue: "Entregue",
 };
 
 interface StatusBadgeProps {
