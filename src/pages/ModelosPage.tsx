@@ -243,27 +243,33 @@ const ModelosPage = () => {
   };
 
   // ── File upload handler ──
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setModelagemFile(file);
-      toast({ title: "Arquivo selecionado", description: `${file.name} carregado com sucesso.` });
+    if (!file) return;
+    setModelagemFile(file);
+    const fileName = `modelagem/${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage.from("modelos").upload(fileName, file, { upsert: true });
+    if (error) {
+      toast({ title: "Erro ao enviar arquivo", description: error.message, variant: "destructive" });
+      return;
     }
+    const { data: urlData } = supabase.storage.from("modelos").getPublicUrl(fileName);
+    setModelagemUrl(urlData.publicUrl);
+    toast({ title: "Arquivo enviado", description: file.name });
   };
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const fileName = `modelos/${Date.now()}-${file.name}`;
-      const { error } = await supabase.storage.from("produtos").upload(fileName, file, { upsert: true });
-      if (error) {
-        toast({ title: "Erro ao enviar imagem", description: error.message, variant: "destructive" });
-        return;
-      }
-      const { data: urlData } = supabase.storage.from("produtos").getPublicUrl(fileName);
-      setModelImage(urlData.publicUrl);
-      toast({ title: "Imagem carregada", description: `${file.name} enviada com sucesso.` });
+    if (!file) return;
+    const fileName = `imagens/${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage.from("modelos").upload(fileName, file, { upsert: true });
+    if (error) {
+      toast({ title: "Erro ao enviar imagem", description: error.message, variant: "destructive" });
+      return;
     }
+    const { data: urlData } = supabase.storage.from("modelos").getPublicUrl(fileName);
+    setModelImage(urlData.publicUrl);
+    toast({ title: "Imagem carregada", description: file.name });
   };
 
   // ── Aviamentos handlers ──
