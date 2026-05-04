@@ -229,6 +229,7 @@ const ModelosPage = () => {
       tecido: tecido || null,
       consumo_tecido: parseFloat(consumoMetros) || 0,
       status_kanban: statusKanban || "pendente",
+      piloto_entregue: pilotoEntregue === "sim",
     } as any, { onConflict: "numero_pedido" });
 
     if (error) {
