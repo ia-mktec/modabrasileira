@@ -677,6 +677,36 @@ export type Database = {
           },
         ]
       }
+      pedido_historico: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          id: string
+          modelo_ref: string | null
+          numero_pedido: string
+          status_anterior: string | null
+          status_novo: string
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          modelo_ref?: string | null
+          numero_pedido: string
+          status_anterior?: string | null
+          status_novo: string
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          modelo_ref?: string | null
+          numero_pedido?: string
+          status_anterior?: string | null
+          status_novo?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

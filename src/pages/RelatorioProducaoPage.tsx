@@ -1,126 +1,75 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { clientes } from "@/lib/mock-data";
-import { CalendarDays } from "lucide-react";
-import { ConsultaProdutoDialog } from "@/components/shared/ConsultaProdutoDialog";
-import produtoPolo from "@/assets/produto-polo.jpg";
-import produtoCamiseta from "@/assets/produto-camiseta.jpg";
-import produtoJeans from "@/assets/produto-jeans.jpg";
-import produtoMoletom from "@/assets/produto-moletom.jpg";
-import produtoVestido from "@/assets/produto-vestido.jpg";
+import { Button } from "@/components/ui/button";
+import { CalendarDays, Clock, Package, TrendingUp, Activity } from "lucide-react";
+import { PedidoTimeline } from "@/components/shared/PedidoTimeline";
 
-const imagemPorReferencia: Record<string, string> = {
-  "MK-2024-001": produtoCamiseta,
-  "MK-2024-002": produtoPolo,
-  "MK-2024-003": produtoMoletom,
-  "MK-2024-004": produtoVestido,
-  "MK-2024-005": produtoJeans,
-};
+interface PedidoRow {
+  numero_pedido: string;
+  modelo_ref: string;
+  cliente: string | null;
+  tecido: string | null;
+  cor: string | null;
+  status_kanban: string;
+  data_pedido: string;
+  created_at: string;
+  updated_at: string;
+}
 
-interface KanbanItem {
-  id: string;
-  ordemNumero: string;
-  referencia: string;
-  descricao: string;
-  cliente: string;
-  qtdCortada: number;
-  status: string;
-  precoPeca: number;
-  dataPrevisao: string;
+interface HistRow {
+  numero_pedido: string;
+  status_anterior: string | null;
+  status_novo: string;
+  created_at: string;
 }
 
 const kanbanColumns = [
-  { key: "modelos", label: "Modelos", color: "hsl(271 71% 50%)" },
-  { key: "corte", label: "Corte", color: "hsl(var(--primary))" },
-  { key: "expedicao", label: "Expedição", color: "hsl(38 92% 50%)" },
-  { key: "recebimento", label: "Recebimento", color: "hsl(199 89% 48%)" },
-  { key: "entrega", label: "Entrega Cliente", color: "hsl(142 71% 35%)" },
+  { key: "pendente", label: "Pendente", color: "hsl(38 92% 50%)" },
+  { key: "em_corte", label: "Em Corte", color: "hsl(217 71% 45%)" },
+  { key: "em_producao", label: "Em Produção", color: "hsl(38 92% 50%)" },
+  { key: "recebido", label: "Recebido", color: "hsl(199 89% 48%)" },
+  { key: "entregue", label: "Entregue", color: "hsl(142 71% 35%)" },
 ];
 
-const generateKanbanData = (): Record<string, KanbanItem[]> => {
-  const c = clientes.map((cl) => cl.razaoSocial);
-  const items: KanbanItem[] = [
-    { id: "k1", ordemNumero: "OC-0002", referencia: "MK-2024-002", descricao: "Polo Masculina Manga Curta", cliente: c[0], qtdCortada: 300, status: "em_andamento", precoPeca: 18.5, dataPrevisao: "2025-03-05" },
-    { id: "k2", ordemNumero: "OC-0003", referencia: "MK-2024-005", descricao: "Calça Jeans Skinny", cliente: c[2], qtdCortada: 200, status: "pendente", precoPeca: 45.0, dataPrevisao: "2025-03-08" },
-    { id: "k3", ordemNumero: "OC-0004", referencia: "MK-2024-003", descricao: "Moletom Canguru Unissex", cliente: c[4], qtdCortada: 150, status: "pendente", precoPeca: 32.0, dataPrevisao: "2025-03-10" },
-    { id: "k4", ordemNumero: "OC-0001", referencia: "MK-2024-001", descricao: "Camiseta Básica Gola Redonda", cliente: c[1], qtdCortada: 500, status: "em_andamento", precoPeca: 12.0, dataPrevisao: "2025-03-03" },
-    { id: "k5", ordemNumero: "OC-0005", referencia: "MK-2024-004", descricao: "Vestido Midi Transpassado", cliente: c[5], qtdCortada: 120, status: "em_andamento", precoPeca: 55.0, dataPrevisao: "2025-03-06" },
-    { id: "k6", ordemNumero: "OC-0006", referencia: "MK-2024-001", descricao: "Camiseta Básica Gola Redonda", cliente: c[0], qtdCortada: 400, status: "concluido", precoPeca: 12.0, dataPrevisao: "2025-03-01" },
-    { id: "k7", ordemNumero: "OC-0007", referencia: "MK-2024-002", descricao: "Polo Masculina Manga Curta", cliente: c[3], qtdCortada: 250, status: "em_andamento", precoPeca: 18.5, dataPrevisao: "2025-03-04" },
-    { id: "k8", ordemNumero: "OC-0008", referencia: "MK-2024-005", descricao: "Calça Jeans Skinny", cliente: c[1], qtdCortada: 180, status: "concluido", precoPeca: 45.0, dataPrevisao: "2025-02-28" },
-    { id: "k9", ordemNumero: "OC-0009", referencia: "MK-2024-001", descricao: "Camiseta Básica Gola Redonda", cliente: c[4], qtdCortada: 600, status: "pendente", precoPeca: 12.0, dataPrevisao: "2025-03-07" },
-  ];
-
-  // Modelos aprovados aguardando início de produção
-  const modelosAprovados: KanbanItem[] = [
-    { id: "km1", ordemNumero: "—", referencia: "MK-2024-003", descricao: "Moletom Canguru Unissex", cliente: c[2], qtdCortada: 350, status: "pendente", precoPeca: 32.0, dataPrevisao: "2025-03-12" },
-    { id: "km2", ordemNumero: "—", referencia: "MK-2024-004", descricao: "Vestido Midi Transpassado", cliente: c[0], qtdCortada: 200, status: "pendente", precoPeca: 55.0, dataPrevisao: "2025-03-15" },
-    { id: "km3", ordemNumero: "—", referencia: "MK-2024-001", descricao: "Camiseta Básica Gola Redonda", cliente: c[3], qtdCortada: 800, status: "pendente", precoPeca: 12.0, dataPrevisao: "2025-03-18" },
-  ];
-
-  return {
-    modelos: modelosAprovados,
-    corte: items.slice(0, 3),
-    expedicao: items.slice(3, 5),
-    recebimento: items.slice(5, 7),
-    entrega: items.slice(7),
-  };
-};
-
-const kanbanData = generateKanbanData();
-
-// Map column key to area label
-const areaByColumn: Record<string, string> = {
-  modelos: "Modelos",
-  corte: "Corte",
-  expedicao: "Expedição",
-  recebimento: "Recebimento",
-  entrega: "Entrega Cliente",
-};
-
-function KanbanCard({ item, area, onClickRef }: { item: KanbanItem; area: string; onClickRef: (item: KanbanItem & { area: string }) => void }) {
+function PedidoCard({ pedido, onClick }: { pedido: PedidoRow; onClick: (n: string) => void }) {
   return (
-    <Card className="mb-3 hover:shadow-md transition-shadow">
-      <CardContent className="p-3 space-y-2.5">
-        <div className="w-full h-28 rounded-md bg-muted flex items-center justify-center overflow-hidden">
-          <img
-            src={imagemPorReferencia[item.referencia] || produtoCamiseta}
-            alt={item.descricao}
-            className="w-full h-full object-cover"
-          />
-        </div>
-
+    <Card className="mb-3 hover:shadow-md transition-shadow cursor-pointer" onClick={() => onClick(pedido.numero_pedido)}>
+      <CardContent className="p-3 space-y-2">
         <div className="flex items-center justify-between">
-          <button
-            onClick={() => onClickRef({ ...item, area })}
-            className="font-mono text-xs font-semibold text-primary hover:underline cursor-pointer"
-          >
-            {item.referencia}
-          </button>
-          <span className="text-[10px] text-muted-foreground">{item.ordemNumero}</span>
+          <span className="font-mono text-xs font-semibold text-primary">{pedido.modelo_ref}</span>
+          <StatusBadge status={pedido.status_kanban} />
         </div>
-
-        <p className="text-xs text-foreground font-medium leading-tight truncate">{item.descricao}</p>
-        <p className="text-[11px] text-muted-foreground truncate">{item.cliente}</p>
-
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-muted-foreground">
-            Qtd: <span className="font-semibold text-foreground">{item.qtdCortada}</span>
-          </span>
-          <span className="text-muted-foreground">
-            R$ <span className="font-semibold text-foreground">{item.precoPeca.toFixed(2)}</span>/pç
-          </span>
+        <p className="text-[11px] text-muted-foreground font-mono truncate">{pedido.numero_pedido}</p>
+        {pedido.cliente && <p className="text-xs text-foreground truncate">{pedido.cliente}</p>}
+        {(pedido.tecido || pedido.cor) && (
+          <p className="text-[11px] text-muted-foreground truncate">
+            {[pedido.tecido, pedido.cor].filter(Boolean).join(" • ")}
+          </p>
+        )}
+        <div className="flex items-center gap-1 text-[11px] text-muted-foreground pt-1 border-t border-border">
+          <CalendarDays className="w-3 h-3" />
+          {new Date(pedido.data_pedido).toLocaleDateString("pt-BR")}
         </div>
+      </CardContent>
+    </Card>
+  );
+}
 
-        <div className="flex items-center justify-between pt-1 border-t border-border">
-          <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-            <CalendarDays className="w-3 h-3" />
-            {new Date(item.dataPrevisao).toLocaleDateString("pt-BR")}
+function MetricCard({ icon: Icon, label, value, hint }: { icon: any; label: string; value: string; hint?: string }) {
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs text-muted-foreground">{label}</p>
+            <p className="text-2xl font-bold mt-1">{value}</p>
+            {hint && <p className="text-[11px] text-muted-foreground mt-1">{hint}</p>}
           </div>
-          <StatusBadge status={item.status} />
+          <Icon className="w-8 h-8 text-primary opacity-70" />
         </div>
       </CardContent>
     </Card>
@@ -128,21 +77,115 @@ function KanbanCard({ item, area, onClickRef }: { item: KanbanItem; area: string
 }
 
 const RelatorioProducaoPage = () => {
-  const [selectedItem, setSelectedItem] = useState<(KanbanItem & { area: string }) | null>(null);
+  const [pedidos, setPedidos] = useState<PedidoRow[]>([]);
+  const [historico, setHistorico] = useState<HistRow[]>([]);
+  const [selectedPedido, setSelectedPedido] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const handleClickRef = (item: KanbanItem & { area: string }) => {
-    setSelectedItem(item);
+  useEffect(() => {
+    supabase.from("modelo_pedidos").select("*").order("created_at", { ascending: false })
+      .then(({ data }) => setPedidos(data || []));
+    supabase.from("pedido_historico").select("numero_pedido,status_anterior,status_novo,created_at")
+      .order("created_at", { ascending: true })
+      .then(({ data }) => setHistorico((data || []) as HistRow[]));
+  }, []);
+
+  const grouped = useMemo(() => {
+    const g: Record<string, PedidoRow[]> = {};
+    kanbanColumns.forEach((c) => (g[c.key] = []));
+    pedidos.forEach((p) => {
+      const key = g[p.status_kanban] ? p.status_kanban : "pendente";
+      g[key].push(p);
+    });
+    return g;
+  }, [pedidos]);
+
+  // Métricas
+  const metrics = useMemo(() => {
+    const total = pedidos.length;
+    const ativos = pedidos.filter((p) => p.status_kanban !== "entregue").length;
+    const entregues = pedidos.filter((p) => p.status_kanban === "entregue").length;
+
+    // Tempo médio entre etapas (em horas) — somente pedidos com transição
+    // Agrupa histórico por pedido e ordena
+    const porPedido: Record<string, HistRow[]> = {};
+    historico.forEach((h) => {
+      if (!porPedido[h.numero_pedido]) porPedido[h.numero_pedido] = [];
+      porPedido[h.numero_pedido].push(h);
+    });
+
+    const duracoes: Record<string, number[]> = {};
+    Object.values(porPedido).forEach((hs) => {
+      for (let i = 1; i < hs.length; i++) {
+        const from = hs[i].status_anterior || "pendente";
+        const dt = (new Date(hs[i].created_at).getTime() - new Date(hs[i - 1].created_at).getTime()) / 3600000;
+        if (!duracoes[from]) duracoes[from] = [];
+        duracoes[from].push(dt);
+      }
+    });
+
+    const mediaPorEtapa: Record<string, number> = {};
+    Object.entries(duracoes).forEach(([k, arr]) => {
+      mediaPorEtapa[k] = arr.reduce((s, v) => s + v, 0) / arr.length;
+    });
+
+    // Throughput últimos 30d — entregas
+    const ms30 = 30 * 24 * 3600 * 1000;
+    const cutoff = Date.now() - ms30;
+    const entregasUltimos30 = historico.filter(
+      (h) => h.status_novo === "entregue" && new Date(h.created_at).getTime() >= cutoff
+    ).length;
+
+    return { total, ativos, entregues, mediaPorEtapa, entregasUltimos30 };
+  }, [pedidos, historico]);
+
+  const handleClick = (numero: string) => {
+    setSelectedPedido(numero);
     setDialogOpen(true);
+  };
+
+  const fmtHoras = (h: number) => {
+    if (!h || isNaN(h)) return "—";
+    if (h < 24) return `${h.toFixed(1)}h`;
+    return `${(h / 24).toFixed(1)}d`;
   };
 
   return (
     <div className="p-6 space-y-6">
       <PageHeader
         title="Fluxo de Produção"
-        description="Kanban de acompanhamento por área de produção"
+        description="Kanban e métricas de pedidos em produção"
       />
 
+      {/* Dashboard de Métricas */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <MetricCard icon={Package} label="Total de Pedidos" value={String(metrics.total)} />
+        <MetricCard icon={Activity} label="Em Andamento" value={String(metrics.ativos)} />
+        <MetricCard icon={TrendingUp} label="Entregues (30d)" value={String(metrics.entregasUltimos30)} hint="últimos 30 dias" />
+        <MetricCard icon={Clock} label="Tempo Médio Corte" value={fmtHoras(metrics.mediaPorEtapa["em_corte"] || 0)} hint="em_corte → em_producao" />
+      </div>
+
+      {/* Tempo médio por etapa - detalhe */}
+      <Card>
+        <CardContent className="p-4">
+          <p className="text-sm font-semibold mb-3">Tempo médio entre etapas</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { from: "pendente", to: "em_corte" },
+              { from: "em_corte", to: "em_producao" },
+              { from: "em_producao", to: "recebido" },
+              { from: "recebido", to: "entregue" },
+            ].map((t) => (
+              <div key={t.from} className="rounded-md border border-border p-3">
+                <p className="text-[11px] text-muted-foreground">{t.from} → {t.to}</p>
+                <p className="text-lg font-bold mt-1">{fmtHoras(metrics.mediaPorEtapa[t.from] || 0)}</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Kanban */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
         {kanbanColumns.map((col) => (
           <div key={col.key} className="flex flex-col">
@@ -150,28 +193,26 @@ const RelatorioProducaoPage = () => {
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: col.color }} />
               <h3 className="text-sm font-semibold text-foreground">{col.label}</h3>
               <Badge variant="secondary" className="ml-auto text-[10px] h-5">
-                {kanbanData[col.key]?.length || 0}
+                {grouped[col.key]?.length || 0}
               </Badge>
             </div>
             <div className="flex-1 rounded-lg bg-muted/30 border border-border p-2 min-h-[400px]">
-              {kanbanData[col.key]?.map((item) => (
-                <KanbanCard
-                  key={item.id}
-                  item={item}
-                  area={areaByColumn[col.key]}
-                  onClickRef={handleClickRef}
-                />
-              ))}
+              {grouped[col.key]?.length ? (
+                grouped[col.key].map((p) => (
+                  <PedidoCard key={p.numero_pedido} pedido={p} onClick={handleClick} />
+                ))
+              ) : (
+                <p className="text-xs text-muted-foreground text-center py-6">Nenhum pedido</p>
+              )}
             </div>
           </div>
         ))}
       </div>
 
-      <ConsultaProdutoDialog
+      <PedidoTimeline
+        numeroPedido={selectedPedido}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        item={selectedItem}
-        imagemSrc={selectedItem ? imagemPorReferencia[selectedItem.referencia] : undefined}
       />
     </div>
   );
