@@ -502,6 +502,100 @@ export type Database = {
           },
         ]
       }
+      modelo_aviamentos: {
+        Row: {
+          created_at: string
+          descricao: string | null
+          id: string
+          modelo_id: string
+          observacao: string | null
+          ordem: number
+          quantidade: number | null
+          unidade: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          modelo_id: string
+          observacao?: string | null
+          ordem?: number
+          quantidade?: number | null
+          unidade?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          modelo_id?: string
+          observacao?: string | null
+          ordem?: number
+          quantidade?: number | null
+          unidade?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modelo_aviamentos_modelo_id_fkey"
+            columns: ["modelo_id"]
+            isOneToOne: false
+            referencedRelation: "modelos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      modelo_gradacao: {
+        Row: {
+          created_at: string
+          id: string
+          medida_a: number | null
+          medida_b: number | null
+          medida_c: number | null
+          medida_d: number | null
+          modelo_id: string
+          observacao: string | null
+          ordem: number
+          tamanho: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          medida_a?: number | null
+          medida_b?: number | null
+          medida_c?: number | null
+          medida_d?: number | null
+          modelo_id: string
+          observacao?: string | null
+          ordem?: number
+          tamanho?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          medida_a?: number | null
+          medida_b?: number | null
+          medida_c?: number | null
+          medida_d?: number | null
+          modelo_id?: string
+          observacao?: string | null
+          ordem?: number
+          tamanho?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modelo_gradacao_modelo_id_fkey"
+            columns: ["modelo_id"]
+            isOneToOne: false
+            referencedRelation: "modelos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       modelo_pedidos: {
         Row: {
           cliente: string | null
@@ -513,6 +607,7 @@ export type Database = {
           modelo_ref: string
           numero_pedido: string
           observacoes: string | null
+          piloto_entregue: boolean | null
           status_kanban: string
           tecido: string | null
           updated_at: string
@@ -527,6 +622,7 @@ export type Database = {
           modelo_ref: string
           numero_pedido: string
           observacoes?: string | null
+          piloto_entregue?: boolean | null
           status_kanban?: string
           tecido?: string | null
           updated_at?: string
@@ -541,20 +637,72 @@ export type Database = {
           modelo_ref?: string
           numero_pedido?: string
           observacoes?: string | null
+          piloto_entregue?: boolean | null
           status_kanban?: string
           tecido?: string | null
           updated_at?: string
         }
         Relationships: []
       }
+      modelo_servicos: {
+        Row: {
+          created_at: string
+          descricao: string | null
+          id: string
+          modelo_id: string
+          observacao: string | null
+          ordem: number
+          updated_at: string
+          valor_unitario: number | null
+        }
+        Insert: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          modelo_id: string
+          observacao?: string | null
+          ordem?: number
+          updated_at?: string
+          valor_unitario?: number | null
+        }
+        Update: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          modelo_id?: string
+          observacao?: string | null
+          ordem?: number
+          updated_at?: string
+          valor_unitario?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modelo_servicos_modelo_id_fkey"
+            columns: ["modelo_id"]
+            isOneToOne: false
+            referencedRelation: "modelos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       modelos: {
         Row: {
+          arquivo_modelagem_url: string | null
           colecao: string | null
+          consumo_gramas: number | null
+          consumo_metros: number | null
           consumo_tecido: number | null
           created_at: string
           descricao: string
+          entretela: boolean | null
+          entretela_descricao: string | null
+          entretela_quantidade: number | null
+          forro_tecido2: boolean | null
+          forro_tecido2_descricao: string | null
+          forro_tecido2_quantidade: number | null
           id: string
           imagem_url: string | null
+          modelo: string | null
           referencia: string
           status: string
           tamanhos_grade: string | null
@@ -562,12 +710,22 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          arquivo_modelagem_url?: string | null
           colecao?: string | null
+          consumo_gramas?: number | null
+          consumo_metros?: number | null
           consumo_tecido?: number | null
           created_at?: string
           descricao: string
+          entretela?: boolean | null
+          entretela_descricao?: string | null
+          entretela_quantidade?: number | null
+          forro_tecido2?: boolean | null
+          forro_tecido2_descricao?: string | null
+          forro_tecido2_quantidade?: number | null
           id?: string
           imagem_url?: string | null
+          modelo?: string | null
           referencia: string
           status?: string
           tamanhos_grade?: string | null
@@ -575,12 +733,22 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          arquivo_modelagem_url?: string | null
           colecao?: string | null
+          consumo_gramas?: number | null
+          consumo_metros?: number | null
           consumo_tecido?: number | null
           created_at?: string
           descricao?: string
+          entretela?: boolean | null
+          entretela_descricao?: string | null
+          entretela_quantidade?: number | null
+          forro_tecido2?: boolean | null
+          forro_tecido2_descricao?: string | null
+          forro_tecido2_quantidade?: number | null
           id?: string
           imagem_url?: string | null
+          modelo?: string | null
           referencia?: string
           status?: string
           tamanhos_grade?: string | null
