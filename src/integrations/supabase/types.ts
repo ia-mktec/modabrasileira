@@ -94,6 +94,54 @@ export type Database = {
           },
         ]
       }
+      aviamentos_pedido: {
+        Row: {
+          cor: string | null
+          created_at: string
+          descricao_item: string | null
+          fornecedor: string | null
+          id: string
+          modelo_ref: string | null
+          numero_pedido: string
+          partes_qtde: number | null
+          preco_unitario: number | null
+          qtde_total_pedido: number | null
+          tamanho: string | null
+          tipo: string | null
+          updated_at: string
+        }
+        Insert: {
+          cor?: string | null
+          created_at?: string
+          descricao_item?: string | null
+          fornecedor?: string | null
+          id?: string
+          modelo_ref?: string | null
+          numero_pedido: string
+          partes_qtde?: number | null
+          preco_unitario?: number | null
+          qtde_total_pedido?: number | null
+          tamanho?: string | null
+          tipo?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cor?: string | null
+          created_at?: string
+          descricao_item?: string | null
+          fornecedor?: string | null
+          id?: string
+          modelo_ref?: string | null
+          numero_pedido?: string
+          partes_qtde?: number | null
+          preco_unitario?: number | null
+          qtde_total_pedido?: number | null
+          tamanho?: string | null
+          tipo?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       clientes: {
         Row: {
           cidade: string | null
