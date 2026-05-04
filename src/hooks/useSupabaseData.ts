@@ -218,7 +218,7 @@ export function useModelos() {
   }, [fetch]);
 
   useEffect(() => { fetch(); }, [fetch]);
-  return { modelos, loading, refetch: fetch, salvarModelo, deletarModelo };
+  return { modelos, loading, refetch: fetch, salvarModelo, deletarModelo, carregarModeloCompleto };
 }
 
 // ===== AVIAMENTOS =====
