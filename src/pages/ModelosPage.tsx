@@ -306,31 +306,69 @@ const ModelosPage = () => {
     }));
   };
 
+  // ── Build payload ──
+  const buildModeloPayload = () => ({
+    referencia,
+    descricao: modelo,
+    modelo,
+    tecido_principal: tecido || null,
+    consumo_tecido: parseFloat(consumoMetros) || 0,
+    consumo_metros: parseFloat(consumoMetros) || 0,
+    consumo_gramas: parseFloat(consumoGramas) || 0,
+    entretela,
+    entretela_descricao: entretelaDescricao || null,
+    entretela_quantidade: parseFloat(entreTelaQtde) || 0,
+    forro_tecido2: forroTecido2,
+    forro_tecido2_descricao: forroDescricao || null,
+    forro_tecido2_quantidade: parseFloat(forroQtde) || 0,
+    arquivo_modelagem_url: modelagemUrl || null,
+    status: statusKanban === "concluido" ? "ativo" : statusKanban === "pendente" ? "desenvolvimento" : "ativo",
+    imagem_url: modelImage || null,
+  });
+
+  const buildChildren = () => ({
+    aviamentos: aviamentos.map((a, i) => ({
+      ordem: i + 1,
+      descricao: a.selectedItem ? `${a.tipo} — ${a.selectedItem.descricao || ""}` : a.tipo,
+      quantidade: parseFloat(a.partesQtde) || 0,
+      unidade: a.selectedItem?.tamanho || null,
+      observacao: null,
+    })),
+    servicos: servicos.map((s, i) => ({
+      ordem: i + 1,
+      descricao: s.descricao,
+      valor_unitario: parseFloat(s.custoPorPeca) || 0,
+      observacao: null,
+    })),
+    gradacao: gradacao.map((g, i) => ({
+      ordem: i + 1,
+      tamanho: g.descricao || null,
+      medida_a: parseFloat(g.p) || 0,
+      medida_b: parseFloat(g.m) || 0,
+      medida_c: parseFloat(g.g) || 0,
+      medida_d: parseFloat(g.gg) || 0,
+      observacao: g.aumentoCm ? `Aumento: ${g.aumentoCm}cm` : null,
+    })),
+  });
+
   // ── Save / Clone ──
   const handleSaveClick = async () => {
     if (isLoadedFromSearch) {
-      // First ask: save or clone?
       setSaveDialogOpen(true);
     } else {
       if (!allFieldsFilled()) {
         toast({ title: "Campos obrigatórios", description: "Preencha todos os campos editáveis antes de salvar.", variant: "destructive" });
         return;
       }
-      const result = await salvarModelo({
-        referencia,
-        descricao: modelo,
-        consumo_tecido: parseFloat(consumoMetros) || 0,
-        status: statusKanban === "concluido" ? "ativo" : statusKanban === "pendente" ? "desenvolvimento" : "ativo",
-        imagem_url: modelImage || undefined,
-      });
+      const result = await salvarModelo(buildModeloPayload(), undefined, buildChildren());
       if (result) {
+        setCurrentModeloId(result);
         toast({ title: "Modelo salvo", description: `Referência ${referencia} salva com sucesso.` });
       }
     }
   };
 
   const handleSaveOverwriteStep1 = () => {
-    // Close first dialog, open overwrite confirmation
     setSaveDialogOpen(false);
     setSaveOverwriteDialogOpen(true);
   };
@@ -338,13 +376,7 @@ const ModelosPage = () => {
   const handleSaveOverwriteConfirm = async () => {
     setSaveOverwriteDialogOpen(false);
     const existingModel = modelos.find((m: any) => m.referencia === referencia);
-    const result = await salvarModelo({
-      referencia,
-      descricao: modelo,
-      consumo_tecido: parseFloat(consumoMetros) || 0,
-      status: statusKanban === "concluido" ? "ativo" : statusKanban === "pendente" ? "desenvolvimento" : "ativo",
-      imagem_url: modelImage || undefined,
-    }, existingModel?.id);
+    const result = await salvarModelo(buildModeloPayload(), existingModel?.id || currentModeloId || undefined, buildChildren());
     if (result) {
       toast({ title: "Modelo atualizado", description: `Referência ${referencia} foi sobrescrita com sucesso.` });
     }
