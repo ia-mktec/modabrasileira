@@ -247,8 +247,10 @@ const AviamentosPage = () => {
                         </td>
                       </tr>
                     ))}
-                    {!loading && aviamentos.length === 0 && (
-                      <tr><td colSpan={7} className="py-8 text-center text-muted-foreground text-sm">Nenhum aviamento cadastrado.</td></tr>
+                    {!loading && filteredAviamentos.length === 0 && (
+                      <tr><td colSpan={7} className="py-8 text-center text-muted-foreground text-sm">
+                        {aviamentos.length === 0 ? "Nenhum aviamento cadastrado." : "Nenhum aviamento corresponde ao filtro."}
+                      </td></tr>
                     )}
                   </tbody>
                 </table>
