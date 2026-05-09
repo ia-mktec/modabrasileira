@@ -187,16 +187,34 @@ const AviamentosPage = () => {
 
           <Card>
             <CardContent className="p-0">
-              <div className="bg-muted/50 px-4 py-2 border-b">
+              <div className="bg-muted/50 px-4 py-2 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                 <h3 className="text-xs font-bold flex items-center gap-2">
                   <Package className="w-3.5 h-3.5" />
-                  Aviamentos Cadastrados ({aviamentos.length})
+                  Aviamentos Cadastrados ({filteredAviamentos.length} de {aviamentos.length})
                 </h3>
+                <div className="flex flex-col md:flex-row gap-2 md:items-center">
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                    <Input
+                      placeholder="Buscar por descrição, tamanho ou cor..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-8 h-8 text-xs w-full md:w-64"
+                    />
+                  </div>
+                  <Select value={searchCategoria} onValueChange={setSearchCategoria}>
+                    <SelectTrigger className="h-8 text-xs w-full md:w-48"><SelectValue placeholder="Categoria" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todas">Todas as categorias</SelectItem>
+                      {CATEGORIAS.map((cat) => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div className="overflow-x-auto">
+              <div className="overflow-auto max-h-[60vh]">
                 <table className="w-full text-xs">
-                  <thead>
-                    <tr className="border-b bg-muted/30">
+                  <thead className="sticky top-0 bg-muted/95 backdrop-blur z-10">
+                    <tr className="border-b">
                       <th className="text-left py-2.5 px-3 font-semibold">Tipo</th>
                       <th className="text-left py-2.5 px-3 font-semibold">Descrição</th>
                       <th className="text-left py-2.5 px-3 font-semibold">Tamanho</th>
@@ -209,7 +227,7 @@ const AviamentosPage = () => {
                   <tbody>
                     {loading ? (
                       <tr><td colSpan={7} className="py-8 text-center text-muted-foreground">Carregando...</td></tr>
-                    ) : aviamentos.map((r: any) => (
+                    ) : filteredAviamentos.map((r: any) => (
                       <tr key={r.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                         <td className="py-2 px-3 font-medium">{r.tipo}</td>
                         <td className="py-2 px-3">{r.descricao}</td>
@@ -229,8 +247,10 @@ const AviamentosPage = () => {
                         </td>
                       </tr>
                     ))}
-                    {!loading && aviamentos.length === 0 && (
-                      <tr><td colSpan={7} className="py-8 text-center text-muted-foreground text-sm">Nenhum aviamento cadastrado.</td></tr>
+                    {!loading && filteredAviamentos.length === 0 && (
+                      <tr><td colSpan={7} className="py-8 text-center text-muted-foreground text-sm">
+                        {aviamentos.length === 0 ? "Nenhum aviamento cadastrado." : "Nenhum aviamento corresponde ao filtro."}
+                      </td></tr>
                     )}
                   </tbody>
                 </table>
