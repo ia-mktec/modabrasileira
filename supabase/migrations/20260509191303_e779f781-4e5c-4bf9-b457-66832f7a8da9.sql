@@ -1,0 +1,1 @@
+ALTER TABLE public.aviamentos_pedido DROP COLUMN fornecedor;
