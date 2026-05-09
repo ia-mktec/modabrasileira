@@ -105,7 +105,6 @@ export type Database = {
           numero_pedido: string
           partes_qtde: number | null
           preco_unitario: number | null
-          qtde_total_pedido: number | null
           tamanho: string | null
           tipo: string | null
           updated_at: string
@@ -120,7 +119,6 @@ export type Database = {
           numero_pedido: string
           partes_qtde?: number | null
           preco_unitario?: number | null
-          qtde_total_pedido?: number | null
           tamanho?: string | null
           tipo?: string | null
           updated_at?: string
@@ -135,7 +133,6 @@ export type Database = {
           numero_pedido?: string
           partes_qtde?: number | null
           preco_unitario?: number | null
-          qtde_total_pedido?: number | null
           tamanho?: string | null
           tipo?: string | null
           updated_at?: string
