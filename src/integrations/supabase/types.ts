@@ -99,7 +99,6 @@ export type Database = {
           cor: string | null
           created_at: string
           descricao_item: string | null
-          fornecedor: string | null
           id: string
           modelo_ref: string | null
           numero_pedido: string
@@ -113,7 +112,6 @@ export type Database = {
           cor?: string | null
           created_at?: string
           descricao_item?: string | null
-          fornecedor?: string | null
           id?: string
           modelo_ref?: string | null
           numero_pedido: string
@@ -127,7 +125,6 @@ export type Database = {
           cor?: string | null
           created_at?: string
           descricao_item?: string | null
-          fornecedor?: string | null
           id?: string
           modelo_ref?: string | null
           numero_pedido?: string
