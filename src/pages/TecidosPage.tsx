@@ -482,30 +482,6 @@ const TecidosPage = () => {
                   <Input value={tecido} onChange={(e) => setTecido(e.target.value)} className={yellowInput} placeholder="Nome do tecido" />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Modelo</Label>
-                  <div className="flex gap-1">
-                    <Input value={modeloTecido} onChange={(e) => setModeloTecido(e.target.value)} className={`flex-1 ${yellowInput}`} placeholder="Tipo de modelo" />
-                    <Sheet open={modeloSearchOpen} onOpenChange={(open) => {setModeloSearchOpen(open);setModeloSearchTerm("");}}>
-                      <SheetTrigger asChild>
-                        <Button variant="outline" size="icon" className="h-10 w-10 shrink-0"><Search className="w-4 h-4" /></Button>
-                      </SheetTrigger>
-                      <SheetContent side="right" className="w-80">
-                        <SheetHeader><SheetTitle>Buscar Modelo (Cadastro)</SheetTitle></SheetHeader>
-                        <div className="mt-4 space-y-3">
-                          <Input placeholder="Nome do modelo..." value={modeloSearchTerm} onChange={(e) => setModeloSearchTerm(e.target.value)} />
-                          <div className="space-y-1 max-h-[60vh] overflow-y-auto">
-                            {cadastroModelos.filter(m => m.nome.toLowerCase().includes(modeloSearchTerm.toLowerCase())).map((m) =>
-                            <button key={m.id} onClick={() => {setModeloTecido(m.nome);setModeloSearchOpen(false);}} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
-                                <div className="font-medium text-sm">{m.nome}</div>
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </SheetContent>
-                    </Sheet>
-                  </div>
-                </div>
-                <div className="space-y-1">
                   <Label className="text-xs font-semibold">Data de Entrada</Label>
                   <Input type="date" value={dataEntrada} onChange={(e) => setDataEntrada(e.target.value)} className={yellowInput} />
                 </div>
