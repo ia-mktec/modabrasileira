@@ -362,6 +362,11 @@ const TecidosPage = () => {
     );
   }
 
+  // ─── CADASTRO VIEW ───
+  if (viewMode === "cadastro") {
+    return <CadastroTecidoView onBack={() => setViewMode("ficha")} salvarTecido={salvarTecido} />;
+  }
+
   // ─── FICHA VIEW ───
   return (
     <div className="p-4 md:p-6 space-y-4">
