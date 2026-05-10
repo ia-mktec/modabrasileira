@@ -79,6 +79,8 @@ const initialCores = [
   { id: "57", cor: "Verde-mar", cod: "057", hex: "#2e8b57" },
   { id: "58", cor: "Vermelho", cod: "058", hex: "#dc143c" },
   { id: "59", cor: "Vinho", cod: "059", hex: "#722f37" },
+  { id: "60", cor: "Pêssego", cod: "060", hex: "#ffcba4" },
+  { id: "61", cor: "Diversos", cod: "061", hex: "#bdbdbd" },
 ];
 
 const CadastroPage = () => {
