@@ -53,7 +53,7 @@ export default function PedidosPage() {
   const [page, setPage] = useState(1);
   const [selectedPedido, setSelectedPedido] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const navigate = useNavigate();
+  
 
   useEffect(() => {
     (async () => {
