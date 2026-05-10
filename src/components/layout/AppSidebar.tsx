@@ -37,6 +37,7 @@ const navItems = [
   { to: "/tecidos", icon: Layers, label: "Tecidos" },
   { to: "/estoque-tecidos", icon: Warehouse, label: "Estoque Tecidos" },
   { to: "/modelos", icon: Shirt, label: "Modelos" },
+  { to: "/pedidos", icon: ClipboardList, label: "Pedidos" },
   { to: "/corte", icon: Scissors, label: "Corte" },
   { to: "/expedicao", icon: TruckIcon, label: "Expedição" },
   { to: "/recebimento", icon: PackageCheck, label: "Recebimento" },
