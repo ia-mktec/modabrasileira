@@ -95,14 +95,35 @@ export default function FichaPedidoPage() {
         .limit(1)
         .maybeSingle();
 
+      // Aviamentos por pedido (preferencial). Fallback para aviamentos do modelo.
+      const { data: avsPedido } = await supabase
+        .from("aviamentos_pedido" as any)
+        .select("*")
+        .eq("numero_pedido", numero);
+
+      if (avsPedido && avsPedido.length > 0) {
+        setAviamentos(
+          avsPedido.map((a: any) => ({
+            descricao: a.descricao_item,
+            unidade: a.tipo,
+            quantidade: a.partes_qtde,
+          }))
+        );
+      }
+
       if (mData) {
         setModelo(mData as any);
-        const [{ data: avs }, { data: svs }] = await Promise.all([
-          supabase.from("modelo_aviamentos" as any).select("*").eq("modelo_id", mData.id).order("ordem"),
+        const promises: any[] = [
           supabase.from("modelo_servicos" as any).select("*").eq("modelo_id", mData.id).order("ordem"),
-        ]);
-        setAviamentos(avs || []);
-        setServicos(svs || []);
+        ];
+        if (!avsPedido || avsPedido.length === 0) {
+          promises.push(
+            supabase.from("modelo_aviamentos" as any).select("*").eq("modelo_id", mData.id).order("ordem")
+          );
+        }
+        const results = await Promise.all(promises);
+        setServicos(results[0].data || []);
+        if (results[1]) setAviamentos(results[1].data || []);
       }
 
       // Gradação por pedido (preferencial). Fallback para gradação do modelo se não houver.
