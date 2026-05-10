@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import { useTecidos, useClientes, useEstoqueMovimentacoes } from "@/hooks/useSupabaseData";
+import { supabase } from "@/integrations/supabase/client";
 
 // Modelos from Cadastro module
 const cadastroModelos = [
