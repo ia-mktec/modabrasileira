@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import { useTecidos, useClientes, useEstoqueMovimentacoes } from "@/hooks/useSupabaseData";
+import { supabase } from "@/integrations/supabase/client";
 
 // Modelos from Cadastro module
 const cadastroModelos = [
@@ -47,58 +48,20 @@ interface CorRow {
   amostraCor: string; // hex color for physical sample
 }
 
-interface RegistroTecido {
+interface RegistroEntrada {
   id: string;
-  cliente: string;
-  ordemCorte: string;
-  tecido: string;
-  dataEntrada: string;
-  registro: string;
-  composicao: string;
-  cores: CorRow[];
+  cliente_nome: string | null;
+  nome_tecido: string;
+  composicao: string | null;
+  data_entrada: string | null;
+  cor: string | null;
+  qtde_rolos: number | null;
+  unidade_medida: string | null;
+  metragem_total: number | null;
+  status: string | null;
+  ordem_corte1: string | null;
+  ordem_corte2: string | null;
 }
-
-const mockRegistros: RegistroTecido[] = [
-  {
-    id: "1", cliente: "Têxtil Brasil", ordemCorte: "OC-0001", tecido: "Malha Cotton 30/1",
-    dataEntrada: "2025-02-10", registro: "REG-001", composicao: "100% Algodão",
-    cores: [
-      { cor: "Branco", cod: "BRC-01", qtdeRolos: "5", metragemTotal: "250.00", amostraCor: "#ffffff" },
-      { cor: "Preto", cod: "PRT-01", qtdeRolos: "3", metragemTotal: "150.00", amostraCor: "#000000" },
-    ],
-  },
-  {
-    id: "2", cliente: "Malhas SP", ordemCorte: "OC-0002", tecido: "Ribana 1x1",
-    dataEntrada: "2025-02-12", registro: "REG-002", composicao: "95% Algodão 5% Elastano",
-    cores: [
-      { cor: "Preto", cod: "PRT-02", qtdeRolos: "4", metragemTotal: "120.00", amostraCor: "#000000" },
-    ],
-  },
-  {
-    id: "3", cliente: "Fios & Cia", ordemCorte: "OC-0003", tecido: "Viscolycra",
-    dataEntrada: "2025-02-15", registro: "REG-003", composicao: "96% Viscose 4% Elastano",
-    cores: [
-      { cor: "Marinho", cod: "MRN-01", qtdeRolos: "6", metragemTotal: "300.00", amostraCor: "#001f4d" },
-      { cor: "Vermelho", cod: "VRM-01", qtdeRolos: "2", metragemTotal: "100.00", amostraCor: "#cc0000" },
-      { cor: "Cinza", cod: "CNZ-01", qtdeRolos: "4", metragemTotal: "200.00", amostraCor: "#808080" },
-    ],
-  },
-  {
-    id: "4", cliente: "PolyTech", ordemCorte: "OC-0004", tecido: "Piquet PA",
-    dataEntrada: "2025-02-18", registro: "REG-004", composicao: "100% Poliamida",
-    cores: [
-      { cor: "Vermelho", cod: "VRM-02", qtdeRolos: "8", metragemTotal: "400.00", amostraCor: "#cc0000" },
-    ],
-  },
-  {
-    id: "5", cliente: "Denim House", ordemCorte: "OC-0005", tecido: "Jeans Denim 10oz",
-    dataEntrada: "2025-02-20", registro: "REG-005", composicao: "100% Algodão",
-    cores: [
-      { cor: "Azul Índigo", cod: "AZI-01", qtdeRolos: "10", metragemTotal: "600.00", amostraCor: "#1a237e" },
-      { cor: "Azul Claro", cod: "AZC-01", qtdeRolos: "5", metragemTotal: "300.00", amostraCor: "#64b5f6" },
-    ],
-  },
-];
 
 type ViewMode = "ficha" | "historico" | "cadastro";
 
@@ -133,22 +96,41 @@ const TecidosPage = () => {
   const [filtroDataAte, setFiltroDataAte] = useState("");
   const [filtroCor, setFiltroCor] = useState("");
 
+  // Histórico — dados reais
+  const [registros, setRegistros] = useState<RegistroEntrada[]>([]);
+  const [loadingRegistros, setLoadingRegistros] = useState(false);
+
+  useEffect(() => {
+    if (viewMode !== "historico") return;
+    let cancelled = false;
+    (async () => {
+      setLoadingRegistros(true);
+      let q = supabase
+        .from("tecido_entradas")
+        .select("id,cliente_nome,nome_tecido,composicao,data_entrada,cor,qtde_rolos,unidade_medida,metragem_total,status,ordem_corte1,ordem_corte2")
+        .order("data_entrada", { ascending: false, nullsFirst: false })
+        .limit(2000);
+      if (filtroCliente) q = q.ilike("cliente_nome", `%${filtroCliente}%`);
+      if (filtroTecido) q = q.ilike("nome_tecido", `%${filtroTecido}%`);
+      if (filtroCor) q = q.ilike("cor", `%${filtroCor}%`);
+      if (filtroDataDe) q = q.gte("data_entrada", filtroDataDe);
+      if (filtroDataAte) q = q.lte("data_entrada", filtroDataAte);
+      if (filtroOrdem) q = q.or(`ordem_corte1.ilike.%${filtroOrdem}%,ordem_corte2.ilike.%${filtroOrdem}%`);
+      const { data, error } = await q;
+      if (!cancelled) {
+        if (!error) setRegistros((data || []) as RegistroEntrada[]);
+        setLoadingRegistros(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [viewMode, filtroCliente, filtroTecido, filtroOrdem, filtroDataDe, filtroDataAte, filtroCor]);
+
   const filteredTecidos = tecidos.filter(
     (t: any) =>
       (t.nome || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (t.cor || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (t.clientes?.razao_social || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const filteredRegistros = mockRegistros.filter((r) => {
-    if (filtroCliente && !r.cliente.toLowerCase().includes(filtroCliente.toLowerCase())) return false;
-    if (filtroTecido && !r.tecido.toLowerCase().includes(filtroTecido.toLowerCase())) return false;
-    if (filtroOrdem && !r.ordemCorte.toLowerCase().includes(filtroOrdem.toLowerCase())) return false;
-    if (filtroDataDe && r.dataEntrada < filtroDataDe) return false;
-    if (filtroDataAte && r.dataEntrada > filtroDataAte) return false;
-    if (filtroCor && !r.cores.some((c) => c.cor.toLowerCase().includes(filtroCor.toLowerCase()))) return false;
-    return true;
-  });
 
   const handleQtdeCoresChange = (value: string) => {
     setQtdeCores(value);
@@ -177,15 +159,23 @@ const TecidosPage = () => {
     setSearchOpen(false);
   };
 
-  const loadRegistro = (r: RegistroTecido) => {
-    setCliente(r.cliente);
-    setOrdemCorte(r.ordemCorte);
-    setTecido(r.tecido);
-    setDataEntrada(r.dataEntrada);
-    setRegistro(r.registro);
-    setComposicao(r.composicao);
-    setQtdeCores(String(r.cores.length));
-    setCores(r.cores.map((c) => ({ ...c })));
+  const loadRegistro = (r: RegistroEntrada) => {
+    setCliente(r.cliente_nome || "");
+    setOrdemCorte(r.ordem_corte1 || "");
+    setTecido(r.nome_tecido);
+    setDataEntrada(r.data_entrada || "");
+    setRegistro("");
+    setComposicao(r.composicao || "");
+    const corHex = cadastroCores.find(c => c.cor.toLowerCase() === (r.cor || "").toLowerCase())?.hex || "#ffffff";
+    const codHex = cadastroCores.find(c => c.cor.toLowerCase() === (r.cor || "").toLowerCase())?.cod || "";
+    setQtdeCores("1");
+    setCores([{
+      cor: r.cor || "",
+      cod: codHex,
+      qtdeRolos: String(r.qtde_rolos ?? 0),
+      metragemTotal: String(r.metragem_total ?? 0),
+      amostraCor: corHex,
+    }]);
     setViewMode("ficha");
   };
 
@@ -293,60 +283,66 @@ const TecidosPage = () => {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b bg-muted/50">
-                    <th className="text-left py-3 px-4 font-semibold">Registro</th>
+                    <th className="text-left py-3 px-4 font-semibold">Data Entrada</th>
                     <th className="text-left py-3 px-4 font-semibold">Cliente</th>
-                    <th className="text-left py-3 px-4 font-semibold">Ordem Corte</th>
                     <th className="text-left py-3 px-4 font-semibold">Tecido</th>
                     <th className="text-left py-3 px-4 font-semibold">Composição</th>
-                    <th className="text-left py-3 px-4 font-semibold">Data Entrada</th>
-                    <th className="text-left py-3 px-4 font-semibold">Cores</th>
+                    <th className="text-left py-3 px-4 font-semibold">Cor</th>
                     <th className="text-center py-3 px-4 font-semibold">Rolos</th>
                     <th className="text-right py-3 px-4 font-semibold">Metragem</th>
+                    <th className="text-center py-3 px-4 font-semibold">Un.</th>
+                    <th className="text-center py-3 px-4 font-semibold">Status</th>
+                    <th className="text-left py-3 px-4 font-semibold">OC 1</th>
+                    <th className="text-left py-3 px-4 font-semibold">OC 2</th>
                     <th className="text-center py-3 px-4 font-semibold w-16">Ação</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredRegistros.map((r) => {
-                    const totalRolos = r.cores.reduce((s, c) => s + (parseInt(c.qtdeRolos) || 0), 0);
-                    const totalMetragem = r.cores.reduce((s, c) => s + (parseFloat(c.metragemTotal) || 0), 0);
+                  {registros.map((r) => {
+                    const corHex = cadastroCores.find(c => c.cor.toLowerCase() === (r.cor || "").toLowerCase())?.hex;
+                    const isDisp = (r.status || "").toLowerCase().startsWith("dispon");
                     return (
                       <tr key={r.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                        <td className="py-3 px-4 font-mono font-semibold text-primary">{r.registro}</td>
-                        <td className="py-3 px-4">{r.cliente}</td>
-                        <td className="py-3 px-4 font-mono">{r.ordemCorte}</td>
-                        <td className="py-3 px-4 font-medium">{r.tecido}</td>
-                        <td className="py-3 px-4 text-muted-foreground">{r.composicao}</td>
-                        <td className="py-3 px-4 font-mono">{r.dataEntrada}</td>
-                        <td className="py-3 px-4">
-                          <div className="flex flex-wrap gap-1">
-                            {r.cores.map((c, i) => (
-                              <span key={i} className="bg-accent text-accent-foreground px-1.5 py-0.5 rounded text-[10px]">
-                                {c.cor}
-                              </span>
-                            ))}
-                          </div>
+                        <td className="py-2 px-4 font-mono">{r.data_entrada ? new Date(r.data_entrada).toLocaleDateString("pt-BR") : "—"}</td>
+                        <td className="py-2 px-4">{r.cliente_nome || "—"}</td>
+                        <td className="py-2 px-4 font-medium">{r.nome_tecido}</td>
+                        <td className="py-2 px-4 text-muted-foreground">{r.composicao || "—"}</td>
+                        <td className="py-2 px-4">
+                          <span className="inline-flex items-center gap-1.5">
+                            {corHex && <span className="w-3 h-3 rounded-full border border-border shrink-0 inline-block" style={{ backgroundColor: corHex }} />}
+                            <span>{r.cor || "—"}</span>
+                          </span>
                         </td>
-                        <td className="py-3 px-4 text-center font-mono">{totalRolos}</td>
-                        <td className="py-3 px-4 text-right font-mono">{totalMetragem.toFixed(2)}</td>
-                        <td className="py-3 px-4 text-center">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
-                            onClick={() => loadRegistro(r)}
-                            title="Editar registro"
-                          >
+                        <td className="py-2 px-4 text-center font-mono">{r.qtde_rolos ?? 0}</td>
+                        <td className="py-2 px-4 text-right font-mono">{Number(r.metragem_total ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</td>
+                        <td className="py-2 px-4 text-center text-muted-foreground">{r.unidade_medida || "—"}</td>
+                        <td className="py-2 px-4 text-center">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${
+                            isDisp
+                              ? "bg-[hsl(142_71%_35%/0.15)] text-[hsl(142,71%,35%)] border-[hsl(142_71%_35%/0.3)]"
+                              : "bg-[hsl(38_92%_50%/0.15)] text-[hsl(38,92%,50%)] border-[hsl(38_92%_50%/0.3)]"
+                          }`}>{r.status || "—"}</span>
+                        </td>
+                        <td className="py-2 px-4 font-mono">{r.ordem_corte1 || "—"}</td>
+                        <td className="py-2 px-4 font-mono">{r.ordem_corte2 || "—"}</td>
+                        <td className="py-2 px-4 text-center">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => loadRegistro(r)} title="Editar registro">
                             <Pencil className="w-3.5 h-3.5" />
                           </Button>
                         </td>
                       </tr>
                     );
                   })}
-                  {filteredRegistros.length === 0 && (
+                  {!loadingRegistros && registros.length === 0 && (
                     <tr>
-                      <td colSpan={10} className="py-8 text-center text-muted-foreground text-sm">
+                      <td colSpan={12} className="py-8 text-center text-muted-foreground text-sm">
                         Nenhum registro encontrado com os filtros aplicados.
                       </td>
+                    </tr>
+                  )}
+                  {loadingRegistros && (
+                    <tr>
+                      <td colSpan={12} className="py-8 text-center text-muted-foreground text-sm">Carregando...</td>
                     </tr>
                   )}
                 </tbody>
@@ -356,7 +352,7 @@ const TecidosPage = () => {
         </Card>
 
         <div className="text-xs text-muted-foreground text-right">
-          {filteredRegistros.length} registro(s) encontrado(s)
+          {registros.length} registro(s){registros.length >= 2000 ? " (limite atingido — refine os filtros)" : ""}
         </div>
       </div>
     );

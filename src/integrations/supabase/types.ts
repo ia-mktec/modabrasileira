@@ -1013,6 +1013,57 @@ export type Database = {
           },
         ]
       }
+      tecido_entradas: {
+        Row: {
+          cliente_id: string | null
+          cliente_nome: string | null
+          composicao: string | null
+          cor: string | null
+          created_at: string
+          data_entrada: string | null
+          id: string
+          metragem_total: number | null
+          nome_tecido: string
+          ordem_corte1: string | null
+          ordem_corte2: string | null
+          qtde_rolos: number | null
+          status: string | null
+          unidade_medida: string | null
+        }
+        Insert: {
+          cliente_id?: string | null
+          cliente_nome?: string | null
+          composicao?: string | null
+          cor?: string | null
+          created_at?: string
+          data_entrada?: string | null
+          id?: string
+          metragem_total?: number | null
+          nome_tecido: string
+          ordem_corte1?: string | null
+          ordem_corte2?: string | null
+          qtde_rolos?: number | null
+          status?: string | null
+          unidade_medida?: string | null
+        }
+        Update: {
+          cliente_id?: string | null
+          cliente_nome?: string | null
+          composicao?: string | null
+          cor?: string | null
+          created_at?: string
+          data_entrada?: string | null
+          id?: string
+          metragem_total?: number | null
+          nome_tecido?: string
+          ordem_corte1?: string | null
+          ordem_corte2?: string | null
+          qtde_rolos?: number | null
+          status?: string | null
+          unidade_medida?: string | null
+        }
+        Relationships: []
+      }
       tecidos: {
         Row: {
           cliente_id: string | null
