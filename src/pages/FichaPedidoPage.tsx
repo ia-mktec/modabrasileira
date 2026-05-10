@@ -169,7 +169,7 @@ export default function FichaPedidoPage() {
   );
 
   return (
-    <div className="p-4 md:p-6 space-y-4 print:p-2">
+    <div className="p-4 md:p-6 space-y-4 print:p-2 max-w-[1200px] mx-auto">
       {/* Action bar */}
       <div className="flex justify-between items-center print:hidden">
         <Button variant="outline" size="sm" onClick={() => navigate("/pedidos")}>
