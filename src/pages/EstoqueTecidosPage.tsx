@@ -13,6 +13,7 @@ interface Entrada {
   status: string | null;
   qtde_rolos: number | null;
   metragem_total: number | null;
+  data_entrada: string | null;
 }
 
 interface SaldoRow {
