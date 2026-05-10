@@ -13,6 +13,7 @@ interface Entrada {
   status: string | null;
   qtde_rolos: number | null;
   metragem_total: number | null;
+  data_entrada: string | null;
 }
 
 interface SaldoRow {
@@ -26,6 +27,7 @@ interface SaldoRow {
   entrada: number;
   alocado: number;
   disponivel: number;
+  ultimaData: string | null;
 }
 
 const corHex: Record<string, string> = {
@@ -51,7 +53,7 @@ const EstoqueTecidosPage = () => {
       while (true) {
         const { data, error } = await supabase
           .from("tecido_entradas")
-          .select("cliente_nome,nome_tecido,composicao,cor,unidade_medida,status,qtde_rolos,metragem_total")
+          .select("cliente_nome,nome_tecido,composicao,cor,unidade_medida,status,qtde_rolos,metragem_total,data_entrada")
           .range(from, from + size - 1);
         if (error || !data || data.length === 0) break;
         all.push(...(data as Entrada[]));
@@ -76,12 +78,13 @@ const EstoqueTecidosPage = () => {
       const rolos = Number(e.qtde_rolos || 0);
       let row = map.get(key);
       if (!row) {
-        row = { key, cliente, tecido, composicao: comp, cor, unidade: un, rolos: 0, entrada: 0, alocado: 0, disponivel: 0 };
+        row = { key, cliente, tecido, composicao: comp, cor, unidade: un, rolos: 0, entrada: 0, alocado: 0, disponivel: 0, ultimaData: null };
         map.set(key, row);
       }
       row.entrada += qtd;
       row.rolos += rolos;
       if ((e.status || "").toLowerCase().startsWith("aloc")) row.alocado += qtd;
+      if (e.data_entrada && (!row.ultimaData || e.data_entrada > row.ultimaData)) row.ultimaData = e.data_entrada;
     }
     for (const r of map.values()) r.disponivel = r.entrada - r.alocado;
     return Array.from(map.values()).sort((a, b) =>
@@ -198,6 +201,7 @@ const EstoqueTecidosPage = () => {
                   <th className="text-left py-3 px-3 font-semibold">Composição</th>
                   <th className="text-left py-3 px-3 font-semibold">Cor</th>
                   <th className="text-center py-3 px-3 font-semibold">Un.</th>
+                  <th className="text-center py-3 px-3 font-semibold">Última Entrada</th>
                   <th className="text-right py-3 px-3 font-semibold">Rolos</th>
                   <th className="text-right py-3 px-3 font-semibold">Entrada</th>
                   <th className="text-right py-3 px-3 font-semibold">Alocado</th>
@@ -218,6 +222,7 @@ const EstoqueTecidosPage = () => {
                       </div>
                     </td>
                     <td className="py-2 px-3 text-center">{r.unidade}</td>
+                    <td className="py-2 px-3 text-center font-mono">{r.ultimaData ? new Date(r.ultimaData).toLocaleDateString("pt-BR") : "—"}</td>
                     <td className="py-2 px-3 text-right font-mono">{r.rolos}</td>
                     <td className="py-2 px-3 text-right font-mono">{r.entrada.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}</td>
                     <td className="py-2 px-3 text-right font-mono text-[hsl(38,92%,50%)]">{r.alocado.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}</td>
@@ -228,12 +233,12 @@ const EstoqueTecidosPage = () => {
                   </tr>
                 ))}
                 {filtered.length === 0 && (
-                  <tr><td colSpan={10} className="py-8 text-center text-muted-foreground text-sm">Nenhum tecido encontrado.</td></tr>
+                  <tr><td colSpan={11} className="py-8 text-center text-muted-foreground text-sm">Nenhum tecido encontrado.</td></tr>
                 )}
               </tbody>
               <tfoot>
                 <tr className="bg-muted/50 font-semibold">
-                  <td colSpan={6} className="py-3 px-3 text-right">Totais ({filtered.length} itens):</td>
+                  <td colSpan={7} className="py-3 px-3 text-right">Totais ({filtered.length} itens):</td>
                   <td className="py-3 px-3 text-right font-mono">{filtered.reduce((s, r) => s + r.entrada, 0).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}</td>
                   <td className="py-3 px-3 text-right font-mono text-[hsl(38,92%,50%)]">{filtered.reduce((s, r) => s + r.alocado, 0).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}</td>
                   <td className="py-3 px-3 text-right font-mono text-[hsl(142,71%,35%)]">{filtered.reduce((s, r) => s + r.disponivel, 0).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}</td>
