@@ -28,6 +28,15 @@ const routePermissions: Record<string, Partial<Record<AppRole, Permission>>> = {
     gestao: "view",
     dev: "edit",
   },
+  "/pedidos": {
+    corte: "view",
+    modelagem: "view",
+    expedicao: "view",
+    recebimento: "view",
+    acabamento: "view",
+    gestao: "view",
+    dev: "edit",
+  },
   "/corte": {
     corte: "edit",
     modelagem: "view",
