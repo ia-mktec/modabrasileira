@@ -36,7 +36,7 @@ const cadastroCores = [
   { cor: "Cinza Claro", cod: "022", hex: "#d3d3d3" }, { cor: "Capuccino", cod: "025", hex: "#a67b5b" },
 ];
 
-import { Plus, Trash2, Printer, Search, CheckCircle, ArrowLeft, Pencil } from "lucide-react";
+import { Plus, Trash2, Printer, Search, CheckCircle, ArrowLeft, Pencil, FileText } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface CorRow {
