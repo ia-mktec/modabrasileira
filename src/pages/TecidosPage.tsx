@@ -96,22 +96,41 @@ const TecidosPage = () => {
   const [filtroDataAte, setFiltroDataAte] = useState("");
   const [filtroCor, setFiltroCor] = useState("");
 
+  // Histórico — dados reais
+  const [registros, setRegistros] = useState<RegistroEntrada[]>([]);
+  const [loadingRegistros, setLoadingRegistros] = useState(false);
+
+  useEffect(() => {
+    if (viewMode !== "historico") return;
+    let cancelled = false;
+    (async () => {
+      setLoadingRegistros(true);
+      let q = supabase
+        .from("tecido_entradas")
+        .select("id,cliente_nome,nome_tecido,composicao,data_entrada,cor,qtde_rolos,unidade_medida,metragem_total,status,ordem_corte1,ordem_corte2")
+        .order("data_entrada", { ascending: false, nullsFirst: false })
+        .limit(2000);
+      if (filtroCliente) q = q.ilike("cliente_nome", `%${filtroCliente}%`);
+      if (filtroTecido) q = q.ilike("nome_tecido", `%${filtroTecido}%`);
+      if (filtroCor) q = q.ilike("cor", `%${filtroCor}%`);
+      if (filtroDataDe) q = q.gte("data_entrada", filtroDataDe);
+      if (filtroDataAte) q = q.lte("data_entrada", filtroDataAte);
+      if (filtroOrdem) q = q.or(`ordem_corte1.ilike.%${filtroOrdem}%,ordem_corte2.ilike.%${filtroOrdem}%`);
+      const { data, error } = await q;
+      if (!cancelled) {
+        if (!error) setRegistros((data || []) as RegistroEntrada[]);
+        setLoadingRegistros(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [viewMode, filtroCliente, filtroTecido, filtroOrdem, filtroDataDe, filtroDataAte, filtroCor]);
+
   const filteredTecidos = tecidos.filter(
     (t: any) =>
       (t.nome || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (t.cor || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (t.clientes?.razao_social || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const filteredRegistros = mockRegistros.filter((r) => {
-    if (filtroCliente && !r.cliente.toLowerCase().includes(filtroCliente.toLowerCase())) return false;
-    if (filtroTecido && !r.tecido.toLowerCase().includes(filtroTecido.toLowerCase())) return false;
-    if (filtroOrdem && !r.ordemCorte.toLowerCase().includes(filtroOrdem.toLowerCase())) return false;
-    if (filtroDataDe && r.dataEntrada < filtroDataDe) return false;
-    if (filtroDataAte && r.dataEntrada > filtroDataAte) return false;
-    if (filtroCor && !r.cores.some((c) => c.cor.toLowerCase().includes(filtroCor.toLowerCase()))) return false;
-    return true;
-  });
 
   const handleQtdeCoresChange = (value: string) => {
     setQtdeCores(value);
