@@ -159,15 +159,23 @@ const TecidosPage = () => {
     setSearchOpen(false);
   };
 
-  const loadRegistro = (r: RegistroTecido) => {
-    setCliente(r.cliente);
-    setOrdemCorte(r.ordemCorte);
-    setTecido(r.tecido);
-    setDataEntrada(r.dataEntrada);
-    setRegistro(r.registro);
-    setComposicao(r.composicao);
-    setQtdeCores(String(r.cores.length));
-    setCores(r.cores.map((c) => ({ ...c })));
+  const loadRegistro = (r: RegistroEntrada) => {
+    setCliente(r.cliente_nome || "");
+    setOrdemCorte(r.ordem_corte1 || "");
+    setTecido(r.nome_tecido);
+    setDataEntrada(r.data_entrada || "");
+    setRegistro("");
+    setComposicao(r.composicao || "");
+    const corHex = cadastroCores.find(c => c.cor.toLowerCase() === (r.cor || "").toLowerCase())?.hex || "#ffffff";
+    const codHex = cadastroCores.find(c => c.cor.toLowerCase() === (r.cor || "").toLowerCase())?.cod || "";
+    setQtdeCores("1");
+    setCores([{
+      cor: r.cor || "",
+      cod: codHex,
+      qtdeRolos: String(r.qtde_rolos ?? 0),
+      metragemTotal: String(r.metragem_total ?? 0),
+      amostraCor: corHex,
+    }]);
     setViewMode("ficha");
   };
 
