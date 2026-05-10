@@ -298,47 +298,51 @@ const TecidosPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredRegistros.map((r) => {
-                    const totalRolos = r.cores.reduce((s, c) => s + (parseInt(c.qtdeRolos) || 0), 0);
-                    const totalMetragem = r.cores.reduce((s, c) => s + (parseFloat(c.metragemTotal) || 0), 0);
+                  {registros.map((r) => {
+                    const corHex = cadastroCores.find(c => c.cor.toLowerCase() === (r.cor || "").toLowerCase())?.hex;
+                    const isDisp = (r.status || "").toLowerCase().startsWith("dispon");
                     return (
                       <tr key={r.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                        <td className="py-3 px-4 font-mono font-semibold text-primary">{r.registro}</td>
-                        <td className="py-3 px-4">{r.cliente}</td>
-                        <td className="py-3 px-4 font-mono">{r.ordemCorte}</td>
-                        <td className="py-3 px-4 font-medium">{r.tecido}</td>
-                        <td className="py-3 px-4 text-muted-foreground">{r.composicao}</td>
-                        <td className="py-3 px-4 font-mono">{r.dataEntrada}</td>
-                        <td className="py-3 px-4">
-                          <div className="flex flex-wrap gap-1">
-                            {r.cores.map((c, i) => (
-                              <span key={i} className="bg-accent text-accent-foreground px-1.5 py-0.5 rounded text-[10px]">
-                                {c.cor}
-                              </span>
-                            ))}
-                          </div>
+                        <td className="py-2 px-4 font-mono">{r.data_entrada ? new Date(r.data_entrada).toLocaleDateString("pt-BR") : "—"}</td>
+                        <td className="py-2 px-4">{r.cliente_nome || "—"}</td>
+                        <td className="py-2 px-4 font-medium">{r.nome_tecido}</td>
+                        <td className="py-2 px-4 text-muted-foreground">{r.composicao || "—"}</td>
+                        <td className="py-2 px-4">
+                          <span className="inline-flex items-center gap-1.5">
+                            {corHex && <span className="w-3 h-3 rounded-full border border-border shrink-0 inline-block" style={{ backgroundColor: corHex }} />}
+                            <span>{r.cor || "—"}</span>
+                          </span>
                         </td>
-                        <td className="py-3 px-4 text-center font-mono">{totalRolos}</td>
-                        <td className="py-3 px-4 text-right font-mono">{totalMetragem.toFixed(2)}</td>
-                        <td className="py-3 px-4 text-center">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
-                            onClick={() => loadRegistro(r)}
-                            title="Editar registro"
-                          >
+                        <td className="py-2 px-4 text-center font-mono">{r.qtde_rolos ?? 0}</td>
+                        <td className="py-2 px-4 text-right font-mono">{Number(r.metragem_total ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</td>
+                        <td className="py-2 px-4 text-center text-muted-foreground">{r.unidade_medida || "—"}</td>
+                        <td className="py-2 px-4 text-center">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${
+                            isDisp
+                              ? "bg-[hsl(142_71%_35%/0.15)] text-[hsl(142,71%,35%)] border-[hsl(142_71%_35%/0.3)]"
+                              : "bg-[hsl(38_92%_50%/0.15)] text-[hsl(38,92%,50%)] border-[hsl(38_92%_50%/0.3)]"
+                          }`}>{r.status || "—"}</span>
+                        </td>
+                        <td className="py-2 px-4 font-mono">{r.ordem_corte1 || "—"}</td>
+                        <td className="py-2 px-4 font-mono">{r.ordem_corte2 || "—"}</td>
+                        <td className="py-2 px-4 text-center">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => loadRegistro(r)} title="Editar registro">
                             <Pencil className="w-3.5 h-3.5" />
                           </Button>
                         </td>
                       </tr>
                     );
                   })}
-                  {filteredRegistros.length === 0 && (
+                  {!loadingRegistros && registros.length === 0 && (
                     <tr>
-                      <td colSpan={10} className="py-8 text-center text-muted-foreground text-sm">
+                      <td colSpan={12} className="py-8 text-center text-muted-foreground text-sm">
                         Nenhum registro encontrado com os filtros aplicados.
                       </td>
+                    </tr>
+                  )}
+                  {loadingRegistros && (
+                    <tr>
+                      <td colSpan={12} className="py-8 text-center text-muted-foreground text-sm">Carregando...</td>
                     </tr>
                   )}
                 </tbody>
@@ -348,7 +352,7 @@ const TecidosPage = () => {
         </Card>
 
         <div className="text-xs text-muted-foreground text-right">
-          {filteredRegistros.length} registro(s) encontrado(s)
+          {registros.length} registro(s){registros.length >= 2000 ? " (limite atingido — refine os filtros)" : ""}
         </div>
       </div>
     );
