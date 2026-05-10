@@ -27,6 +27,7 @@ interface SaldoRow {
   entrada: number;
   alocado: number;
   disponivel: number;
+  ultimaData: string | null;
 }
 
 const corHex: Record<string, string> = {
