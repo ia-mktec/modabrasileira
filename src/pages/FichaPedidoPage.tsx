@@ -356,46 +356,64 @@ export default function FichaPedidoPage() {
         </Card>
       )}
 
-      {/* Gradação */}
-      <Card>
-        <div className="bg-[hsl(199,89%,30%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
-          <h3 className="text-sm font-bold tracking-wide text-center">GRADAÇÃO DE AVIAMENTOS</h3>
-        </div>
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b bg-muted/50">
-                <th className="text-left py-2 px-2 font-semibold">DESCRIÇÃO</th>
-                <th className="text-center py-2 px-1 font-semibold w-16">PP</th>
-                <th className="text-center py-2 px-1 font-semibold w-16">P</th>
-                <th className="text-center py-2 px-1 font-semibold w-16">M</th>
-                <th className="text-center py-2 px-1 font-semibold w-16">G</th>
-                <th className="text-center py-2 px-1 font-semibold w-16">GG</th>
-                <th className="text-left py-2 px-2 font-semibold">OBS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {gradacao.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="text-center text-muted-foreground py-4">Sem gradação</td>
-                </tr>
-              ) : (
-                gradacao.map((g, i) => (
-                  <tr key={i} className="border-b last:border-0">
-                    <td className="py-1 px-2">{g.tamanho || "—"}</td>
-                    <td className="py-1 px-1 text-center font-mono">{g.medida_a ?? "—"}</td>
-                    <td className="py-1 px-1 text-center font-mono">{g.medida_b ?? "—"}</td>
-                    <td className="py-1 px-1 text-center font-mono">{g.medida_c ?? "—"}</td>
-                    <td className="py-1 px-1 text-center font-mono">{g.medida_d ?? "—"}</td>
-                    <td className="py-1 px-1 text-center font-mono">{(g as any).medida_e ?? "—"}</td>
-                    <td className="py-1 px-2 text-muted-foreground">{g.observacao || ""}</td>
+      {/* Gradação — pivot: 1 linha por item, tamanhos em colunas */}
+      {(() => {
+        const SIZES = ["PP", "P", "M", "G", "GG", "G1", "G2", "G3"] as const;
+        // Agrupa por nome do item (observacao). Se não houver, usa "—"
+        const grupos = new Map<string, Record<string, number | null>>();
+        gradacao.forEach((g: any) => {
+          const item = (g.observacao || "—").trim();
+          if (!grupos.has(item)) grupos.set(item, {});
+          const sizeKey = (g.tamanho || "").toUpperCase().trim();
+          const valor =
+            g.medida_a ?? g.medida_b ?? g.medida_c ?? g.medida_d ?? null;
+          if (sizeKey) grupos.get(item)![sizeKey] = valor;
+        });
+        const linhas = Array.from(grupos.entries());
+
+        return (
+          <Card>
+            <div className="bg-[hsl(199,89%,30%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
+              <h3 className="text-sm font-bold tracking-wide text-center">GRADAÇÃO DE AVIAMENTOS</h3>
+            </div>
+            <CardContent className="p-0 overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b bg-muted/50">
+                    <th className="text-left py-2 px-2 font-semibold">DESCRIÇÃO</th>
+                    {SIZES.map((s) => (
+                      <th key={s} className="text-center py-2 px-1 font-semibold w-14">{s}</th>
+                    ))}
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </CardContent>
-      </Card>
+                </thead>
+                <tbody>
+                  {linhas.length === 0 ? (
+                    <tr>
+                      <td colSpan={SIZES.length + 1} className="text-center text-muted-foreground py-4">
+                        Sem gradação
+                      </td>
+                    </tr>
+                  ) : (
+                    linhas.map(([item, vals], i) => (
+                      <tr key={i} className="border-b last:border-0">
+                        <td className="py-1 px-2 font-medium">{item}</td>
+                        {SIZES.map((s) => {
+                          const v = vals[s];
+                          return (
+                            <td key={s} className="py-1 px-1 text-center font-mono">
+                              {v != null && Number(v) !== 0 ? Number(v) : "—"}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </CardContent>
+          </Card>
+        );
+      })()}
     </div>
   );
 }
