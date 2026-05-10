@@ -440,6 +440,14 @@ const TecidosPage = () => {
           </Button>
 
           <Button
+            className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(262,52%,47%)] hover:bg-[hsl(262,52%,40%)] text-[hsl(0,0%,100%)]"
+            onClick={() => setViewMode("cadastro")}
+          >
+            <FileText className="w-4 h-4" />
+            <span>Cadastro de Tecido</span>
+          </Button>
+
+          <Button
             variant="destructive"
             className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0"
             onClick={limparRegistro}
