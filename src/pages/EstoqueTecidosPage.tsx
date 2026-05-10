@@ -53,7 +53,7 @@ const EstoqueTecidosPage = () => {
       while (true) {
         const { data, error } = await supabase
           .from("tecido_entradas")
-          .select("cliente_nome,nome_tecido,composicao,cor,unidade_medida,status,qtde_rolos,metragem_total")
+          .select("cliente_nome,nome_tecido,composicao,cor,unidade_medida,status,qtde_rolos,metragem_total,data_entrada")
           .range(from, from + size - 1);
         if (error || !data || data.length === 0) break;
         all.push(...(data as Entrada[]));
@@ -78,12 +78,13 @@ const EstoqueTecidosPage = () => {
       const rolos = Number(e.qtde_rolos || 0);
       let row = map.get(key);
       if (!row) {
-        row = { key, cliente, tecido, composicao: comp, cor, unidade: un, rolos: 0, entrada: 0, alocado: 0, disponivel: 0 };
+        row = { key, cliente, tecido, composicao: comp, cor, unidade: un, rolos: 0, entrada: 0, alocado: 0, disponivel: 0, ultimaData: null };
         map.set(key, row);
       }
       row.entrada += qtd;
       row.rolos += rolos;
       if ((e.status || "").toLowerCase().startsWith("aloc")) row.alocado += qtd;
+      if (e.data_entrada && (!row.ultimaData || e.data_entrada > row.ultimaData)) row.ultimaData = e.data_entrada;
     }
     for (const r of map.values()) r.disponivel = r.entrada - r.alocado;
     return Array.from(map.values()).sort((a, b) =>
