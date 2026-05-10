@@ -597,6 +597,7 @@ export type Database = {
           medida_c: number | null
           medida_d: number | null
           modelo_id: string
+          numero_pedido: string | null
           observacao: string | null
           ordem: number
           tamanho: string | null
@@ -610,6 +611,7 @@ export type Database = {
           medida_c?: number | null
           medida_d?: number | null
           modelo_id: string
+          numero_pedido?: string | null
           observacao?: string | null
           ordem?: number
           tamanho?: string | null
@@ -623,6 +625,7 @@ export type Database = {
           medida_c?: number | null
           medida_d?: number | null
           modelo_id?: string
+          numero_pedido?: string | null
           observacao?: string | null
           ordem?: number
           tamanho?: string | null
