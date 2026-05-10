@@ -233,12 +233,12 @@ const EstoqueTecidosPage = () => {
                   </tr>
                 ))}
                 {filtered.length === 0 && (
-                  <tr><td colSpan={10} className="py-8 text-center text-muted-foreground text-sm">Nenhum tecido encontrado.</td></tr>
+                  <tr><td colSpan={11} className="py-8 text-center text-muted-foreground text-sm">Nenhum tecido encontrado.</td></tr>
                 )}
               </tbody>
               <tfoot>
                 <tr className="bg-muted/50 font-semibold">
-                  <td colSpan={6} className="py-3 px-3 text-right">Totais ({filtered.length} itens):</td>
+                  <td colSpan={7} className="py-3 px-3 text-right">Totais ({filtered.length} itens):</td>
                   <td className="py-3 px-3 text-right font-mono">{filtered.reduce((s, r) => s + r.entrada, 0).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}</td>
                   <td className="py-3 px-3 text-right font-mono text-[hsl(38,92%,50%)]">{filtered.reduce((s, r) => s + r.alocado, 0).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}</td>
                   <td className="py-3 px-3 text-right font-mono text-[hsl(142,71%,35%)]">{filtered.reduce((s, r) => s + r.disponivel, 0).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}</td>
