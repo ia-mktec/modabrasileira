@@ -156,18 +156,19 @@ export default function PedidosPage() {
                   <TableHead>Cliente</TableHead>
                   <TableHead>Tecido / Cor</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                       Carregando...
                     </TableCell>
                   </TableRow>
                 ) : paginated.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                       Nenhum pedido encontrado
                     </TableCell>
                   </TableRow>
@@ -191,6 +192,19 @@ export default function PedidosPage() {
                       </TableCell>
                       <TableCell>
                         <StatusBadge status={p.status_kanban} />
+                      </TableCell>
+                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-1 text-xs"
+                          onClick={() =>
+                            window.open(`/pedidos/${encodeURIComponent(p.numero_pedido)}/ficha`, "_blank")
+                          }
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          Ver Ficha
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))
