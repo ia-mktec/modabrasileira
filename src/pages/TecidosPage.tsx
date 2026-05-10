@@ -100,7 +100,7 @@ const mockRegistros: RegistroTecido[] = [
   },
 ];
 
-type ViewMode = "ficha" | "historico";
+type ViewMode = "ficha" | "historico" | "cadastro";
 
 const TecidosPage = () => {
   const { tecidos, salvarTecido } = useTecidos();
