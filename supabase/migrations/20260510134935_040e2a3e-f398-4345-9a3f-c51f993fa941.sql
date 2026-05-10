@@ -1,0 +1,1 @@
+DELETE FROM tecidos WHERE created_at < '2026-05-10';
