@@ -283,15 +283,17 @@ const TecidosPage = () => {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b bg-muted/50">
-                    <th className="text-left py-3 px-4 font-semibold">Registro</th>
+                    <th className="text-left py-3 px-4 font-semibold">Data Entrada</th>
                     <th className="text-left py-3 px-4 font-semibold">Cliente</th>
-                    <th className="text-left py-3 px-4 font-semibold">Ordem Corte</th>
                     <th className="text-left py-3 px-4 font-semibold">Tecido</th>
                     <th className="text-left py-3 px-4 font-semibold">Composição</th>
-                    <th className="text-left py-3 px-4 font-semibold">Data Entrada</th>
-                    <th className="text-left py-3 px-4 font-semibold">Cores</th>
+                    <th className="text-left py-3 px-4 font-semibold">Cor</th>
                     <th className="text-center py-3 px-4 font-semibold">Rolos</th>
                     <th className="text-right py-3 px-4 font-semibold">Metragem</th>
+                    <th className="text-center py-3 px-4 font-semibold">Un.</th>
+                    <th className="text-center py-3 px-4 font-semibold">Status</th>
+                    <th className="text-left py-3 px-4 font-semibold">OC 1</th>
+                    <th className="text-left py-3 px-4 font-semibold">OC 2</th>
                     <th className="text-center py-3 px-4 font-semibold w-16">Ação</th>
                   </tr>
                 </thead>
