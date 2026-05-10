@@ -17,7 +17,9 @@ export function ProtectedRoute() {
   if (!user) return <Navigate to="/login" replace />;
 
   // Block users with no roles or no permission for the current route
-  const route = location.pathname;
+  // Normalize dynamic routes (ex: /pedidos/PED-00001/ficha -> /pedidos)
+  let route = location.pathname;
+  if (/^\/pedidos\/[^/]+\/ficha$/.test(route)) route = "/pedidos";
   // Allow the user-management page check to be handled inside that page (dev-only)
   // For all other routes, enforce permission matrix
   if (route !== "/gerenciar-usuarios" && !canAccessRoute(route, roles)) {
