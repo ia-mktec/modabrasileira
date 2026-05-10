@@ -21,7 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface PedidoRow {
   numero_pedido: string;
