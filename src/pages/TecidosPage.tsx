@@ -48,58 +48,20 @@ interface CorRow {
   amostraCor: string; // hex color for physical sample
 }
 
-interface RegistroTecido {
+interface RegistroEntrada {
   id: string;
-  cliente: string;
-  ordemCorte: string;
-  tecido: string;
-  dataEntrada: string;
-  registro: string;
-  composicao: string;
-  cores: CorRow[];
+  cliente_nome: string | null;
+  nome_tecido: string;
+  composicao: string | null;
+  data_entrada: string | null;
+  cor: string | null;
+  qtde_rolos: number | null;
+  unidade_medida: string | null;
+  metragem_total: number | null;
+  status: string | null;
+  ordem_corte1: string | null;
+  ordem_corte2: string | null;
 }
-
-const mockRegistros: RegistroTecido[] = [
-  {
-    id: "1", cliente: "Têxtil Brasil", ordemCorte: "OC-0001", tecido: "Malha Cotton 30/1",
-    dataEntrada: "2025-02-10", registro: "REG-001", composicao: "100% Algodão",
-    cores: [
-      { cor: "Branco", cod: "BRC-01", qtdeRolos: "5", metragemTotal: "250.00", amostraCor: "#ffffff" },
-      { cor: "Preto", cod: "PRT-01", qtdeRolos: "3", metragemTotal: "150.00", amostraCor: "#000000" },
-    ],
-  },
-  {
-    id: "2", cliente: "Malhas SP", ordemCorte: "OC-0002", tecido: "Ribana 1x1",
-    dataEntrada: "2025-02-12", registro: "REG-002", composicao: "95% Algodão 5% Elastano",
-    cores: [
-      { cor: "Preto", cod: "PRT-02", qtdeRolos: "4", metragemTotal: "120.00", amostraCor: "#000000" },
-    ],
-  },
-  {
-    id: "3", cliente: "Fios & Cia", ordemCorte: "OC-0003", tecido: "Viscolycra",
-    dataEntrada: "2025-02-15", registro: "REG-003", composicao: "96% Viscose 4% Elastano",
-    cores: [
-      { cor: "Marinho", cod: "MRN-01", qtdeRolos: "6", metragemTotal: "300.00", amostraCor: "#001f4d" },
-      { cor: "Vermelho", cod: "VRM-01", qtdeRolos: "2", metragemTotal: "100.00", amostraCor: "#cc0000" },
-      { cor: "Cinza", cod: "CNZ-01", qtdeRolos: "4", metragemTotal: "200.00", amostraCor: "#808080" },
-    ],
-  },
-  {
-    id: "4", cliente: "PolyTech", ordemCorte: "OC-0004", tecido: "Piquet PA",
-    dataEntrada: "2025-02-18", registro: "REG-004", composicao: "100% Poliamida",
-    cores: [
-      { cor: "Vermelho", cod: "VRM-02", qtdeRolos: "8", metragemTotal: "400.00", amostraCor: "#cc0000" },
-    ],
-  },
-  {
-    id: "5", cliente: "Denim House", ordemCorte: "OC-0005", tecido: "Jeans Denim 10oz",
-    dataEntrada: "2025-02-20", registro: "REG-005", composicao: "100% Algodão",
-    cores: [
-      { cor: "Azul Índigo", cod: "AZI-01", qtdeRolos: "10", metragemTotal: "600.00", amostraCor: "#1a237e" },
-      { cor: "Azul Claro", cod: "AZC-01", qtdeRolos: "5", metragemTotal: "300.00", amostraCor: "#64b5f6" },
-    ],
-  },
-];
 
 type ViewMode = "ficha" | "historico" | "cadastro";
 
