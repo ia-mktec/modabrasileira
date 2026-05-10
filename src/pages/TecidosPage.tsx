@@ -633,3 +633,91 @@ const TecidosPage = () => {
 };
 
 export default TecidosPage;
+
+interface CadastroTecidoViewProps {
+  onBack: () => void;
+  salvarTecido: (data: any) => Promise<any>;
+}
+
+function CadastroTecidoView({ onBack, salvarTecido }: CadastroTecidoViewProps) {
+  const [nome, setNome] = useState("");
+  const [composicao, setComposicao] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const yellowInput =
+    "bg-[hsl(48,100%,88%)] text-[hsl(220,15%,15%)] border-[hsl(48,80%,60%)] focus:ring-[hsl(48,80%,50%)] placeholder:text-[hsl(48,30%,50%)]";
+
+  const handleSalvar = async () => {
+    if (!nome.trim()) {
+      toast({ title: "Nome obrigatório", description: "Informe o nome do tecido.", variant: "destructive" });
+      return;
+    }
+    setSaving(true);
+    const result = await salvarTecido({
+      nome: nome.trim(),
+      composicao: composicao.trim() || undefined,
+      estoque_kg: 0,
+      preco_kg: 0,
+    });
+    setSaving(false);
+    if (result) {
+      toast({ title: "Tecido cadastrado", description: "O tecido foi salvo com sucesso." });
+      setNome("");
+      setComposicao("");
+    }
+  };
+
+  return (
+    <div className="p-4 md:p-6 space-y-4">
+      <div className="bg-[hsl(217,71%,25%)] text-[hsl(0,0%,100%)] rounded-t-lg px-6 py-3 flex items-center gap-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-[hsl(0,0%,100%)] hover:bg-[hsl(217,71%,35%)] shrink-0"
+          onClick={onBack}
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        <h1 className="text-xl md:text-2xl font-bold tracking-wide font-mono flex-1 text-center pr-9">
+          CADASTRO DE TECIDO
+        </h1>
+      </div>
+
+      <Card className="max-w-2xl mx-auto">
+        <CardContent className="p-6 space-y-4">
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold">Nome do Tecido *</Label>
+            <Input
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              className={yellowInput}
+              placeholder="Ex: Malha Cotton 30/1"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold">Composição</Label>
+            <Input
+              value={composicao}
+              onChange={(e) => setComposicao(e.target.value)}
+              className={yellowInput}
+              placeholder="Ex: 100% Algodão"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => { setNome(""); setComposicao(""); }}>
+              Limpar
+            </Button>
+            <Button
+              onClick={handleSalvar}
+              disabled={saving}
+              className="bg-[hsl(142,50%,35%)] hover:bg-[hsl(142,50%,30%)] text-[hsl(0,0%,100%)]"
+            >
+              <Plus className="w-4 h-4" />
+              {saving ? "Salvando..." : "Cadastrar Tecido"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
