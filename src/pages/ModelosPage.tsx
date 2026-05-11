@@ -209,15 +209,34 @@ const ModelosPage = () => {
     setIsLoadedFromSearch(false);
   };
 
-  // Gera número de pedido: REFERENCIA-AAAAMMDD e cria registro em modelo_pedidos
+  // Gera número de pedido sequencial: PED-XXXXX
   const handleGerarNumeroPedido = async () => {
     if (!referencia) {
       toast({ title: "Referência obrigatória", description: "Informe a referência antes de gerar o número do pedido.", variant: "destructive" });
       return;
     }
     const dataBase = dataPedido || new Date().toISOString().slice(0, 10);
-    const yyyymmdd = dataBase.replace(/-/g, "");
-    const numero = `${referencia}-${yyyymmdd}`;
+
+    // Busca o maior número PED-XXXXX já existente e incrementa
+    const { data: ultimos, error: errBusca } = await supabase
+      .from("modelo_pedidos")
+      .select("numero_pedido")
+      .like("numero_pedido", "PED-%")
+      .order("numero_pedido", { ascending: false })
+      .limit(1);
+
+    if (errBusca) {
+      toast({ title: "Erro ao gerar pedido", description: errBusca.message, variant: "destructive" });
+      return;
+    }
+
+    let proximo = 1;
+    const ultimo = ultimos?.[0]?.numero_pedido as string | undefined;
+    if (ultimo) {
+      const n = parseInt(ultimo.replace(/^PED-/, ""), 10);
+      if (!isNaN(n)) proximo = n + 1;
+    }
+    const numero = `PED-${String(proximo).padStart(5, "0")}`;
     setNumeroPedido(numero);
     if (!dataPedido) setDataPedido(dataBase);
 
