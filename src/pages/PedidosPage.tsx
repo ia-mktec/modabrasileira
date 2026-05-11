@@ -21,7 +21,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, FileText, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
 
 
 interface PedidoRow {
@@ -53,6 +65,10 @@ export default function PedidosPage() {
   const [page, setPage] = useState(1);
   const [selectedPedido, setSelectedPedido] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [pedidoToDelete, setPedidoToDelete] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const { hasRole } = useAuth();
+  const canDelete = hasRole("modelagem") || hasRole("dev");
   
 
   useEffect(() => {
