@@ -271,12 +271,28 @@ export function useOrdensCorte() {
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("ordens_corte")
-      .select("*, grade_corte(*), aviamentos_ordem(*)")
-      .order("created_at", { ascending: false });
-    if (error) { toast({ title: "Erro ao buscar ordens", description: error.message, variant: "destructive" }); }
-    else setOrdens(data || []);
+    const PAGE = 1000;
+    let from = 0;
+    const all: any[] = [];
+    // Pagina para contornar o limite padrão de 1000 linhas do Supabase
+    // (existem ~3k+ ordens no banco e todas com mesmo created_at do import).
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const { data, error } = await supabase
+        .from("ordens_corte")
+        .select("*, grade_corte(*), aviamentos_ordem(*)")
+        .order("data_corte", { ascending: false, nullsFirst: false })
+        .order("numero", { ascending: false })
+        .range(from, from + PAGE - 1);
+      if (error) {
+        toast({ title: "Erro ao buscar ordens", description: error.message, variant: "destructive" });
+        break;
+      }
+      all.push(...(data || []));
+      if (!data || data.length < PAGE) break;
+      from += PAGE;
+    }
+    setOrdens(all);
     setLoading(false);
   }, []);
 
