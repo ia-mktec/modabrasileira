@@ -34,7 +34,7 @@ const createEmptyGradeRow = (): GradeRow => ({
 
 const CortePage = () => {
   const navigate = useNavigate();
-  const { ordens: ordensCorteDb, salvarOrdem, deletarOrdem } = useOrdensCorte();
+  const { ordens: ordensCorteDb, salvarOrdem, deletarOrdem, loadOrdemDetalhada } = useOrdensCorte();
   const { modelos: modelosDb } = useModelos();
   const { tecidos: tecidosDb, refetch: refetchTecidos } = useTecidos();
   const { clientes: clientesDb } = useClientes();
