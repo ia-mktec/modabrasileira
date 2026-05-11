@@ -380,7 +380,13 @@ const ModelosPage = () => {
         toast({ title: "Campos obrigatórios", description: "Preencha todos os campos editáveis antes de salvar.", variant: "destructive" });
         return;
       }
-      const result = await salvarModelo(buildModeloPayload(), undefined, buildChildren());
+      // Se já existe um modelo com a mesma referência, pedir confirmação para sobrescrever
+      const existingModel = modelos.find((m: any) => m.referencia === referencia);
+      if (existingModel && !currentModeloId) {
+        setSaveDialogOpen(true);
+        return;
+      }
+      const result = await salvarModelo(buildModeloPayload(), currentModeloId || undefined, buildChildren());
       if (result) {
         setCurrentModeloId(result);
         toast({ title: "Modelo salvo", description: `Referência ${referencia} salva com sucesso.` });
