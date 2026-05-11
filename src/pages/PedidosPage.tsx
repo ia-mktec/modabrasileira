@@ -21,7 +21,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, FileText, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
 
 
 interface PedidoRow {
@@ -53,6 +65,10 @@ export default function PedidosPage() {
   const [page, setPage] = useState(1);
   const [selectedPedido, setSelectedPedido] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [pedidoToDelete, setPedidoToDelete] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const { hasRole } = useAuth();
+  const canDelete = hasRole("modelagem") || hasRole("dev");
   
 
   useEffect(() => {
@@ -111,6 +127,23 @@ export default function PedidosPage() {
   const handleRowClick = (numero: string) => {
     setSelectedPedido(numero);
     setDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!pedidoToDelete) return;
+    setDeleting(true);
+    const { error } = await supabase
+      .from("modelo_pedidos")
+      .delete()
+      .eq("numero_pedido", pedidoToDelete);
+    setDeleting(false);
+    if (error) {
+      toast({ title: "Erro ao excluir pedido", description: error.message, variant: "destructive" });
+      return;
+    }
+    setPedidos((prev) => prev.filter((p) => p.numero_pedido !== pedidoToDelete));
+    toast({ title: "Pedido excluído", description: `${pedidoToDelete} foi removido.` });
+    setPedidoToDelete(null);
   };
 
   return (
@@ -194,17 +227,30 @@ export default function PedidosPage() {
                         <StatusBadge status={p.status_kanban} />
                       </TableCell>
                       <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-1 text-xs"
-                          onClick={() =>
-                            window.open(`/pedidos/${encodeURIComponent(p.numero_pedido)}/ficha`, "_blank")
-                          }
-                        >
-                          <FileText className="w-3.5 h-3.5" />
-                          Ver Ficha
-                        </Button>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1 text-xs"
+                            onClick={() =>
+                              window.open(`/pedidos/${encodeURIComponent(p.numero_pedido)}/ficha`, "_blank")
+                            }
+                          >
+                            <FileText className="w-3.5 h-3.5" />
+                            Ver Ficha
+                          </Button>
+                          {canDelete && (
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="gap-1 text-xs"
+                              onClick={() => setPedidoToDelete(p.numero_pedido)}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              Excluir
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -246,6 +292,30 @@ export default function PedidosPage() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
       />
+
+      <AlertDialog open={!!pedidoToDelete} onOpenChange={(o) => !o && setPedidoToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir pedido {pedidoToDelete}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Todos os registros do pedido serão removidos permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Excluindo..." : "Excluir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
