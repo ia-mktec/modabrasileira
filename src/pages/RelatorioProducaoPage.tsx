@@ -347,6 +347,30 @@ const RelatorioProducaoPage = () => {
         <MetricCard icon={TrendingUp} label="Concluídos" value={String(metrics.ocultos)} hint="entregues ao cliente" />
       </div>
 
+      <Card>
+        <CardContent className="p-4 flex flex-wrap items-end gap-3">
+          <div className="flex flex-col gap-1 min-w-[240px] flex-1 max-w-sm">
+            <label className="text-xs font-semibold text-muted-foreground">Cliente</label>
+            <Select value={filtroCliente} onValueChange={setFiltroCliente}>
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="Todos os clientes" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">Todos os clientes</SelectItem>
+                {clientesOptions.map((c) => (
+                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {filtroCliente !== "__all__" && (
+            <Button variant="ghost" size="sm" onClick={() => setFiltroCliente("__all__")}>
+              Limpar
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
         {kanbanColumns.map((col) => (
           <div key={col.key} className="flex flex-col">
