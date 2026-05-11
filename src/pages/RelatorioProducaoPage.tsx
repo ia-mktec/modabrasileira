@@ -166,11 +166,13 @@ const isConcluido = (s?: string | null) => {
 const isCancelado = (s?: string | null) => norm(s) === "cancelado";
 
 const RelatorioProducaoPage = () => {
+  const navigate = useNavigate();
   const [pedidos, setPedidos] = useState<PedidoRow[]>([]);
   const [ordens, setOrdens] = useState<(OrdemCorteRow & { id: string })[]>([]);
   const [expedicoes, setExpedicoes] = useState<ExpedicaoRow[]>([]);
   const [recebimentos, setRecebimentos] = useState<RecebimentoRow[]>([]);
   const [entregas, setEntregas] = useState<EntregaRow[]>([]);
+  const [modeloImgs, setModeloImgs] = useState<Record<string, string>>({});
   const [selectedPedido, setSelectedPedido] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -181,12 +183,18 @@ const RelatorioProducaoPage = () => {
       supabase.from("expedicao").select("ordem_corte_id,status,updated_at"),
       supabase.from("recebimento").select("ordem_corte_id,status,updated_at"),
       supabase.from("entrega_cliente").select("ordem_corte_id,status,updated_at"),
-    ]).then(([p, o, e, r, en]) => {
+      supabase.from("modelos").select("referencia,imagem_url"),
+    ]).then(([p, o, e, r, en, m]) => {
       setPedidos((p.data || []) as PedidoRow[]);
       setOrdens((o.data || []) as any);
       setExpedicoes((e.data || []) as any);
       setRecebimentos((r.data || []) as any);
       setEntregas((en.data || []) as any);
+      const imgs: Record<string, string> = {};
+      (m.data || []).forEach((x: any) => {
+        if (x.referencia && x.imagem_url) imgs[x.referencia] = x.imagem_url;
+      });
+      setModeloImgs(imgs);
     });
   }, []);
 
