@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { CalendarDays, Clock, Package, TrendingUp, Activity } from "lucide-react";
 import { PedidoTimeline } from "@/components/shared/PedidoTimeline";
+import { cn } from "@/lib/utils";
 
 interface PedidoRow {
   numero_pedido: string;
@@ -20,28 +19,68 @@ interface PedidoRow {
   updated_at: string;
 }
 
-interface HistRow {
-  numero_pedido: string;
-  status_anterior: string | null;
-  status_novo: string;
-  created_at: string;
+interface OrdemCorteRow {
+  numero_pedido: string | null;
+  status: string;
+  updated_at: string;
+}
+interface ExpedicaoRow {
+  ordem_corte_id: string;
+  status: string;
+  updated_at: string;
+}
+interface RecebimentoRow {
+  ordem_corte_id: string;
+  status: string;
+  updated_at: string;
+}
+interface EntregaRow {
+  ordem_corte_id: string;
+  status: string;
+  updated_at: string;
 }
 
-const kanbanColumns = [
-  { key: "pendente", label: "Modelos - Pedido", color: "hsl(38 92% 50%)" },
-  { key: "em_corte", label: "Corte", color: "hsl(217 71% 45%)" },
-  { key: "em_producao", label: "Em Produção", color: "hsl(38 92% 50%)" },
-  { key: "recebido", label: "Recebimento", color: "hsl(199 89% 48%)" },
-  { key: "entregue", label: "Acabamento", color: "hsl(142 71% 35%)" },
+type ColKey = "modelos_pedido" | "corte" | "producao" | "recebimento" | "acabamento";
+
+const kanbanColumns: { key: ColKey; label: string; color: string }[] = [
+  { key: "modelos_pedido", label: "Modelos - Pedido", color: "hsl(38 92% 50%)" },
+  { key: "corte", label: "Corte", color: "hsl(217 71% 45%)" },
+  { key: "producao", label: "Produção", color: "hsl(38 92% 50%)" },
+  { key: "recebimento", label: "Recebimento", color: "hsl(199 89% 48%)" },
+  { key: "acabamento", label: "Acabamento", color: "hsl(142 71% 35%)" },
 ];
 
-function PedidoCard({ pedido, onClick }: { pedido: PedidoRow; onClick: (n: string) => void }) {
+const colBadgeStyles: Record<ColKey, string> = {
+  modelos_pedido: "bg-[hsl(38_92%_50%/0.15)] text-[hsl(38,92%,50%)] border-[hsl(38_92%_50%/0.3)]",
+  corte: "bg-[hsl(217_71%_45%/0.15)] text-[hsl(217,71%,45%)] border-[hsl(217_71%_45%/0.3)]",
+  producao: "bg-[hsl(38_92%_50%/0.15)] text-[hsl(38,92%,50%)] border-[hsl(38_92%_50%/0.3)]",
+  recebimento: "bg-[hsl(199_89%_48%/0.15)] text-[hsl(199,89%,48%)] border-[hsl(199_89%_48%/0.3)]",
+  acabamento: "bg-[hsl(142_71%_35%/0.15)] text-[hsl(142,71%,35%)] border-[hsl(142_71%_35%/0.3)]",
+};
+
+function PedidoCard({
+  pedido,
+  col,
+  onClick,
+}: {
+  pedido: PedidoRow;
+  col: ColKey;
+  onClick: (n: string) => void;
+}) {
+  const colLabel = kanbanColumns.find((c) => c.key === col)?.label || "";
   return (
     <Card className="mb-3 hover:shadow-md transition-shadow cursor-pointer" onClick={() => onClick(pedido.numero_pedido)}>
       <CardContent className="p-3 space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="font-mono text-xs font-semibold text-primary">{pedido.modelo_ref}</span>
-          <StatusBadge status={pedido.status_kanban} />
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-mono text-xs font-semibold text-primary truncate">{pedido.modelo_ref}</span>
+          <span
+            className={cn(
+              "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border whitespace-nowrap",
+              colBadgeStyles[col]
+            )}
+          >
+            {colLabel}
+          </span>
         </div>
         <p className="text-[11px] text-muted-foreground font-mono truncate">{pedido.numero_pedido}</p>
         {pedido.cliente && <p className="text-xs text-foreground truncate">{pedido.cliente}</p>}
@@ -76,116 +115,185 @@ function MetricCard({ icon: Icon, label, value, hint }: { icon: any; label: stri
   );
 }
 
+const norm = (s?: string | null) =>
+  (s || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+
+const isAndamento = (s?: string | null) => {
+  const n = norm(s);
+  return n === "em_andamento" || n === "em andamento" || n === "andamento" || n === "pendente";
+};
+const isConcluido = (s?: string | null) => {
+  const n = norm(s);
+  return n === "concluido" || n === "concluida" || n === "entregue" || n === "finalizado";
+};
+const isCancelado = (s?: string | null) => norm(s) === "cancelado";
+
 const RelatorioProducaoPage = () => {
   const [pedidos, setPedidos] = useState<PedidoRow[]>([]);
-  const [historico, setHistorico] = useState<HistRow[]>([]);
+  const [ordens, setOrdens] = useState<(OrdemCorteRow & { id: string })[]>([]);
+  const [expedicoes, setExpedicoes] = useState<ExpedicaoRow[]>([]);
+  const [recebimentos, setRecebimentos] = useState<RecebimentoRow[]>([]);
+  const [entregas, setEntregas] = useState<EntregaRow[]>([]);
   const [selectedPedido, setSelectedPedido] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
-    supabase.from("modelo_pedidos").select("*").order("created_at", { ascending: false })
-      .then(({ data }) => setPedidos(data || []));
-    supabase.from("pedido_historico").select("numero_pedido,status_anterior,status_novo,created_at")
-      .order("created_at", { ascending: true })
-      .then(({ data }) => setHistorico((data || []) as HistRow[]));
+    Promise.all([
+      supabase.from("modelo_pedidos").select("*").order("created_at", { ascending: false }),
+      supabase.from("ordens_corte").select("id,numero_pedido,status,updated_at"),
+      supabase.from("expedicao").select("ordem_corte_id,status,updated_at"),
+      supabase.from("recebimento").select("ordem_corte_id,status,updated_at"),
+      supabase.from("entrega_cliente").select("ordem_corte_id,status,updated_at"),
+    ]).then(([p, o, e, r, en]) => {
+      setPedidos((p.data || []) as PedidoRow[]);
+      setOrdens((o.data || []) as any);
+      setExpedicoes((e.data || []) as any);
+      setRecebimentos((r.data || []) as any);
+      setEntregas((en.data || []) as any);
+    });
   }, []);
 
-  const grouped = useMemo(() => {
-    const g: Record<string, PedidoRow[]> = {};
-    kanbanColumns.forEach((c) => (g[c.key] = []));
+  // Mapeia ordem_corte_id -> numero_pedido para propagar status das etapas seguintes
+  const ordemToPedido = useMemo(() => {
+    const m: Record<string, string> = {};
+    ordens.forEach((o) => {
+      if (o.numero_pedido) m[o.id] = o.numero_pedido;
+    });
+    return m;
+  }, [ordens]);
+
+  // Para cada pedido calcula a coluna do kanban (ou null = não aparece)
+  const colByPedido = useMemo(() => {
+    const map: Record<string, ColKey | null> = {};
+
+    // Indexa por numero_pedido
+    const ordensByPed: Record<string, OrdemCorteRow[]> = {};
+    ordens.forEach((o) => {
+      if (!o.numero_pedido) return;
+      (ordensByPed[o.numero_pedido] ||= []).push(o);
+    });
+    const expByPed: Record<string, ExpedicaoRow[]> = {};
+    expedicoes.forEach((x) => {
+      const np = ordemToPedido[x.ordem_corte_id];
+      if (np) (expByPed[np] ||= []).push(x);
+    });
+    const recByPed: Record<string, RecebimentoRow[]> = {};
+    recebimentos.forEach((x) => {
+      const np = ordemToPedido[x.ordem_corte_id];
+      if (np) (recByPed[np] ||= []).push(x);
+    });
+    const entByPed: Record<string, EntregaRow[]> = {};
+    entregas.forEach((x) => {
+      const np = ordemToPedido[x.ordem_corte_id];
+      if (np) (entByPed[np] ||= []).push(x);
+    });
+
     pedidos.forEach((p) => {
-      const key = g[p.status_kanban] ? p.status_kanban : "pendente";
-      g[key].push(p);
+      const np = p.numero_pedido;
+      const ents = entByPed[np] || [];
+      const recs = recByPed[np] || [];
+      const exps = expByPed[np] || [];
+      const ocs = ordensByPed[np] || [];
+
+      // ENTREGA — concluído oculta o pedido
+      if (ents.some(isConcluidoStatus)) {
+        map[np] = null;
+        return;
+      }
+      if (ents.some((x) => isAndamento(x.status))) {
+        map[np] = "acabamento";
+        return;
+      }
+      // RECEBIMENTO concluído -> Acabamento
+      if (recs.some((x) => isConcluido(x.status))) {
+        map[np] = "acabamento";
+        return;
+      }
+      if (recs.some((x) => isAndamento(x.status))) {
+        map[np] = "recebimento";
+        return;
+      }
+      // EXPEDICAO concluído -> Recebimento
+      if (exps.some((x) => isConcluido(x.status))) {
+        map[np] = "recebimento";
+        return;
+      }
+      if (exps.some((x) => isAndamento(x.status))) {
+        map[np] = "producao";
+        return;
+      }
+      // ORDEM DE CORTE concluído -> Produção
+      if (ocs.some((x) => isConcluido(x.status))) {
+        map[np] = "producao";
+        return;
+      }
+      if (ocs.some((x) => isAndamento(x.status) || isCancelado(x.status))) {
+        map[np] = "corte";
+        return;
+      }
+      // PEDIDO concluído -> Corte
+      if (isConcluido(p.status_kanban)) {
+        map[np] = "corte";
+        return;
+      }
+      // Default: Modelos - Pedido (em andamento / pendente)
+      map[np] = "modelos_pedido";
+    });
+
+    return map;
+
+    function isConcluidoStatus(x: { status: string }) {
+      return isConcluido(x.status);
+    }
+  }, [pedidos, ordens, expedicoes, recebimentos, entregas, ordemToPedido]);
+
+  const grouped = useMemo(() => {
+    const g: Record<ColKey, PedidoRow[]> = {
+      modelos_pedido: [],
+      corte: [],
+      producao: [],
+      recebimento: [],
+      acabamento: [],
+    };
+    pedidos.forEach((p) => {
+      const c = colByPedido[p.numero_pedido];
+      if (c) g[c].push(p);
     });
     return g;
-  }, [pedidos]);
+  }, [pedidos, colByPedido]);
 
-  // Métricas
   const metrics = useMemo(() => {
+    const visiveis = pedidos.filter((p) => colByPedido[p.numero_pedido]);
     const total = pedidos.length;
-    const ativos = pedidos.filter((p) => p.status_kanban !== "entregue").length;
-    const entregues = pedidos.filter((p) => p.status_kanban === "entregue").length;
-
-    // Tempo médio entre etapas (em horas) — somente pedidos com transição
-    // Agrupa histórico por pedido e ordena
-    const porPedido: Record<string, HistRow[]> = {};
-    historico.forEach((h) => {
-      if (!porPedido[h.numero_pedido]) porPedido[h.numero_pedido] = [];
-      porPedido[h.numero_pedido].push(h);
-    });
-
-    const duracoes: Record<string, number[]> = {};
-    Object.values(porPedido).forEach((hs) => {
-      for (let i = 1; i < hs.length; i++) {
-        const from = hs[i].status_anterior || "pendente";
-        const dt = (new Date(hs[i].created_at).getTime() - new Date(hs[i - 1].created_at).getTime()) / 3600000;
-        if (!duracoes[from]) duracoes[from] = [];
-        duracoes[from].push(dt);
-      }
-    });
-
-    const mediaPorEtapa: Record<string, number> = {};
-    Object.entries(duracoes).forEach(([k, arr]) => {
-      mediaPorEtapa[k] = arr.reduce((s, v) => s + v, 0) / arr.length;
-    });
-
-    // Throughput últimos 30d — entregas
-    const ms30 = 30 * 24 * 3600 * 1000;
-    const cutoff = Date.now() - ms30;
-    const entregasUltimos30 = historico.filter(
-      (h) => h.status_novo === "entregue" && new Date(h.created_at).getTime() >= cutoff
-    ).length;
-
-    return { total, ativos, entregues, mediaPorEtapa, entregasUltimos30 };
-  }, [pedidos, historico]);
+    const ativos = visiveis.length;
+    const acabamento = grouped.acabamento.length;
+    const ocultos = total - ativos;
+    return { total, ativos, acabamento, ocultos };
+  }, [pedidos, colByPedido, grouped]);
 
   const handleClick = (numero: string) => {
     setSelectedPedido(numero);
     setDialogOpen(true);
   };
 
-  const fmtHoras = (h: number) => {
-    if (!h || isNaN(h)) return "—";
-    if (h < 24) return `${h.toFixed(1)}h`;
-    return `${(h / 24).toFixed(1)}d`;
-  };
-
   return (
     <div className="p-6 space-y-6">
       <PageHeader
         title="Fluxo de Produção"
-        description="Kanban e métricas de pedidos em produção"
+        description="Kanban de pedidos derivado dos status de Pedido, Corte, Expedição, Recebimento e Entrega"
       />
 
-      {/* Dashboard de Métricas */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <MetricCard icon={Package} label="Total de Pedidos" value={String(metrics.total)} />
-        <MetricCard icon={Activity} label="Em Andamento" value={String(metrics.ativos)} />
-        <MetricCard icon={TrendingUp} label="Entregues (30d)" value={String(metrics.entregasUltimos30)} hint="últimos 30 dias" />
-        <MetricCard icon={Clock} label="Tempo Médio Corte" value={fmtHoras(metrics.mediaPorEtapa["em_corte"] || 0)} hint="em_corte → em_producao" />
+        <MetricCard icon={Activity} label="Em Fluxo" value={String(metrics.ativos)} hint="visíveis no kanban" />
+        <MetricCard icon={Clock} label="Em Acabamento" value={String(metrics.acabamento)} />
+        <MetricCard icon={TrendingUp} label="Concluídos" value={String(metrics.ocultos)} hint="entregues ao cliente" />
       </div>
 
-      {/* Tempo médio por etapa - detalhe */}
-      <Card>
-        <CardContent className="p-4">
-          <p className="text-sm font-semibold mb-3">Tempo médio entre etapas</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[
-              { from: "pendente", to: "em_corte", fromLabel: "Modelos - Pedido", toLabel: "Corte" },
-              { from: "em_corte", to: "em_producao", fromLabel: "Corte", toLabel: "Em Produção" },
-              { from: "em_producao", to: "recebido", fromLabel: "Em Produção", toLabel: "Recebimento" },
-              { from: "recebido", to: "entregue", fromLabel: "Recebimento", toLabel: "Acabamento" },
-            ].map((t) => (
-              <div key={t.from} className="rounded-md border border-border p-3">
-                <p className="text-[11px] text-muted-foreground">{t.fromLabel} → {t.toLabel}</p>
-                <p className="text-lg font-bold mt-1">{fmtHoras(metrics.mediaPorEtapa[t.from] || 0)}</p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Kanban */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
         {kanbanColumns.map((col) => (
           <div key={col.key} className="flex flex-col">
@@ -193,13 +301,13 @@ const RelatorioProducaoPage = () => {
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: col.color }} />
               <h3 className="text-sm font-semibold text-foreground">{col.label}</h3>
               <Badge variant="secondary" className="ml-auto text-[10px] h-5">
-                {grouped[col.key]?.length || 0}
+                {grouped[col.key].length}
               </Badge>
             </div>
             <div className="flex-1 rounded-lg bg-muted/30 border border-border p-2 min-h-[400px]">
-              {grouped[col.key]?.length ? (
+              {grouped[col.key].length ? (
                 grouped[col.key].map((p) => (
-                  <PedidoCard key={p.numero_pedido} pedido={p} onClick={handleClick} />
+                  <PedidoCard key={p.numero_pedido} pedido={p} col={col.key} onClick={handleClick} />
                 ))
               ) : (
                 <p className="text-xs text-muted-foreground text-center py-6">Nenhum pedido</p>
@@ -209,11 +317,7 @@ const RelatorioProducaoPage = () => {
         ))}
       </div>
 
-      <PedidoTimeline
-        numeroPedido={selectedPedido}
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-      />
+      <PedidoTimeline numeroPedido={selectedPedido} open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
   );
 };
