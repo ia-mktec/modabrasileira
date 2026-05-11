@@ -348,7 +348,14 @@ const RelatorioProducaoPage = () => {
             <div className="flex-1 rounded-lg bg-muted/30 border border-border p-2 min-h-[400px]">
               {grouped[col.key].length ? (
                 grouped[col.key].map((p) => (
-                  <PedidoCard key={p.numero_pedido} pedido={p} col={col.key} onClick={handleClick} />
+                  <PedidoCard
+                    key={p.numero_pedido}
+                    pedido={p}
+                    col={col.key}
+                    imagemUrl={modeloImgs[p.modelo_ref]}
+                    onOpenTimeline={handleClick}
+                    onOpenFicha={(n) => navigate(`/pedidos/${encodeURIComponent(n)}/ficha`)}
+                  />
                 ))
               ) : (
                 <p className="text-xs text-muted-foreground text-center py-6">Nenhum pedido</p>
