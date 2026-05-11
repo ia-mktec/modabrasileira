@@ -175,6 +175,7 @@ const RelatorioProducaoPage = () => {
   const [modeloImgs, setModeloImgs] = useState<Record<string, string>>({});
   const [selectedPedido, setSelectedPedido] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [filtroCliente, setFiltroCliente] = useState<string>("__all__");
 
   useEffect(() => {
     Promise.all([
