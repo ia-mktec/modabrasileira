@@ -62,37 +62,69 @@ const colBadgeStyles: Record<ColKey, string> = {
 function PedidoCard({
   pedido,
   col,
-  onClick,
+  imagemUrl,
+  onOpenTimeline,
+  onOpenFicha,
 }: {
   pedido: PedidoRow;
   col: ColKey;
-  onClick: (n: string) => void;
+  imagemUrl?: string | null;
+  onOpenTimeline: (n: string) => void;
+  onOpenFicha: (n: string) => void;
 }) {
   const colLabel = kanbanColumns.find((c) => c.key === col)?.label || "";
   return (
-    <Card className="mb-3 hover:shadow-md transition-shadow cursor-pointer" onClick={() => onClick(pedido.numero_pedido)}>
-      <CardContent className="p-3 space-y-2">
-        <div className="flex items-center justify-between gap-2">
-          <span className="font-mono text-xs font-semibold text-primary truncate">{pedido.modelo_ref}</span>
-          <span
-            className={cn(
-              "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border whitespace-nowrap",
-              colBadgeStyles[col]
-            )}
+    <Card className="mb-3 hover:shadow-md transition-shadow">
+      <CardContent className="p-3">
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => onOpenFicha(pedido.numero_pedido)}
+            className="shrink-0 w-14 h-14 rounded-md border border-border bg-muted overflow-hidden flex items-center justify-center hover:ring-2 hover:ring-primary transition"
+            title="Abrir ficha do pedido"
           >
-            {colLabel}
-          </span>
-        </div>
-        <p className="text-[11px] text-muted-foreground font-mono truncate">{pedido.numero_pedido}</p>
-        {pedido.cliente && <p className="text-xs text-foreground truncate">{pedido.cliente}</p>}
-        {(pedido.tecido || pedido.cor) && (
-          <p className="text-[11px] text-muted-foreground truncate">
-            {[pedido.tecido, pedido.cor].filter(Boolean).join(" • ")}
-          </p>
-        )}
-        <div className="flex items-center gap-1 text-[11px] text-muted-foreground pt-1 border-t border-border">
-          <CalendarDays className="w-3 h-3" />
-          {new Date(pedido.data_pedido).toLocaleDateString("pt-BR")}
+            {imagemUrl ? (
+              <img src={imagemUrl} alt={pedido.modelo_ref} className="w-full h-full object-cover" />
+            ) : (
+              <Shirt className="w-6 h-6 text-muted-foreground" />
+            )}
+          </button>
+          <div className="flex-1 min-w-0 space-y-1.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-mono text-xs font-semibold text-primary truncate">{pedido.modelo_ref}</span>
+              <span
+                className={cn(
+                  "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border whitespace-nowrap",
+                  colBadgeStyles[col]
+                )}
+              >
+                {colLabel}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => onOpenFicha(pedido.numero_pedido)}
+              className="text-[11px] text-primary font-mono truncate hover:underline text-left block w-full"
+              title="Abrir ficha do pedido"
+            >
+              {pedido.numero_pedido}
+            </button>
+            {pedido.cliente && <p className="text-xs text-foreground truncate">{pedido.cliente}</p>}
+            {(pedido.tecido || pedido.cor) && (
+              <p className="text-[11px] text-muted-foreground truncate">
+                {[pedido.tecido, pedido.cor].filter(Boolean).join(" • ")}
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={() => onOpenTimeline(pedido.numero_pedido)}
+              className="flex items-center gap-1 text-[11px] text-muted-foreground pt-1 border-t border-border w-full hover:text-foreground transition"
+              title="Ver linha do tempo"
+            >
+              <CalendarDays className="w-3 h-3" />
+              {new Date(pedido.data_pedido).toLocaleDateString("pt-BR")}
+            </button>
+          </div>
         </div>
       </CardContent>
     </Card>
