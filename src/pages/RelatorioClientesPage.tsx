@@ -1,81 +1,33 @@
-import { useState, useMemo } from "react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
-import { StatusBadge } from "@/components/shared/StatusBadge";
-import { clientes } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend, LineChart, Line, AreaChart, Area,
+  PieChart, Pie, Cell, Legend, AreaChart, Area,
 } from "recharts";
-import {
-  Users, ShoppingBag, TrendingUp, PackageCheck, ArrowUpRight, ArrowDownRight, Filter, X, Calendar as CalendarIcon,
-} from "lucide-react";
+import { Users, ShoppingBag, PackageCheck, Filter, X, TrendingUp, ArrowUpRight } from "lucide-react";
 
-// --- Mock data for reports ---
-const pedidosPorCliente = [
-  { cliente: "Renner", pedidos: 48, pecas: 12400, faturamento: 385000 },
-  { cliente: "Riachuelo", pedidos: 35, pecas: 9200, faturamento: 276000 },
-  { cliente: "C&A", pedidos: 42, pecas: 11000, faturamento: 341000 },
-  { cliente: "Marisa", pedidos: 12, pecas: 3100, faturamento: 93000 },
-  { cliente: "Hering", pedidos: 28, pecas: 7500, faturamento: 232500 },
-  { cliente: "Zara", pedidos: 22, pecas: 5800, faturamento: 203000 },
-];
+const STATUS_COLORS: Record<string, string> = {
+  pendente: "hsl(38, 92%, 50%)",
+  em_andamento: "hsl(217, 71%, 55%)",
+  concluido: "hsl(142, 71%, 35%)",
+  cancelado: "hsl(0, 72%, 51%)",
+};
+const STATUS_LABELS: Record<string, string> = {
+  pendente: "Pendente",
+  em_andamento: "Em Andamento",
+  concluido: "Concluído",
+  cancelado: "Cancelado",
+};
 
-const modelosPorCliente = [
-  { cliente: "Renner", camiseta: 4200, polo: 3100, moletom: 2800, vestido: 2300 },
-  { cliente: "Riachuelo", camiseta: 3500, polo: 2200, moletom: 1800, vestido: 1700 },
-  { cliente: "C&A", camiseta: 3800, polo: 2800, moletom: 2100, vestido: 2300 },
-  { cliente: "Hering", camiseta: 2800, polo: 1900, moletom: 1500, vestido: 1300 },
-  { cliente: "Zara", camiseta: 2000, polo: 1500, moletom: 1200, vestido: 1100 },
-];
-
-const statusPedidos = [
-  { name: "Concluído", value: 62, fill: "hsl(142, 71%, 35%)" },
-  { name: "Em Produção", value: 24, fill: "hsl(217, 71%, 55%)" },
-  { name: "Pendente", value: 10, fill: "hsl(38, 92%, 50%)" },
-  { name: "Cancelado", value: 4, fill: "hsl(0, 72%, 51%)" },
-];
-
-const evolucaoMensal = [
-  { mes: "Set", pecas: 8200, faturamento: 246000 },
-  { mes: "Out", pecas: 9400, faturamento: 282000 },
-  { mes: "Nov", pecas: 10800, faturamento: 324000 },
-  { mes: "Dez", pecas: 12500, faturamento: 375000 },
-  { mes: "Jan", pecas: 11200, faturamento: 336000 },
-  { mes: "Fev", pecas: 13100, faturamento: 393000 },
-];
-
-const entregasPorCliente = [
-  { cliente: "Renner", noPrazo: 42, atrasado: 6 },
-  { cliente: "Riachuelo", noPrazo: 30, atrasado: 5 },
-  { cliente: "C&A", noPrazo: 38, atrasado: 4 },
-  { cliente: "Marisa", noPrazo: 10, atrasado: 2 },
-  { cliente: "Hering", noPrazo: 25, atrasado: 3 },
-  { cliente: "Zara", noPrazo: 20, atrasado: 2 },
-];
-
-const topModelosClientes = [
-  { cliente: "Renner", modelo: "Camiseta Básica", ref: "MK-2024-001", pecas: 4200, status: "concluido" },
-  { cliente: "C&A", modelo: "Camiseta Básica", ref: "MK-2024-001", pecas: 3800, status: "em_andamento" },
-  { cliente: "Riachuelo", modelo: "Polo Masculina", ref: "MK-2024-002", pecas: 3500, status: "concluido" },
-  { cliente: "Renner", modelo: "Polo Masculina", ref: "MK-2024-002", pecas: 3100, status: "em_andamento" },
-  { cliente: "Hering", modelo: "Camiseta Básica", ref: "MK-2024-001", pecas: 2800, status: "concluido" },
-  { cliente: "C&A", modelo: "Moletom Canguru", ref: "MK-2024-003", pecas: 2100, status: "pendente" },
-  { cliente: "Zara", modelo: "Vestido Midi", ref: "MK-2024-004", pecas: 1100, status: "pendente" },
-  { cliente: "Marisa", modelo: "Calça Jeans", ref: "MK-2024-005", pecas: 900, status: "cancelado" },
-];
-
-function KpiCard({ title, value, subtitle, icon: Icon, trend, trendUp }: {
-  title: string; value: string; subtitle: string; icon: React.ElementType; trend: string; trendUp: boolean;
+function KpiCard({ title, value, subtitle, icon: Icon }: {
+  title: string; value: string; subtitle: string; icon: React.ElementType;
 }) {
   return (
     <Card>
@@ -86,14 +38,8 @@ function KpiCard({ title, value, subtitle, icon: Icon, trend, trendUp }: {
             <p className="text-2xl font-bold">{value}</p>
             <p className="text-xs text-muted-foreground">{subtitle}</p>
           </div>
-          <div className="flex flex-col items-end gap-2">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Icon className="w-5 h-5 text-primary" />
-            </div>
-            <span className={`text-xs font-medium flex items-center gap-0.5 ${trendUp ? "text-[hsl(142,71%,35%)]" : "text-destructive"}`}>
-              {trendUp ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-              {trend}
-            </span>
+          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Icon className="w-5 h-5 text-primary" />
           </div>
         </div>
       </CardContent>
@@ -101,45 +47,132 @@ function KpiCard({ title, value, subtitle, icon: Icon, trend, trendUp }: {
   );
 }
 
-const CHART_COLORS = [
-  "hsl(217, 71%, 55%)",
-  "hsl(199, 89%, 48%)",
-  "hsl(142, 71%, 35%)",
-  "hsl(38, 92%, 50%)",
-];
-
-const allClienteNames = pedidosPorCliente.map((c) => c.cliente);
+function monthsBack(n: number) {
+  const d = new Date();
+  d.setMonth(d.getMonth() - n);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
 
 const RelatorioClientesPage = () => {
   const [periodo, setPeriodo] = useState("6m");
   const [selectedClientes, setSelectedClientes] = useState<string[]>([]);
-  const [dateFrom, setDateFrom] = useState<Date | undefined>();
-  const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [clientes, setClientes] = useState<any[]>([]);
+  const [ordens, setOrdens] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const [c, o] = await Promise.all([
+        supabase.from("clientes").select("id,razao_social,status"),
+        supabase.from("ordens_corte").select("id,cliente_id,modelo_ref,quantidade_pecas,data_corte,status"),
+      ]);
+      setClientes(c.data || []);
+      setOrdens(o.data || []);
+      setLoading(false);
+    })();
+  }, []);
+
+  const cutoff = useMemo(() => {
+    if (periodo === "1m") return monthsBack(1);
+    if (periodo === "3m") return monthsBack(3);
+    if (periodo === "6m") return monthsBack(6);
+    if (periodo === "12m") return monthsBack(12);
+    return null;
+  }, [periodo]);
+
+  const ordensPeriodo = useMemo(() => {
+    if (!cutoff) return ordens;
+    return ordens.filter((o) => o.data_corte && new Date(o.data_corte) >= cutoff);
+  }, [ordens, cutoff]);
+
+  const clienteById = useMemo(() => {
+    const m = new Map<string, string>();
+    clientes.forEach((c) => m.set(c.id, c.razao_social));
+    return m;
+  }, [clientes]);
+
+  const allClienteNames = useMemo(() => {
+    const set = new Set<string>();
+    ordensPeriodo.forEach((o) => {
+      const name = clienteById.get(o.cliente_id) || (o.cliente_id ? "Sem cadastro" : "Sem cliente");
+      set.add(name);
+    });
+    return Array.from(set).sort();
+  }, [ordensPeriodo, clienteById]);
+
   const isAllSelected = selectedClientes.length === 0;
   const activeFilter = isAllSelected ? allClienteNames : selectedClientes;
 
-  const filteredPedidos = useMemo(() => pedidosPorCliente.filter((c) => activeFilter.includes(c.cliente)), [activeFilter]);
-  const filteredModelos = useMemo(() => modelosPorCliente.filter((c) => activeFilter.includes(c.cliente)), [activeFilter]);
-  const filteredEntregas = useMemo(() => entregasPorCliente.filter((c) => activeFilter.includes(c.cliente)), [activeFilter]);
-  const filteredTopModelos = useMemo(() => topModelosClientes.filter((r) => activeFilter.includes(r.cliente)), [activeFilter]);
+  const ordensFiltradas = useMemo(() => ordensPeriodo.filter((o) => {
+    const name = clienteById.get(o.cliente_id) || (o.cliente_id ? "Sem cadastro" : "Sem cliente");
+    return activeFilter.includes(name);
+  }), [ordensPeriodo, activeFilter, clienteById]);
 
-  const totalPecas = filteredPedidos.reduce((s, c) => s + c.pecas, 0);
-  const totalFaturamento = filteredPedidos.reduce((s, c) => s + c.faturamento, 0);
-  const totalPedidos = filteredPedidos.reduce((s, c) => s + c.pedidos, 0);
+  const pedidosPorCliente = useMemo(() => {
+    const map = new Map<string, { cliente: string; ordens: number; pecas: number }>();
+    ordensFiltradas.forEach((o) => {
+      const name = clienteById.get(o.cliente_id) || (o.cliente_id ? "Sem cadastro" : "Sem cliente");
+      const cur = map.get(name) || { cliente: name, ordens: 0, pecas: 0 };
+      cur.ordens += 1;
+      cur.pecas += o.quantidade_pecas || 0;
+      map.set(name, cur);
+    });
+    return Array.from(map.values()).sort((a, b) => b.pecas - a.pecas);
+  }, [ordensFiltradas, clienteById]);
+
+  const statusPedidos = useMemo(() => {
+    const counts: Record<string, number> = {};
+    ordensFiltradas.forEach((o) => { counts[o.status] = (counts[o.status] || 0) + 1; });
+    const total = ordensFiltradas.length || 1;
+    return Object.entries(counts).map(([k, v]) => ({
+      name: STATUS_LABELS[k] || k,
+      value: Math.round((v / total) * 100),
+      fill: STATUS_COLORS[k] || "hsl(220, 14%, 50%)",
+    }));
+  }, [ordensFiltradas]);
+
+  const evolucaoMensal = useMemo(() => {
+    const buckets: Record<string, number> = {};
+    ordensFiltradas.forEach((o) => {
+      if (!o.data_corte) return;
+      const d = new Date(o.data_corte);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      buckets[key] = (buckets[key] || 0) + (o.quantidade_pecas || 0);
+    });
+    return Object.entries(buckets)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, v]) => {
+        const [y, m] = k.split("-");
+        return { mes: new Date(Number(y), Number(m) - 1, 1).toLocaleDateString("pt-BR", { month: "short", year: "2-digit" }), pecas: v };
+      });
+  }, [ordensFiltradas]);
+
+  const topModelos = useMemo(() => {
+    const map = new Map<string, { modelo: string; pecas: number; ordens: number }>();
+    ordensFiltradas.forEach((o) => {
+      if (!o.modelo_ref) return;
+      const cur = map.get(o.modelo_ref) || { modelo: o.modelo_ref, pecas: 0, ordens: 0 };
+      cur.pecas += o.quantidade_pecas || 0;
+      cur.ordens += 1;
+      map.set(o.modelo_ref, cur);
+    });
+    return Array.from(map.values()).sort((a, b) => b.pecas - a.pecas).slice(0, 10);
+  }, [ordensFiltradas]);
+
+  const totalPecas = pedidosPorCliente.reduce((s, c) => s + c.pecas, 0);
+  const totalOrdens = pedidosPorCliente.reduce((s, c) => s + c.ordens, 0);
   const clientesAtivos = clientes.filter((c) => c.status === "ativo").length;
 
   const toggleCliente = (name: string) => {
-    setSelectedClientes((prev) =>
-      prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]
-    );
+    setSelectedClientes((prev) => prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]);
   };
 
   return (
     <div className="p-4 md:p-6 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <PageHeader title="Relatório de Clientes" description="Acompanhamento de produção por cliente" />
-        <div className="flex items-center gap-2">
-          {/* Filtro de clientes */}
+        <div className="flex items-center gap-2 flex-wrap">
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
@@ -147,23 +180,21 @@ const RelatorioClientesPage = () => {
                 {isAllSelected ? "Todos os Clientes" : `${selectedClientes.length} selecionado(s)`}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-56 p-3" align="end">
+            <PopoverContent className="w-64 p-3" align="end">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Filtrar Clientes</span>
                   {!isAllSelected && (
-                    <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => setSelectedClientes([])}>
-                      Limpar
-                    </Button>
+                    <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => setSelectedClientes([])}>Limpar</Button>
                   )}
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-72 overflow-y-auto">
+                  {allClienteNames.length === 0 && (
+                    <p className="text-xs text-muted-foreground">Nenhum cliente no período.</p>
+                  )}
                   {allClienteNames.map((name) => (
                     <label key={name} className="flex items-center gap-2 cursor-pointer text-sm hover:text-primary transition-colors">
-                      <Checkbox
-                        checked={selectedClientes.includes(name)}
-                        onCheckedChange={() => toggleCliente(name)}
-                      />
+                      <Checkbox checked={selectedClientes.includes(name)} onCheckedChange={() => toggleCliente(name)} />
                       {name}
                     </label>
                   ))}
@@ -172,7 +203,7 @@ const RelatorioClientesPage = () => {
             </PopoverContent>
           </Popover>
 
-          <Select value={periodo} onValueChange={(v) => { setPeriodo(v); if (v !== "custom") { setDateFrom(undefined); setDateTo(undefined); } }}>
+          <Select value={periodo} onValueChange={setPeriodo}>
             <SelectTrigger className="w-[180px]">
               <SelectValue />
             </SelectTrigger>
@@ -181,40 +212,12 @@ const RelatorioClientesPage = () => {
               <SelectItem value="3m">Últimos 3 meses</SelectItem>
               <SelectItem value="6m">Últimos 6 meses</SelectItem>
               <SelectItem value="12m">Último ano</SelectItem>
-              <SelectItem value="custom">Personalizado</SelectItem>
+              <SelectItem value="all">Todo período</SelectItem>
             </SelectContent>
           </Select>
-
-          {periodo === "custom" && (
-            <div className="flex items-center gap-2">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className={cn("w-[130px] justify-start text-left font-normal", !dateFrom && "text-muted-foreground")}>
-                    <CalendarIcon className="w-4 h-4 mr-1" />
-                    {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "De"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className={cn("p-3 pointer-events-auto")} locale={ptBR} />
-                </PopoverContent>
-              </Popover>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className={cn("w-[130px] justify-start text-left font-normal", !dateTo && "text-muted-foreground")}>
-                    <CalendarIcon className="w-4 h-4 mr-1" />
-                    {dateTo ? format(dateTo, "dd/MM/yyyy") : "Até"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className={cn("p-3 pointer-events-auto")} locale={ptBR} disabled={(date) => dateFrom ? date < dateFrom : false} />
-                </PopoverContent>
-              </Popover>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Badges dos clientes selecionados */}
       {!isAllSelected && (
         <div className="flex flex-wrap gap-2">
           {selectedClientes.map((name) => (
@@ -226,15 +229,13 @@ const RelatorioClientesPage = () => {
         </div>
       )}
 
-      {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard title="Clientes Ativos" value={isAllSelected ? String(clientesAtivos) : String(selectedClientes.length)} subtitle={isAllSelected ? `de ${clientes.length} cadastrados` : "selecionados"} icon={Users} trend="+2 este mês" trendUp />
-        <KpiCard title="Total Pedidos" value={String(totalPedidos)} subtitle="no período" icon={ShoppingBag} trend="+12%" trendUp />
-        <KpiCard title="Peças Produzidas" value={totalPecas.toLocaleString("pt-BR")} subtitle="para clientes filtrados" icon={PackageCheck} trend="+8.5%" trendUp />
-        <KpiCard title="Faturamento" value={`R$ ${(totalFaturamento / 1000).toFixed(0)}k`} subtitle="no período" icon={TrendingUp} trend="+15.2%" trendUp />
+        <KpiCard title="Clientes Ativos" value={loading ? "—" : String(clientesAtivos)} subtitle={`${clientes.length} cadastrados`} icon={Users} />
+        <KpiCard title="Ordens de Corte" value={loading ? "—" : String(totalOrdens)} subtitle="no período" icon={ShoppingBag} />
+        <KpiCard title="Peças Produzidas" value={loading ? "—" : totalPecas.toLocaleString("pt-BR")} subtitle="no período" icon={PackageCheck} />
+        <KpiCard title="Modelos Únicos" value={loading ? "—" : String(topModelos.length)} subtitle="referências usadas" icon={TrendingUp} />
       </div>
 
-      {/* Row 1: Pedidos por cliente + Status */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2">
           <CardHeader className="pb-2">
@@ -242,155 +243,109 @@ const RelatorioClientesPage = () => {
           </CardHeader>
           <CardContent>
             <div className="h-[280px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={filteredPedidos} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 88%)" />
-                  <XAxis dataKey="cliente" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip
-                    contentStyle={{ borderRadius: 8, border: "1px solid hsl(220,14%,88%)", fontSize: 12 }}
-                    formatter={(v: number) => v.toLocaleString("pt-BR")}
-                  />
-                  <Bar dataKey="pecas" name="Peças" fill="hsl(217, 71%, 55%)" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              {pedidosPorCliente.length === 0 ? (
+                <div className="h-full flex items-center justify-center text-sm text-muted-foreground">Sem dados.</div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={pedidosPorCliente.slice(0, 10)} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 88%)" />
+                    <XAxis dataKey="cliente" tick={{ fontSize: 11 }} interval={0} angle={-15} textAnchor="end" height={60} />
+                    <YAxis tick={{ fontSize: 11 }} />
+                    <Tooltip formatter={(v: number) => v.toLocaleString("pt-BR")} />
+                    <Bar dataKey="pecas" name="Peças" fill="hsl(217, 71%, 55%)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">Status dos Pedidos</CardTitle>
+            <CardTitle className="text-sm font-semibold">Status das Ordens</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[280px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={statusPedidos}
-                    cx="50%" cy="50%"
-                    innerRadius={55} outerRadius={85}
-                    paddingAngle={3}
-                    dataKey="value"
-                  >
-                    {statusPedidos.map((entry, i) => (
-                      <Cell key={i} fill={entry.fill} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(v: number) => `${v}%`} />
-                  <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
-                </PieChart>
-              </ResponsiveContainer>
+              {statusPedidos.length === 0 ? (
+                <div className="h-full flex items-center justify-center text-sm text-muted-foreground">Sem dados.</div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={statusPedidos} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3} dataKey="value">
+                      {statusPedidos.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
+                    </Pie>
+                    <Tooltip formatter={(v: number) => `${v}%`} />
+                    <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Row 2: Evolução mensal + Modelos por cliente */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">Evolução Mensal — Peças & Faturamento</CardTitle>
+            <CardTitle className="text-sm font-semibold">Evolução Mensal — Peças</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[280px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={evolucaoMensal} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                  <defs>
-                    <linearGradient id="gradPecas" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(217, 71%, 55%)" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="hsl(217, 71%, 55%)" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 88%)" />
-                  <XAxis dataKey="mes" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid hsl(220,14%,88%)", fontSize: 12 }} formatter={(v: number) => v.toLocaleString("pt-BR")} />
-                  <Area type="monotone" dataKey="pecas" name="Peças" stroke="hsl(217, 71%, 55%)" fill="url(#gradPecas)" strokeWidth={2} />
-                </AreaChart>
-              </ResponsiveContainer>
+              {evolucaoMensal.length === 0 ? (
+                <div className="h-full flex items-center justify-center text-sm text-muted-foreground">Sem dados.</div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={evolucaoMensal} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                    <defs>
+                      <linearGradient id="gradPecas" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(217, 71%, 55%)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(217, 71%, 55%)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 88%)" />
+                    <XAxis dataKey="mes" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} />
+                    <Tooltip formatter={(v: number) => v.toLocaleString("pt-BR")} />
+                    <Area type="monotone" dataKey="pecas" name="Peças" stroke="hsl(217, 71%, 55%)" fill="url(#gradPecas)" strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">Modelos por Cliente</CardTitle>
+            <CardTitle className="text-sm font-semibold">Top Modelos por Peças</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[280px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={filteredModelos} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 88%)" />
-                  <XAxis dataKey="cliente" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid hsl(220,14%,88%)", fontSize: 12 }} formatter={(v: number) => v.toLocaleString("pt-BR")} />
-                  <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
-                  <Bar dataKey="camiseta" name="Camiseta" stackId="a" fill={CHART_COLORS[0]} />
-                  <Bar dataKey="polo" name="Polo" stackId="a" fill={CHART_COLORS[1]} />
-                  <Bar dataKey="moletom" name="Moletom" stackId="a" fill={CHART_COLORS[2]} />
-                  <Bar dataKey="vestido" name="Vestido" stackId="a" fill={CHART_COLORS[3]} radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="h-[280px] overflow-y-auto">
+              {topModelos.length === 0 ? (
+                <div className="h-full flex items-center justify-center text-sm text-muted-foreground">Sem dados.</div>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead className="sticky top-0 bg-card">
+                    <tr className="border-b text-muted-foreground">
+                      <th className="text-left py-2 font-medium">Referência</th>
+                      <th className="text-right py-2 font-medium">Ordens</th>
+                      <th className="text-right py-2 font-medium">Peças</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topModelos.map((m) => (
+                      <tr key={m.modelo} className="border-b last:border-0">
+                        <td className="py-2 font-mono text-xs">{m.modelo}</td>
+                        <td className="py-2 text-right">{m.ordens}</td>
+                        <td className="py-2 text-right">{m.pecas.toLocaleString("pt-BR")}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Row 3: Pontualidade de entregas */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold">Pontualidade de Entregas por Cliente</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[260px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={filteredEntregas} layout="vertical" margin={{ top: 5, right: 20, left: 60, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 88%)" />
-                <XAxis type="number" tick={{ fontSize: 11 }} />
-                <YAxis type="category" dataKey="cliente" tick={{ fontSize: 11 }} />
-                <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid hsl(220,14%,88%)", fontSize: 12 }} />
-                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="noPrazo" name="No Prazo" stackId="a" fill="hsl(142, 71%, 35%)" />
-                <Bar dataKey="atrasado" name="Atrasado" stackId="a" fill="hsl(0, 72%, 51%)" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Row 4: Tabela detalhada */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold">Detalhamento — Top Modelos por Cliente</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b bg-muted/50">
-                  <th className="text-left py-3 px-4 font-medium text-muted-foreground">Cliente</th>
-                  <th className="text-left py-3 px-4 font-medium text-muted-foreground">Modelo</th>
-                  <th className="text-left py-3 px-4 font-medium text-muted-foreground">Referência</th>
-                  <th className="text-right py-3 px-4 font-medium text-muted-foreground">Peças</th>
-                  <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredTopModelos.map((row, i) => (
-                  <tr key={i} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                    <td className="py-3 px-4 font-medium">{row.cliente}</td>
-                    <td className="py-3 px-4">{row.modelo}</td>
-                    <td className="py-3 px-4 font-mono text-xs">{row.ref}</td>
-                    <td className="py-3 px-4 text-right font-medium">{row.pecas.toLocaleString("pt-BR")}</td>
-                    <td className="py-3 px-4"><StatusBadge status={row.status} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
