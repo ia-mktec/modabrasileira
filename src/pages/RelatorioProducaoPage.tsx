@@ -293,6 +293,17 @@ const RelatorioProducaoPage = () => {
     }
   }, [pedidos, ordens, expedicoes, recebimentos, entregas, ordemToPedido]);
 
+  const clientesOptions = useMemo(() => {
+    const set = new Set<string>();
+    pedidos.forEach((p) => p.cliente && set.add(p.cliente));
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
+  }, [pedidos]);
+
+  const pedidosFiltrados = useMemo(
+    () => (filtroCliente === "__all__" ? pedidos : pedidos.filter((p) => (p.cliente || "") === filtroCliente)),
+    [pedidos, filtroCliente]
+  );
+
   const grouped = useMemo(() => {
     const g: Record<ColKey, PedidoRow[]> = {
       modelos_pedido: [],
@@ -301,21 +312,21 @@ const RelatorioProducaoPage = () => {
       recebimento: [],
       acabamento: [],
     };
-    pedidos.forEach((p) => {
+    pedidosFiltrados.forEach((p) => {
       const c = colByPedido[p.numero_pedido];
       if (c) g[c].push(p);
     });
     return g;
-  }, [pedidos, colByPedido]);
+  }, [pedidosFiltrados, colByPedido]);
 
   const metrics = useMemo(() => {
-    const visiveis = pedidos.filter((p) => colByPedido[p.numero_pedido]);
-    const total = pedidos.length;
+    const visiveis = pedidosFiltrados.filter((p) => colByPedido[p.numero_pedido]);
+    const total = pedidosFiltrados.length;
     const ativos = visiveis.length;
     const acabamento = grouped.acabamento.length;
     const ocultos = total - ativos;
     return { total, ativos, acabamento, ocultos };
-  }, [pedidos, colByPedido, grouped]);
+  }, [pedidosFiltrados, colByPedido, grouped]);
 
   const handleClick = (numero: string) => {
     setSelectedPedido(numero);
