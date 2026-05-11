@@ -217,8 +217,6 @@ const RelatorioProducaoPage = () => {
       setModeloImgs(imgs);
     });
   }, []);
-    });
-  }, []);
 
   // Mapeia ordem_corte_id -> numero_pedido para propagar status das etapas seguintes
   const ordemToPedido = useMemo(() => {
