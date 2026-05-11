@@ -91,6 +91,17 @@ const CortePage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isLoadedFromSearch, setIsLoadedFromSearch] = useState(false);
 
+  // Conferir (histórico) view
+  const [viewMode, setViewMode] = useState<"ficha" | "historico">("ficha");
+  const [filtroNumero, setFiltroNumero] = useState("");
+  const [filtroPedido, setFiltroPedido] = useState("");
+  const [filtroCliente, setFiltroCliente] = useState("");
+  const [filtroModelo, setFiltroModelo] = useState("");
+  const [filtroTecido, setFiltroTecido] = useState("");
+  const [filtroDataDe, setFiltroDataDe] = useState("");
+  const [filtroDataAte, setFiltroDataAte] = useState("");
+  const [filtroStatus, setFiltroStatus] = useState("");
+
   const filteredOrdens = ordensCorteDb.filter(
     (oc: any) =>
     (oc.numero || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
