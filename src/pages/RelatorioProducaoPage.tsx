@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CalendarDays, Clock, Package, TrendingUp, Activity } from "lucide-react";
+import { CalendarDays, Clock, Package, TrendingUp, Activity, Shirt } from "lucide-react";
 import { PedidoTimeline } from "@/components/shared/PedidoTimeline";
 import { cn } from "@/lib/utils";
 
