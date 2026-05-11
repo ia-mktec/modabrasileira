@@ -12,7 +12,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from
 "@/components/ui/alert-dialog";
 import { useOrdensCorte, useModelos, useTecidos, useClientes, useAviamentos } from "@/hooks/useSupabaseData";
-import { Plus, Save, Trash2, Printer, Search, ImageOff, Scissors, AlertTriangle } from "lucide-react";
+import { Plus, Save, Trash2, Printer, Search, ImageOff, Scissors, AlertTriangle, CheckCircle, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -90,6 +90,17 @@ const CortePage = () => {
   // Dialogs
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isLoadedFromSearch, setIsLoadedFromSearch] = useState(false);
+
+  // Conferir (histórico) view
+  const [viewMode, setViewMode] = useState<"ficha" | "historico">("ficha");
+  const [filtroNumero, setFiltroNumero] = useState("");
+  const [filtroPedido, setFiltroPedido] = useState("");
+  const [filtroCliente, setFiltroCliente] = useState("");
+  const [filtroModelo, setFiltroModelo] = useState("");
+  const [filtroTecido, setFiltroTecido] = useState("");
+  const [filtroDataDe, setFiltroDataDe] = useState("");
+  const [filtroDataAte, setFiltroDataAte] = useState("");
+  const [filtroStatus, setFiltroStatus] = useState("");
 
   const filteredOrdens = ordensCorteDb.filter(
     (oc: any) =>
@@ -375,6 +386,167 @@ const CortePage = () => {
     setTecidoSearchOpen(true);
   };
 
+  const limparFiltros = () => {
+    setFiltroNumero(""); setFiltroPedido(""); setFiltroCliente(""); setFiltroModelo("");
+    setFiltroTecido(""); setFiltroDataDe(""); setFiltroDataAte(""); setFiltroStatus("");
+  };
+
+  const ordensFiltradas = ordensCorteDb.filter((oc: any) => {
+    if (filtroNumero && !(oc.numero || "").toLowerCase().includes(filtroNumero.toLowerCase())) return false;
+    if (filtroPedido && !(oc.numero_pedido || "").toLowerCase().includes(filtroPedido.toLowerCase())) return false;
+    if (filtroModelo && !(oc.modelo_ref || "").toLowerCase().includes(filtroModelo.toLowerCase())) return false;
+    if (filtroTecido && !(oc.tecido_nome || "").toLowerCase().includes(filtroTecido.toLowerCase())) return false;
+    if (filtroStatus && oc.status !== filtroStatus) return false;
+    if (filtroCliente) {
+      const nome = clientesDb.find((c: any) => c.id === oc.cliente_id)?.razao_social || "";
+      if (!nome.toLowerCase().includes(filtroCliente.toLowerCase())) return false;
+    }
+    if (filtroDataDe && (!oc.data_corte || oc.data_corte < filtroDataDe)) return false;
+    if (filtroDataAte && (!oc.data_corte || oc.data_corte > filtroDataAte)) return false;
+    return true;
+  });
+
+  if (viewMode === "historico") {
+    return (
+      <div className="p-4 md:p-6 space-y-4">
+        <div className="bg-[hsl(217,71%,25%)] text-[hsl(0,0%,100%)] rounded-t-lg px-6 py-3 flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-[hsl(0,0%,100%)] hover:bg-[hsl(217,71%,35%)] shrink-0"
+            onClick={() => setViewMode("ficha")}
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <h1 className="text-xl md:text-2xl font-bold tracking-wide font-mono flex-1 text-center pr-9">
+            HISTÓRICO DE ORDENS DE CORTE
+          </h1>
+        </div>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold">Filtros</h3>
+              <Button variant="ghost" size="sm" className="text-xs h-7" onClick={limparFiltros}>
+                Limpar filtros
+              </Button>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs">Nº Ordem</Label>
+                <Input value={filtroNumero} onChange={(e) => setFiltroNumero(e.target.value)} placeholder="OC-..." className="h-8 text-xs" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Nº Pedido</Label>
+                <Input value={filtroPedido} onChange={(e) => setFiltroPedido(e.target.value)} placeholder="Filtrar..." className="h-8 text-xs" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Cliente</Label>
+                <Input value={filtroCliente} onChange={(e) => setFiltroCliente(e.target.value)} placeholder="Filtrar..." className="h-8 text-xs" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Modelo</Label>
+                <Input value={filtroModelo} onChange={(e) => setFiltroModelo(e.target.value)} placeholder="Ref..." className="h-8 text-xs" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Tecido</Label>
+                <Input value={filtroTecido} onChange={(e) => setFiltroTecido(e.target.value)} placeholder="Filtrar..." className="h-8 text-xs" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Data de</Label>
+                <Input type="date" value={filtroDataDe} onChange={(e) => setFiltroDataDe(e.target.value)} className="h-8 text-xs" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Data até</Label>
+                <Input type="date" value={filtroDataAte} onChange={(e) => setFiltroDataAte(e.target.value)} className="h-8 text-xs" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Status</Label>
+                <Select value={filtroStatus || "todos"} onValueChange={(v) => setFiltroStatus(v === "todos" ? "" : v)}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Todos" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    <SelectItem value="pendente">Pendente</SelectItem>
+                    <SelectItem value="em_andamento">Em Andamento</SelectItem>
+                    <SelectItem value="concluido">Concluído</SelectItem>
+                    <SelectItem value="cancelado">Cancelado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b bg-muted/50">
+                    <th className="text-left py-3 px-3 font-semibold">Data Corte</th>
+                    <th className="text-left py-3 px-3 font-semibold">Nº Ordem</th>
+                    <th className="text-left py-3 px-3 font-semibold">Nº Pedido</th>
+                    <th className="text-left py-3 px-3 font-semibold">Cliente</th>
+                    <th className="text-left py-3 px-3 font-semibold">Modelo</th>
+                    <th className="text-left py-3 px-3 font-semibold">Tecido</th>
+                    <th className="text-right py-3 px-3 font-semibold">Peças</th>
+                    <th className="text-left py-3 px-3 font-semibold">Cortador</th>
+                    <th className="text-center py-3 px-3 font-semibold">Status</th>
+                    <th className="text-center py-3 px-3 font-semibold w-16">Ação</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ordensFiltradas.map((oc: any) => {
+                    const clienteN = clientesDb.find((c: any) => c.id === oc.cliente_id)?.razao_social || "—";
+                    return (
+                      <tr key={oc.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                        <td className="py-2 px-3 font-mono">{oc.data_corte ? new Date(oc.data_corte).toLocaleDateString("pt-BR") : "—"}</td>
+                        <td className="py-2 px-3 font-mono font-semibold text-primary">{oc.numero}</td>
+                        <td className="py-2 px-3 font-mono">{oc.numero_pedido || "—"}</td>
+                        <td className="py-2 px-3">{clienteN}</td>
+                        <td className="py-2 px-3 font-mono">{oc.modelo_ref || "—"}</td>
+                        <td className="py-2 px-3">{oc.tecido_nome || "—"}</td>
+                        <td className="py-2 px-3 text-right font-mono">{oc.quantidade_pecas ?? 0}</td>
+                        <td className="py-2 px-3">{oc.cortador || "—"}</td>
+                        <td className="py-2 px-3 text-center">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border bg-muted/50">
+                            {statusLabel(oc.status) || "—"}
+                          </span>
+                        </td>
+                        <td className="py-2 px-3 text-center">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            title="Editar ordem"
+                            onClick={() => { loadOrdem(oc); setViewMode("ficha"); }}
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {ordensFiltradas.length === 0 && (
+                    <tr>
+                      <td colSpan={10} className="py-8 text-center text-muted-foreground text-sm">
+                        Nenhuma ordem encontrada com os filtros aplicados.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="text-xs text-muted-foreground text-right">
+          {ordensFiltradas.length} ordem(ns)
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 md:p-6 space-y-4">
       {/* Header */}
@@ -433,6 +605,14 @@ const CortePage = () => {
           <Button variant="destructive" className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0" onClick={() => setDeleteDialogOpen(true)}>
             <Trash2 className="w-4 h-4" />
             <span>Limpar Registro</span>
+          </Button>
+
+          <Button
+            className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]"
+            onClick={() => setViewMode("historico")}
+          >
+            <CheckCircle className="w-4 h-4" />
+            <span>Conferir</span>
           </Button>
 
           <Separator className="hidden md:block" />
