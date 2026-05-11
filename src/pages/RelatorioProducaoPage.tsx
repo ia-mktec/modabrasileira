@@ -28,11 +28,11 @@ interface HistRow {
 }
 
 const kanbanColumns = [
-  { key: "pendente", label: "Pendente", color: "hsl(38 92% 50%)" },
-  { key: "em_corte", label: "Em Corte", color: "hsl(217 71% 45%)" },
+  { key: "pendente", label: "Modelos - Pedido", color: "hsl(38 92% 50%)" },
+  { key: "em_corte", label: "Corte", color: "hsl(217 71% 45%)" },
   { key: "em_producao", label: "Em Produção", color: "hsl(38 92% 50%)" },
-  { key: "recebido", label: "Recebido", color: "hsl(199 89% 48%)" },
-  { key: "entregue", label: "Entregue", color: "hsl(142 71% 35%)" },
+  { key: "recebido", label: "Recebimento", color: "hsl(199 89% 48%)" },
+  { key: "entregue", label: "Acabamento", color: "hsl(142 71% 35%)" },
 ];
 
 function PedidoCard({ pedido, onClick }: { pedido: PedidoRow; onClick: (n: string) => void }) {
@@ -171,13 +171,13 @@ const RelatorioProducaoPage = () => {
           <p className="text-sm font-semibold mb-3">Tempo médio entre etapas</p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { from: "pendente", to: "em_corte" },
-              { from: "em_corte", to: "em_producao" },
-              { from: "em_producao", to: "recebido" },
-              { from: "recebido", to: "entregue" },
+              { from: "pendente", to: "em_corte", fromLabel: "Modelos - Pedido", toLabel: "Corte" },
+              { from: "em_corte", to: "em_producao", fromLabel: "Corte", toLabel: "Em Produção" },
+              { from: "em_producao", to: "recebido", fromLabel: "Em Produção", toLabel: "Recebimento" },
+              { from: "recebido", to: "entregue", fromLabel: "Recebimento", toLabel: "Acabamento" },
             ].map((t) => (
               <div key={t.from} className="rounded-md border border-border p-3">
-                <p className="text-[11px] text-muted-foreground">{t.from} → {t.to}</p>
+                <p className="text-[11px] text-muted-foreground">{t.fromLabel} → {t.toLabel}</p>
                 <p className="text-lg font-bold mt-1">{fmtHoras(metrics.mediaPorEtapa[t.from] || 0)}</p>
               </div>
             ))}
