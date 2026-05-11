@@ -180,24 +180,43 @@ const RelatorioProducaoPage = () => {
   const [filtroCliente, setFiltroCliente] = useState<string>("__all__");
 
   useEffect(() => {
+    // Helper para paginar tabelas que podem exceder 1000 linhas (limite padrão do Supabase)
+    const fetchAll = async <T,>(table: string, columns: string): Promise<T[]> => {
+      const PAGE = 1000;
+      let from = 0;
+      const all: T[] = [];
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const { data, error } = await supabase.from(table as any).select(columns).range(from, from + PAGE - 1);
+        if (error || !data) break;
+        all.push(...(data as T[]));
+        if (data.length < PAGE) break;
+        from += PAGE;
+      }
+      return all;
+    };
+
     Promise.all([
-      supabase.from("modelo_pedidos").select("*").order("created_at", { ascending: false }),
-      supabase.from("ordens_corte").select("id,numero_pedido,status,updated_at"),
-      supabase.from("expedicao").select("ordem_corte_id,status,updated_at"),
-      supabase.from("recebimento").select("ordem_corte_id,status,updated_at"),
-      supabase.from("entrega_cliente").select("ordem_corte_id,status,updated_at"),
+      fetchAll<PedidoRow>("modelo_pedidos", "*"),
+      fetchAll<OrdemCorteRow & { id: string }>("ordens_corte", "id,numero_pedido,status,updated_at"),
+      fetchAll<ExpedicaoRow>("expedicao", "ordem_corte_id,status,updated_at"),
+      fetchAll<RecebimentoRow>("recebimento", "ordem_corte_id,status,updated_at"),
+      fetchAll<EntregaRow>("entrega_cliente", "ordem_corte_id,status,updated_at"),
       supabase.from("modelos").select("referencia,imagem_url"),
     ]).then(([p, o, e, r, en, m]) => {
-      setPedidos((p.data || []) as PedidoRow[]);
-      setOrdens((o.data || []) as any);
-      setExpedicoes((e.data || []) as any);
-      setRecebimentos((r.data || []) as any);
-      setEntregas((en.data || []) as any);
+      // Pedidos mais recentes primeiro
+      setPedidos([...p].sort((a, b) => (b.created_at || "").localeCompare(a.created_at || "")));
+      setOrdens(o);
+      setExpedicoes(e);
+      setRecebimentos(r);
+      setEntregas(en);
       const imgs: Record<string, string> = {};
       (m.data || []).forEach((x: any) => {
         if (x.referencia && x.imagem_url) imgs[x.referencia] = x.imagem_url;
       });
       setModeloImgs(imgs);
+    });
+  }, []);
     });
   }, []);
 
