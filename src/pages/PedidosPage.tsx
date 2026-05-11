@@ -129,6 +129,23 @@ export default function PedidosPage() {
     setDialogOpen(true);
   };
 
+  const handleDelete = async () => {
+    if (!pedidoToDelete) return;
+    setDeleting(true);
+    const { error } = await supabase
+      .from("modelo_pedidos")
+      .delete()
+      .eq("numero_pedido", pedidoToDelete);
+    setDeleting(false);
+    if (error) {
+      toast({ title: "Erro ao excluir pedido", description: error.message, variant: "destructive" });
+      return;
+    }
+    setPedidos((prev) => prev.filter((p) => p.numero_pedido !== pedidoToDelete));
+    toast({ title: "Pedido excluído", description: `${pedidoToDelete} foi removido.` });
+    setPedidoToDelete(null);
+  };
+
   return (
     <div className="p-6 space-y-6">
       <PageHeader
