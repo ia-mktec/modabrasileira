@@ -28,11 +28,11 @@ interface HistRow {
 }
 
 const kanbanColumns = [
-  { key: "pendente", label: "Pendente", color: "hsl(38 92% 50%)" },
-  { key: "em_corte", label: "Em Corte", color: "hsl(217 71% 45%)" },
+  { key: "pendente", label: "Modelos - Pedido", color: "hsl(38 92% 50%)" },
+  { key: "em_corte", label: "Corte", color: "hsl(217 71% 45%)" },
   { key: "em_producao", label: "Em Produção", color: "hsl(38 92% 50%)" },
-  { key: "recebido", label: "Recebido", color: "hsl(199 89% 48%)" },
-  { key: "entregue", label: "Entregue", color: "hsl(142 71% 35%)" },
+  { key: "recebido", label: "Recebimento", color: "hsl(199 89% 48%)" },
+  { key: "entregue", label: "Acabamento", color: "hsl(142 71% 35%)" },
 ];
 
 function PedidoCard({ pedido, onClick }: { pedido: PedidoRow; onClick: (n: string) => void }) {
