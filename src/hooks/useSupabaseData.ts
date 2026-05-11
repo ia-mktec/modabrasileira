@@ -372,7 +372,20 @@ export function useOrdensCorte() {
   }, [fetch]);
 
   useEffect(() => { fetch(); }, [fetch]);
-  return { ordens, loading, refetch: fetch, salvarOrdem, deletarOrdem };
+  const loadOrdemDetalhada = useCallback(async (id: string) => {
+    const { data, error } = await supabase
+      .from("ordens_corte")
+      .select("*, grade_corte(*), aviamentos_ordem(*)")
+      .eq("id", id)
+      .maybeSingle();
+    if (error) {
+      toast({ title: "Erro ao carregar ordem", description: error.message, variant: "destructive" });
+      return null;
+    }
+    return data;
+  }, []);
+
+  return { ordens, loading, refetch: fetch, salvarOrdem, deletarOrdem, loadOrdemDetalhada };
 }
 
 // ===== EXPEDIÇÃO =====
