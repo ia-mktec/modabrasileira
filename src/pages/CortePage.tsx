@@ -34,7 +34,7 @@ const createEmptyGradeRow = (): GradeRow => ({
 
 const CortePage = () => {
   const navigate = useNavigate();
-  const { ordens: ordensCorteDb, salvarOrdem, deletarOrdem } = useOrdensCorte();
+  const { ordens: ordensCorteDb, salvarOrdem, deletarOrdem, loadOrdemDetalhada } = useOrdensCorte();
   const { modelos: modelosDb } = useModelos();
   const { tecidos: tecidosDb, refetch: refetchTecidos } = useTecidos();
   const { clientes: clientesDb } = useClientes();
@@ -144,7 +144,12 @@ const CortePage = () => {
     (a.tipo || "").toLowerCase().includes(aviamentoSearchTerm.toLowerCase())
   );
 
-  const loadOrdem = (oc: any) => {
+  const loadOrdem = async (oc: any) => {
+    // Se vier da lista enxuta (sem joins), busca a ordem completa sob demanda
+    if (oc && !oc.grade_corte && !oc.aviamentos_ordem && oc.id) {
+      const full = await loadOrdemDetalhada(oc.id);
+      if (full) oc = full;
+    }
     setCurrentOrdemId(oc.id);
     setNumero(oc.numero);
     setNumeroPedido(oc.numero_pedido || "");
