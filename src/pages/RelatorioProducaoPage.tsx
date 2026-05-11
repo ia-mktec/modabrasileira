@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CalendarDays, Clock, Package, TrendingUp, Activity, Shirt } from "lucide-react";
 import { PedidoTimeline } from "@/components/shared/PedidoTimeline";
 import { cn } from "@/lib/utils";
@@ -175,6 +177,7 @@ const RelatorioProducaoPage = () => {
   const [modeloImgs, setModeloImgs] = useState<Record<string, string>>({});
   const [selectedPedido, setSelectedPedido] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [filtroCliente, setFiltroCliente] = useState<string>("__all__");
 
   useEffect(() => {
     Promise.all([
@@ -292,6 +295,17 @@ const RelatorioProducaoPage = () => {
     }
   }, [pedidos, ordens, expedicoes, recebimentos, entregas, ordemToPedido]);
 
+  const clientesOptions = useMemo(() => {
+    const set = new Set<string>();
+    pedidos.forEach((p) => p.cliente && set.add(p.cliente));
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
+  }, [pedidos]);
+
+  const pedidosFiltrados = useMemo(
+    () => (filtroCliente === "__all__" ? pedidos : pedidos.filter((p) => (p.cliente || "") === filtroCliente)),
+    [pedidos, filtroCliente]
+  );
+
   const grouped = useMemo(() => {
     const g: Record<ColKey, PedidoRow[]> = {
       modelos_pedido: [],
@@ -300,21 +314,21 @@ const RelatorioProducaoPage = () => {
       recebimento: [],
       acabamento: [],
     };
-    pedidos.forEach((p) => {
+    pedidosFiltrados.forEach((p) => {
       const c = colByPedido[p.numero_pedido];
       if (c) g[c].push(p);
     });
     return g;
-  }, [pedidos, colByPedido]);
+  }, [pedidosFiltrados, colByPedido]);
 
   const metrics = useMemo(() => {
-    const visiveis = pedidos.filter((p) => colByPedido[p.numero_pedido]);
-    const total = pedidos.length;
+    const visiveis = pedidosFiltrados.filter((p) => colByPedido[p.numero_pedido]);
+    const total = pedidosFiltrados.length;
     const ativos = visiveis.length;
     const acabamento = grouped.acabamento.length;
     const ocultos = total - ativos;
     return { total, ativos, acabamento, ocultos };
-  }, [pedidos, colByPedido, grouped]);
+  }, [pedidosFiltrados, colByPedido, grouped]);
 
   const handleClick = (numero: string) => {
     setSelectedPedido(numero);
@@ -334,6 +348,30 @@ const RelatorioProducaoPage = () => {
         <MetricCard icon={Clock} label="Em Acabamento" value={String(metrics.acabamento)} />
         <MetricCard icon={TrendingUp} label="Concluídos" value={String(metrics.ocultos)} hint="entregues ao cliente" />
       </div>
+
+      <Card>
+        <CardContent className="p-4 flex flex-wrap items-end gap-3">
+          <div className="flex flex-col gap-1 min-w-[240px] flex-1 max-w-sm">
+            <label className="text-xs font-semibold text-muted-foreground">Cliente</label>
+            <Select value={filtroCliente} onValueChange={setFiltroCliente}>
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="Todos os clientes" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">Todos os clientes</SelectItem>
+                {clientesOptions.map((c) => (
+                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {filtroCliente !== "__all__" && (
+            <Button variant="ghost" size="sm" onClick={() => setFiltroCliente("__all__")}>
+              Limpar
+            </Button>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
         {kanbanColumns.map((col) => (
