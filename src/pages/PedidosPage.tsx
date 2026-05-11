@@ -132,6 +132,28 @@ export default function PedidosPage() {
   const handleDelete = async () => {
     if (!pedidoToDelete) return;
     setDeleting(true);
+
+    // Bloquear exclusão se já existe ordem de corte vinculada
+    const { count: ocCount, error: ocErr } = await supabase
+      .from("ordens_corte")
+      .select("id", { count: "exact", head: true })
+      .eq("numero_pedido", pedidoToDelete);
+    if (ocErr) {
+      setDeleting(false);
+      toast({ title: "Erro ao verificar ordem de corte", description: ocErr.message, variant: "destructive" });
+      return;
+    }
+    if ((ocCount ?? 0) > 0) {
+      setDeleting(false);
+      toast({
+        title: "Não é possível excluir",
+        description: "Este pedido já possui ordem de corte vinculada.",
+        variant: "destructive",
+      });
+      setPedidoToDelete(null);
+      return;
+    }
+
     const { error } = await supabase
       .from("modelo_pedidos")
       .delete()
