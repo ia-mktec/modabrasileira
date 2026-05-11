@@ -280,7 +280,7 @@ export function useOrdensCorte() {
     while (true) {
       const { data, error } = await supabase
         .from("ordens_corte")
-        .select("*, grade_corte(*), aviamentos_ordem(*)")
+        .select("id,numero,numero_pedido,modelo_ref,modelo_id,tecido_nome,tecido_id,cliente_id,quantidade_pecas,data_corte,cortador,enfestos,perda_percent,consumo_por_peca,observacoes,status,created_at,updated_at")
         .order("data_corte", { ascending: false, nullsFirst: false })
         .order("numero", { ascending: false })
         .range(from, from + PAGE - 1);
