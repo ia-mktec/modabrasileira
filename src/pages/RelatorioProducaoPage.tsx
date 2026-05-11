@@ -171,13 +171,13 @@ const RelatorioProducaoPage = () => {
           <p className="text-sm font-semibold mb-3">Tempo médio entre etapas</p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { from: "pendente", to: "em_corte" },
-              { from: "em_corte", to: "em_producao" },
-              { from: "em_producao", to: "recebido" },
-              { from: "recebido", to: "entregue" },
+              { from: "pendente", to: "em_corte", fromLabel: "Modelos - Pedido", toLabel: "Corte" },
+              { from: "em_corte", to: "em_producao", fromLabel: "Corte", toLabel: "Em Produção" },
+              { from: "em_producao", to: "recebido", fromLabel: "Em Produção", toLabel: "Recebimento" },
+              { from: "recebido", to: "entregue", fromLabel: "Recebimento", toLabel: "Acabamento" },
             ].map((t) => (
               <div key={t.from} className="rounded-md border border-border p-3">
-                <p className="text-[11px] text-muted-foreground">{t.from} → {t.to}</p>
+                <p className="text-[11px] text-muted-foreground">{t.fromLabel} → {t.toLabel}</p>
                 <p className="text-lg font-bold mt-1">{fmtHoras(metrics.mediaPorEtapa[t.from] || 0)}</p>
               </div>
             ))}

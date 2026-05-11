@@ -24,14 +24,14 @@ const statusLabels: Record<string, string> = {
   ativo: "Ativo",
   inativo: "Inativo",
   desenvolvimento: "Em Desenvolvimento",
-  pendente: "Pendente",
+  pendente: "Modelos - Pedido",
   em_andamento: "Em Andamento",
   concluido: "Concluído",
   cancelado: "Cancelado",
-  em_corte: "Em Corte",
+  em_corte: "Corte",
   em_producao: "Em Produção",
-  recebido: "Recebido",
-  entregue: "Entregue",
+  recebido: "Recebimento",
+  entregue: "Acabamento",
 };
 
 interface StatusBadgeProps {
