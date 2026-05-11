@@ -103,7 +103,7 @@ const Dashboard = () => {
     },
     {
       title: "Tecido em Estoque",
-      value: `${tecidoEstoque.toLocaleString("pt-BR", { maximumFractionDigits: 1 })} kg`,
+      value: `${tecidoEstoque.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} mt`,
       subtitle: "Total disponível",
       icon: Layers,
     },
