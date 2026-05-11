@@ -227,17 +227,30 @@ export default function PedidosPage() {
                         <StatusBadge status={p.status_kanban} />
                       </TableCell>
                       <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-1 text-xs"
-                          onClick={() =>
-                            window.open(`/pedidos/${encodeURIComponent(p.numero_pedido)}/ficha`, "_blank")
-                          }
-                        >
-                          <FileText className="w-3.5 h-3.5" />
-                          Ver Ficha
-                        </Button>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1 text-xs"
+                            onClick={() =>
+                              window.open(`/pedidos/${encodeURIComponent(p.numero_pedido)}/ficha`, "_blank")
+                            }
+                          >
+                            <FileText className="w-3.5 h-3.5" />
+                            Ver Ficha
+                          </Button>
+                          {canDelete && (
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="gap-1 text-xs"
+                              onClick={() => setPedidoToDelete(p.numero_pedido)}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              Excluir
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
