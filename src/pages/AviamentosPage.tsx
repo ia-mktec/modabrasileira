@@ -224,6 +224,7 @@ const AviamentosPage = () => {
                   <thead className="sticky top-0 bg-muted/95 backdrop-blur z-10">
                     <tr className="border-b">
                       <th className="text-left py-2.5 px-3 font-semibold">Tipo</th>
+                      <th className="text-left py-2.5 px-3 font-semibold">Código</th>
                       <th className="text-left py-2.5 px-3 font-semibold">Descrição</th>
                       <th className="text-left py-2.5 px-3 font-semibold">Tamanho</th>
                       <th className="text-left py-2.5 px-3 font-semibold">Cor</th>
@@ -234,10 +235,11 @@ const AviamentosPage = () => {
                   </thead>
                   <tbody>
                     {loading ? (
-                      <tr><td colSpan={7} className="py-8 text-center text-muted-foreground">Carregando...</td></tr>
+                      <tr><td colSpan={8} className="py-8 text-center text-muted-foreground">Carregando...</td></tr>
                     ) : filteredAviamentos.map((r: any) => (
                       <tr key={r.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                         <td className="py-2 px-3 font-medium">{r.tipo}</td>
+                        <td className="py-2 px-3 font-mono">{r.codigo || "—"}</td>
                         <td className="py-2 px-3">{r.descricao}</td>
                         <td className="py-2 px-3">{r.tamanho}</td>
                         <td className="py-2 px-3">{r.cor}</td>
@@ -256,7 +258,7 @@ const AviamentosPage = () => {
                       </tr>
                     ))}
                     {!loading && filteredAviamentos.length === 0 && (
-                      <tr><td colSpan={7} className="py-8 text-center text-muted-foreground text-sm">
+                      <tr><td colSpan={8} className="py-8 text-center text-muted-foreground text-sm">
                         {aviamentos.length === 0 ? "Nenhum aviamento cadastrado." : "Nenhum aviamento corresponde ao filtro."}
                       </td></tr>
                     )}
