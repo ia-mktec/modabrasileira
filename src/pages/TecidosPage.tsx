@@ -11,6 +11,8 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import { useTecidos, useClientes, useEstoqueMovimentacoes } from "@/hooks/useSupabaseData";
+import { SearchableSelect } from "@/components/shared/SearchableSelect";
+import { useEntityOptions } from "@/hooks/useEntityOptions";
 import { supabase } from "@/integrations/supabase/client";
 
 // Modelos from Cadastro module
