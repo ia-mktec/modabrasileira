@@ -9,8 +9,26 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { useFornecedores, useClientes } from "@/hooks/useSupabaseData";
-import { Plus, Search, Pencil } from "lucide-react";
+import { Plus, Search, Pencil, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { supabase } from "@/integrations/supabase/client";
 
 // Local lookup data (not persisted to DB - simple dropdown options)
 const initialModelos = [
@@ -85,7 +103,7 @@ const initialCores = [
 ];
 
 const CadastroPage = () => {
-  const { fornecedores, loading: loadingForn, salvarFornecedor } = useFornecedores();
+  const { fornecedores, loading: loadingForn, salvarFornecedor, deletarFornecedor } = useFornecedores();
   const { clientes, loading: loadingCli, salvarCliente } = useClientes();
 
   const [search, setSearch] = useState("");
@@ -95,6 +113,8 @@ const CadastroPage = () => {
 
   const [editFornecedorOpen, setEditFornecedorOpen] = useState(false);
   const [editingFornecedor, setEditingFornecedor] = useState<any>(null);
+  const [deleteFornecedorOpen, setDeleteFornecedorOpen] = useState(false);
+  const [deletingFornecedor, setDeletingFornecedor] = useState<any>(null);
   const [editClienteOpen, setEditClienteOpen] = useState(false);
   const [editingCliente, setEditingCliente] = useState<any>(null);
   const [novaCorOpen, setNovaCorOpen] = useState(false);
@@ -139,6 +159,32 @@ const CadastroPage = () => {
     setNovaCorNome("");
     setNovaCorHex("#ffffff");
     setNovaCorOpen(false);
+  };
+
+  const handleDeleteFornecedor = async () => {
+    if (!deletingFornecedor) return;
+    // Verifica vínculos na tabela aviamentos
+    const { data: vinculos, error } = await supabase
+      .from("aviamentos")
+      .select("id")
+      .eq("fornecedor_id", deletingFornecedor.id)
+      .limit(1);
+    if (error) {
+      toast({ title: "Erro ao verificar vínculos", description: error.message, variant: "destructive" });
+      setDeleteFornecedorOpen(false);
+      return;
+    }
+    if (vinculos && vinculos.length > 0) {
+      toast({ title: "Não é possível excluir", description: "Este fornecedor possui aviamentos vinculados.", variant: "destructive" });
+      setDeleteFornecedorOpen(false);
+      return;
+    }
+    const ok = await deletarFornecedor(deletingFornecedor.id);
+    if (ok) {
+      toast({ title: "Fornecedor excluído com sucesso" });
+    }
+    setDeleteFornecedorOpen(false);
+    setDeletingFornecedor(null);
   };
 
   return (
@@ -199,12 +245,20 @@ const CadastroPage = () => {
                         <td className="py-3 px-4 text-center">{f.prazo_pagamento} dias</td>
                         <td className="py-3 px-4"><StatusBadge status={f.status} /></td>
                         <td className="py-3 px-4 text-center">
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
-                            setEditingFornecedor({ ...f });
-                            setEditFornecedorOpen(true);
-                          }}>
-                            <Pencil className="w-4 h-4" />
-                          </Button>
+                          <div className="flex items-center justify-center gap-1">
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
+                              setEditingFornecedor({ ...f });
+                              setEditFornecedorOpen(true);
+                            }}>
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => {
+                              setDeletingFornecedor(f);
+                              setDeleteFornecedorOpen(true);
+                            }}>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -419,6 +473,18 @@ const CadastroPage = () => {
                 <Label>Prazo de Pagamento (dias)</Label>
                 <Input type="number" value={editingFornecedor.prazo_pagamento || 0} onChange={(e) => setEditingFornecedor((prev: any) => ({ ...prev, prazo_pagamento: parseInt(e.target.value) || 0 }))} />
               </div>
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select value={editingFornecedor.status || "ativo"} onValueChange={(val) => setEditingFornecedor((prev: any) => ({ ...prev, status: val }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ativo">Ativo</SelectItem>
+                    <SelectItem value="inativo">Inativo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="flex gap-2 pt-4">
                 <Button className="flex-1" onClick={handleSaveFornecedor}>Salvar</Button>
                 <Button variant="outline" className="flex-1" onClick={() => setEditFornecedorOpen(false)}>Cancelar</Button>
@@ -505,6 +571,26 @@ const CadastroPage = () => {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* AlertDialog: Confirmar exclusão de Fornecedor */}
+      <AlertDialog open={deleteFornecedorOpen} onOpenChange={setDeleteFornecedorOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir fornecedor?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir o fornecedor <strong>{deletingFornecedor?.razao_social}</strong>?
+              <br />
+              {deletingFornecedor?.id && "Se houver aviamentos vinculados, a exclusão será bloqueada automaticamente."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeletingFornecedor(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteFornecedor} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
