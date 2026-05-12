@@ -413,23 +413,32 @@ export default function PedidosPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs">Cliente</Label>
-                  <Input
-                    value={editingPedido.cliente || ""}
-                    onChange={(e) => setEditingPedido({ ...editingPedido, cliente: e.target.value || null })}
+                  <SearchableSelect
+                    options={clienteOptions}
+                    value={editingPedido.cliente}
+                    onChange={(v) => setEditingPedido({ ...editingPedido, cliente: v })}
+                    placeholder="Selecione cliente"
+                    searchPlaceholder="Buscar cliente..."
                   />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Tecido</Label>
-                  <Input
-                    value={editingPedido.tecido || ""}
-                    onChange={(e) => setEditingPedido({ ...editingPedido, tecido: e.target.value || null })}
+                  <SearchableSelect
+                    options={tecidoOptions}
+                    value={editingPedido.tecido}
+                    onChange={(v) => setEditingPedido({ ...editingPedido, tecido: v })}
+                    placeholder="Selecione tecido"
+                    searchPlaceholder="Buscar tecido..."
                   />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Cor</Label>
-                  <Input
-                    value={editingPedido.cor || ""}
-                    onChange={(e) => setEditingPedido({ ...editingPedido, cor: e.target.value || null })}
+                  <SearchableSelect
+                    options={corOptions}
+                    value={editingPedido.cor}
+                    onChange={(v) => setEditingPedido({ ...editingPedido, cor: v })}
+                    placeholder="Selecione cor"
+                    searchPlaceholder="Buscar cor..."
                   />
                 </div>
                 <div className="space-y-1">
@@ -447,25 +456,39 @@ export default function PedidosPage() {
                   />
                 </div>
               </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Status</Label>
-                <Select
-                  value={editingPedido.status_kanban}
-                  onValueChange={(v) => setEditingPedido({ ...editingPedido, status_kanban: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {statusOptions
-                      .filter((s) => s.value !== "todos")
-                      .map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Status</Label>
+                  <SearchableSelect
+                    options={STATUS_PEDIDO_OPTIONS}
+                    value={editingPedido.status_kanban}
+                    onChange={(v) => setEditingPedido({ ...editingPedido, status_kanban: v || "pendente" })}
+                    placeholder="Selecione status"
+                    searchPlaceholder="Buscar status..."
+                    allowClear={false}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Piloto Entregue</Label>
+                  <SearchableSelect
+                    options={PILOTO_OPTIONS}
+                    value={
+                      editingPedido.piloto_entregue === true
+                        ? "true"
+                        : editingPedido.piloto_entregue === false
+                          ? "false"
+                          : null
+                    }
+                    onChange={(v) =>
+                      setEditingPedido({
+                        ...editingPedido,
+                        piloto_entregue: v === "true" ? true : v === "false" ? false : null,
+                      })
+                    }
+                    placeholder="Selecione"
+                    searchPlaceholder="Buscar..."
+                  />
+                </div>
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Observações</Label>
@@ -476,18 +499,6 @@ export default function PedidosPage() {
                     setEditingPedido({ ...editingPedido, observacoes: e.target.value || null })
                   }
                 />
-              </div>
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="piloto"
-                  checked={editingPedido.piloto_entregue === true}
-                  onCheckedChange={(checked) =>
-                    setEditingPedido({ ...editingPedido, piloto_entregue: checked === true })
-                  }
-                />
-                <Label htmlFor="piloto" className="text-sm font-normal cursor-pointer">
-                  Piloto entregue
-                </Label>
               </div>
             </div>
           )}
