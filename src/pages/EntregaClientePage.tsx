@@ -34,7 +34,7 @@ interface GradeEntregueRow {
 }
 
 const EntregaClientePage = () => {
-  const { ordens: ordensCorteDb, loading: loadingOrdens } = useOrdensCorte();
+  const { ordens: ordensCorteDb, loading: loadingOrdens, loadOrdemDetalhada } = useOrdensCorte();
   const { salvarEntrega } = useEntregaCliente();
   const { modelos: modelosDb, loading: loadingModelos } = useModelos();
   const [currentOrdemCorteId, setCurrentOrdemCorteId] = useState<string | null>(null);
@@ -83,7 +83,7 @@ const EntregaClientePage = () => {
     }
   };
 
-  const loadOrdem = (oc: any) => {
+  const loadOrdem = async (oc: any) => {
     setCurrentOrdemCorteId(oc.id);
     setOrdemCorte(oc.numero);
     setNumeroPedido(oc.numero_pedido || "");
@@ -96,10 +96,20 @@ const EntregaClientePage = () => {
     setDataEnvio("");
     setDataEntrega(undefined);
     setTempoProducao("");
+    setRefImage(foundModelo?.imagem_url || null);
+    setGradeCortada([]);
+    setGradeEntregue([]);
+    setSearchOpen(false);
+    setIsLoaded(true);
+    setObservacoes("");
+    setStatusKanban("");
 
-    // Grade cortada from ordem
-    if (oc.grade_corte && oc.grade_corte.length > 0) {
-      const cortada = oc.grade_corte.map((g: any) => ({
+    // Fetch full ordem detail (grade_corte) since list query doesn't include children
+    const detalhe = await loadOrdemDetalhada(oc.id);
+    const ordemFull = detalhe || oc;
+
+    if (ordemFull.grade_corte && ordemFull.grade_corte.length > 0) {
+      const cortada = ordemFull.grade_corte.map((g: any) => ({
         id: g.id || crypto.randomUUID(),
         cor: g.cor || "",
         qtdCortada: {
@@ -111,23 +121,14 @@ const EntregaClientePage = () => {
       }));
       setGradeCortada(cortada);
 
-      const entregue = oc.grade_corte.map((g: any) => ({
+      const entregue = ordemFull.grade_corte.map((g: any) => ({
         id: g.id || crypto.randomUUID(),
         cor: g.cor || "",
         qtdEntregue: Object.fromEntries(TAMANHOS.map((t: string) => [t, ""])),
         segundaQualidade: "",
       }));
       setGradeEntregue(entregue);
-    } else {
-      setGradeCortada([]);
-      setGradeEntregue([]);
     }
-
-    setRefImage(foundModelo?.imagem_url || null);
-    setSearchOpen(false);
-    setIsLoaded(true);
-    setObservacoes("");
-    setStatusKanban("");
   };
 
   const updateEntregue = (rowId: string, tam: string, val: string) =>
