@@ -148,7 +148,7 @@ export function useModelos() {
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
-    const { data, error } = await supabase.from("modelos").select("*").order("referencia");
+    const { data, error } = await supabase.from("modelos").select("*").order("referencia").range(0, 9999);
     if (error) { toast({ title: "Erro ao buscar modelos", description: error.message, variant: "destructive" }); }
     else setModelos(data || []);
     setLoading(false);
