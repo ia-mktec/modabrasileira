@@ -203,6 +203,43 @@ const ExpedicaoPage = () => {
   const updateQtdEnviar = (rowId: string, tam: string, val: string) =>
     setGradeRows((prev) => prev.map((r) => r.id === rowId ? { ...r, qtdEnviar: { ...r.qtdEnviar, [tam]: val } } : r));
 
+  // Distribui um total proporcionalmente conforme pesos (saldo por tamanho), com inteiros e remanejamento de resto
+  const distributeByWeights = (total: number, weights: number[]): number[] => {
+    const sumW = weights.reduce((a, b) => a + b, 0);
+    if (sumW <= 0 || total <= 0) return weights.map(() => 0);
+    const raw = weights.map((w) => (total * w) / sumW);
+    const floored = raw.map((v) => Math.floor(v));
+    let resto = total - floored.reduce((a, b) => a + b, 0);
+    const fracs = raw
+      .map((v, i) => ({ i, frac: v - Math.floor(v), w: weights[i] }))
+      .sort((a, b) => b.frac - a.frac || b.w - a.w);
+    let k = 0;
+    while (resto > 0 && k < fracs.length * 4) {
+      const idx = fracs[k % fracs.length].i;
+      // Não exceder o peso (saldo) do tamanho
+      if (floored[idx] < weights[idx]) {
+        floored[idx] += 1;
+        resto -= 1;
+      }
+      k += 1;
+    }
+    return floored;
+  };
+
+  const updateRowTotal = (rowId: string, totalStr: string) => {
+    setGradeRows((prev) => prev.map((r) => {
+      if (r.id !== rowId) return r;
+      const weights = TAMANHOS.map((t) => saldoCell(r, t));
+      const sumW = weights.reduce((a, b) => a + b, 0);
+      let total = parseInt(totalStr) || 0;
+      if (total > sumW) total = sumW;
+      const dist = distributeByWeights(total, weights);
+      const qtdEnviar: Record<string, string> = {};
+      TAMANHOS.forEach((t, i) => { qtdEnviar[t] = dist[i] > 0 ? String(dist[i]) : ""; });
+      return { ...r, qtdEnviar };
+    }));
+  };
+
   const totalProdBySize = (tam: string) => gradeRows.reduce((s, r) => s + (r.qtdProduzida[tam] || 0), 0);
   const totalProdGeral = TAMANHOS.reduce((s, t) => s + totalProdBySize(t), 0);
   const saldoCell = (row: GradeExpRow, tam: string) =>
@@ -578,7 +615,13 @@ const ExpedicaoPage = () => {
                               </td>
                             );
                           })}
-                          <td className="px-2 py-0.5 text-center font-bold">{totalEnv}</td>
+                          <td className="px-1 py-0.5 text-center">
+                            <Input type="number" min="0" max={totalSaldo}
+                              value={totalEnv > 0 ? String(totalEnv) : ""}
+                              onChange={(e) => updateRowTotal(row.id, e.target.value)}
+                              disabled={totalSaldo === 0}
+                              className={`h-7 text-xs text-center font-bold ${yellowInput}`} placeholder="0" />
+                          </td>
                         </tr>,
                       ];
                     })}
