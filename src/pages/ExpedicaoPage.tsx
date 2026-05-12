@@ -110,16 +110,39 @@ const ExpedicaoPage = () => {
     setStatusOrdem(oc.status || "");
     setCliente("");
 
+    // Compute already shipped quantities (sum across previous expedicoes for this OC)
+    const prevExps = (expedicoesDb || []).filter((e: any) => e.ordem_corte_id === oc.id);
+    const enviadoPorCor: Record<string, Record<string, number>> = {};
+    prevExps.forEach((e: any) => {
+      (e.grade_expedicao || []).forEach((g: any) => {
+        const cor = g.cor || "";
+        if (!enviadoPorCor[cor]) enviadoPorCor[cor] = {};
+        TAMANHOS.forEach((t) => {
+          const k = `${TAM_KEYS[t]}_exp`;
+          enviadoPorCor[cor][t] = (enviadoPorCor[cor][t] || 0) + (g[k] || 0);
+        });
+      });
+    });
+
     // Load grade from ordem corte
     if (oc.grade_corte && oc.grade_corte.length > 0) {
-      setGradeRows(oc.grade_corte.map((g: any) => ({
-        id: g.id || crypto.randomUUID(),
-        cor: g.cor || "",
-        qtdProduzida: {
-          PP: g.pp || 0, P: g.p || 0, M: g.m || 0, G: g.g || 0,
-          GG: g.gg || 0, G1: g.g1 || 0, G2: g.g2 || 0, G3: g.g3 || 0,
-        }
-      })));
+      setGradeRows(oc.grade_corte.map((g: any) => {
+        const cor = g.cor || "";
+        const enviada = enviadoPorCor[cor] || {};
+        return {
+          id: g.id || crypto.randomUUID(),
+          cor,
+          qtdProduzida: {
+            PP: g.pp || 0, P: g.p || 0, M: g.m || 0, G: g.g || 0,
+            GG: g.gg || 0, G1: g.g1 || 0, G2: g.g2 || 0, G3: g.g3 || 0,
+          },
+          qtdEnviadaAnterior: {
+            PP: enviada.PP || 0, P: enviada.P || 0, M: enviada.M || 0, G: enviada.G || 0,
+            GG: enviada.GG || 0, G1: enviada.G1 || 0, G2: enviada.G2 || 0, G3: enviada.G3 || 0,
+          },
+          qtdEnviar: { PP: "", P: "", M: "", G: "", GG: "", G1: "", G2: "", G3: "" },
+        };
+      }));
     } else {
       setGradeRows([]);
     }
@@ -148,6 +171,9 @@ const ExpedicaoPage = () => {
     setObservacoes("");
     setStatusKanban("");
   };
+
+  const updateQtdEnviar = (rowId: string, tam: string, val: string) =>
+    setGradeRows((prev) => prev.map((r) => r.id === rowId ? { ...r, qtdEnviar: { ...r.qtdEnviar, [tam]: val } } : r));
 
   const totalProdBySize = (tam: string) => gradeRows.reduce((s, r) => s + (r.qtdProduzida[tam] || 0), 0);
   const totalProdGeral = TAMANHOS.reduce((s, t) => s + totalProdBySize(t), 0);
