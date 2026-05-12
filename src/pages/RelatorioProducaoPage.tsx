@@ -92,50 +92,48 @@ function PedidoCard({
             {colLabel}
           </span>
         </div>
-        <div className="flex gap-3">
+        <button
+          type="button"
+          onClick={() => onOpenFicha(pedido.numero_pedido)}
+          className="w-full aspect-square rounded-md border border-border bg-muted overflow-hidden flex items-center justify-center hover:ring-2 hover:ring-primary transition mb-2"
+          title="Abrir ficha do pedido"
+        >
+          {imagemUrl ? (
+            <img src={imagemUrl} alt={pedido.modelo_ref} className="w-full h-full object-cover" />
+          ) : (
+            <Shirt className="w-10 h-10 text-muted-foreground" />
+          )}
+        </button>
+        <div className="space-y-1.5 min-w-0">
+          <div className="flex flex-col min-w-0">
+            <span className="font-mono text-xs font-semibold text-primary truncate">{pedido.modelo_ref}</span>
+            {numeroOrdemCorte && (
+              <span className="text-[10px] text-muted-foreground truncate">OC: {numeroOrdemCorte}</span>
+            )}
+          </div>
           <button
             type="button"
             onClick={() => onOpenFicha(pedido.numero_pedido)}
-            className="shrink-0 w-14 h-14 rounded-md border border-border bg-muted overflow-hidden flex items-center justify-center hover:ring-2 hover:ring-primary transition"
+            className="text-[11px] text-primary font-mono truncate hover:underline text-left block w-full"
             title="Abrir ficha do pedido"
           >
-            {imagemUrl ? (
-              <img src={imagemUrl} alt={pedido.modelo_ref} className="w-full h-full object-cover" />
-            ) : (
-              <Shirt className="w-6 h-6 text-muted-foreground" />
-            )}
+            {pedido.numero_pedido}
           </button>
-          <div className="flex-1 min-w-0 space-y-1.5">
-            <div className="flex flex-col min-w-0">
-              <span className="font-mono text-xs font-semibold text-primary truncate">{pedido.modelo_ref}</span>
-              {numeroOrdemCorte && (
-                <span className="text-[10px] text-muted-foreground truncate">OC: {numeroOrdemCorte}</span>
-              )}
-            </div>
-            <button
-              type="button"
-              onClick={() => onOpenFicha(pedido.numero_pedido)}
-              className="text-[11px] text-primary font-mono truncate hover:underline text-left block w-full"
-              title="Abrir ficha do pedido"
-            >
-              {pedido.numero_pedido}
-            </button>
-            {pedido.cliente && <p className="text-xs text-foreground truncate">{pedido.cliente}</p>}
-            {(pedido.tecido || pedido.cor) && (
-              <p className="text-[11px] text-muted-foreground truncate">
-                {[pedido.tecido, pedido.cor].filter(Boolean).join(" • ")}
-              </p>
-            )}
-            <button
-              type="button"
-              onClick={() => onOpenTimeline(pedido.numero_pedido)}
-              className="flex items-center gap-1 text-[11px] text-muted-foreground pt-1 border-t border-border w-full hover:text-foreground transition"
-              title="Ver linha do tempo"
-            >
-              <CalendarDays className="w-3 h-3" />
-              {new Date(pedido.data_pedido).toLocaleDateString("pt-BR")}
-            </button>
-          </div>
+          {pedido.cliente && <p className="text-xs text-foreground truncate">{pedido.cliente}</p>}
+          {(pedido.tecido || pedido.cor) && (
+            <p className="text-[11px] text-muted-foreground truncate">
+              {[pedido.tecido, pedido.cor].filter(Boolean).join(" • ")}
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={() => onOpenTimeline(pedido.numero_pedido)}
+            className="flex items-center gap-1 text-[11px] text-muted-foreground pt-1 border-t border-border w-full hover:text-foreground transition"
+            title="Ver linha do tempo"
+          >
+            <CalendarDays className="w-3 h-3" />
+            {new Date(pedido.data_pedido).toLocaleDateString("pt-BR")}
+          </button>
         </div>
       </CardContent>
     </Card>
