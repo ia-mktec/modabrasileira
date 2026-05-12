@@ -32,6 +32,7 @@ const statusLabels: Record<string, string> = {
   em_producao: "Em Produção",
   recebido: "Recebimento",
   entregue: "Acabamento",
+  inativo: "Inativo",
 };
 
 interface StatusBadgeProps {
