@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Search, Trash2, Printer } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ZiperCorRow {
   cor: string;
@@ -26,38 +27,24 @@ interface ZiperOrdemData {
   cores: ZiperCorRow[];
 }
 
-const mockZiperData: ZiperOrdemData[] = [
-  {
-    ordemCorte: "OC-0001", cliente: "Lojas Renner S.A.", dataCorte: "2025-02-20",
-    referencia: "MK-2024-001", tecido: "Malha Cotton 30/1", descricaoZiper: "Invisível de 20 cm PTO",
-    cores: [
-      { cor: "Preto", codigo: "ZP-INV-20-PTO", qtdePecas: 300, amostraCor: "#000000" },
-      { cor: "Marinho", codigo: "ZP-INV-20-MRN", qtdePecas: 200, amostraCor: "#001f4d" },
-    ],
-  },
-  {
-    ordemCorte: "OC-0002", cliente: "Riachuelo Modas Ltda", dataCorte: "2025-02-22",
-    referencia: "MK-2024-002", tecido: "Piquet PA", descricaoZiper: "Comum de 15 cm COLOR",
-    cores: [
-      { cor: "Vermelho", codigo: "ZP-COM-15-VRM", qtdePecas: 300, amostraCor: "#cc0000" },
-    ],
-  },
-  {
-    ordemCorte: "OC-0003", cliente: "C&A Modas S.A.", dataCorte: "2025-02-25",
-    referencia: "MK-2024-005", tecido: "Jeans Denim 10oz", descricaoZiper: "Destacável de 25 cm PTO/BR",
-    cores: [
-      { cor: "Preto/Branco", codigo: "ZP-DST-25-PB", qtdePecas: 120, amostraCor: "#000000" },
-      { cor: "Azul Índigo", codigo: "ZP-DST-25-AZI", qtdePecas: 80, amostraCor: "#1a237e" },
-    ],
-  },
-  {
-    ordemCorte: "OC-0004", cliente: "Hering Store Ltda", dataCorte: "2025-02-28",
-    referencia: "MK-2024-003", tecido: "Moletom Flanelado", descricaoZiper: "Invisível de 40 cm COLOR",
-    cores: [
-      { cor: "Cinza", codigo: "ZP-INV-40-CNZ", qtdePecas: 150, amostraCor: "#808080" },
-    ],
-  },
-];
+// Mapa simples de nomes de cor PT-BR -> hex para a amostra visual
+const COR_HEX: Record<string, string> = {
+  preto: "#000000", branco: "#ffffff", marinho: "#001f4d", azul: "#1e40af",
+  "azul marinho": "#001f4d", "azul royal": "#1d4ed8", "azul claro": "#60a5fa",
+  vermelho: "#cc0000", verde: "#16a34a", amarelo: "#facc15", cinza: "#808080",
+  bege: "#d6c6a8", marrom: "#7b3f00", rosa: "#ec4899", roxo: "#7c3aed",
+  laranja: "#f97316", colorido: "#a855f7", diversos: "#a855f7",
+  niquelado: "#c0c0c0", "preto/branco": "#000000",
+};
+
+function corParaHex(cor: string): string {
+  if (!cor) return "#e5e7eb";
+  const c = cor.trim().toLowerCase();
+  if (COR_HEX[c]) return COR_HEX[c];
+  // tenta primeira palavra
+  const first = c.split(/[\s/]/)[0];
+  return COR_HEX[first] || "#e5e7eb";
+}
 
 const FichaZiperPage = () => {
   const navigate = useNavigate();
@@ -72,8 +59,86 @@ const FichaZiperPage = () => {
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [ordens, setOrdens] = useState<ZiperOrdemData[]>([]);
 
-  const filteredOrdens = mockZiperData.filter(
+  useEffect(() => {
+    const loadAll = async () => {
+      // Buscar ordens de corte
+      const { data: ocs, error: ocErr } = await supabase
+        .from("ordens_corte")
+        .select("id, numero, modelo_ref, tecido_nome, data_corte, cliente_id, quantidade_pecas")
+        .order("created_at", { ascending: false });
+      if (ocErr || !ocs) return;
+
+      const ocIds = ocs.map((o) => o.id);
+      const clienteIds = Array.from(new Set(ocs.map((o) => o.cliente_id).filter(Boolean))) as string[];
+
+      // Clientes
+      const { data: clientes } = clienteIds.length
+        ? await supabase.from("clientes").select("id, razao_social").in("id", clienteIds)
+        : { data: [] as any[] };
+      const clienteMap = new Map((clientes || []).map((c: any) => [c.id, c.razao_social]));
+
+      // Aviamentos da ordem
+      const { data: aviOrdem } = ocIds.length
+        ? await supabase
+            .from("aviamentos_ordem")
+            .select("ordem_corte_id, descricao, quantidade, aviamento_id")
+            .in("ordem_corte_id", ocIds)
+        : { data: [] as any[] };
+
+      // Detalhes dos aviamentos para filtrar zíperes
+      const aviIds = Array.from(
+        new Set((aviOrdem || []).map((a: any) => a.aviamento_id).filter(Boolean))
+      ) as string[];
+      const { data: aviInfo } = aviIds.length
+        ? await supabase
+            .from("aviamentos")
+            .select("id, tipo, descricao, cor")
+            .in("id", aviIds)
+        : { data: [] as any[] };
+      const aviMap = new Map((aviInfo || []).map((a: any) => [a.id, a]));
+
+      const result: ZiperOrdemData[] = ocs.map((oc: any) => {
+        const itens = (aviOrdem || []).filter((a: any) => a.ordem_corte_id === oc.id);
+        const ziperItens = itens.filter((it: any) => {
+          const info = it.aviamento_id ? aviMap.get(it.aviamento_id) : null;
+          const tipo = (info?.tipo || "").toLowerCase();
+          if (tipo.includes("zíper") || tipo.includes("ziper")) return true;
+          // fallback pela descrição livre
+          return (it.descricao || "").toLowerCase().includes("zíper") ||
+            (it.descricao || "").toLowerCase().includes("ziper");
+        });
+        const descricaoZiper = ziperItens
+          .map((it: any) => aviMap.get(it.aviamento_id)?.descricao || it.descricao)
+          .filter(Boolean)
+          .join(" | ");
+        const cores: ZiperCorRow[] = ziperItens.map((it: any) => {
+          const info = it.aviamento_id ? aviMap.get(it.aviamento_id) : null;
+          const cor = info?.cor || "-";
+          return {
+            cor,
+            codigo: it.aviamento_id ? String(it.aviamento_id).slice(0, 8).toUpperCase() : "-",
+            qtdePecas: it.quantidade || 0,
+            amostraCor: corParaHex(cor),
+          };
+        });
+        return {
+          ordemCorte: oc.numero,
+          cliente: oc.cliente_id ? clienteMap.get(oc.cliente_id) || "-" : "-",
+          dataCorte: oc.data_corte || "",
+          referencia: oc.modelo_ref || "",
+          tecido: oc.tecido_nome || "",
+          descricaoZiper,
+          cores,
+        };
+      });
+      setOrdens(result);
+    };
+    loadAll();
+  }, []);
+
+  const filteredOrdens = ordens.filter(
     (oc) =>
       oc.ordemCorte.toLowerCase().includes(searchTerm.toLowerCase()) ||
       oc.cliente.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -208,7 +273,7 @@ const FichaZiperPage = () => {
                       placeholder="OC-0000"
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
-                          const found = mockZiperData.find(
+                          const found = ordens.find(
                             (d) => d.ordemCorte.toLowerCase() === ordemCorte.toLowerCase()
                           );
                           if (found) {
