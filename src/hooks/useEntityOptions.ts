@@ -8,6 +8,7 @@ export const STATUS_PEDIDO_OPTIONS: SearchableOption[] = [
   { value: "em_producao", label: "Em Produção" },
   { value: "recebido", label: "Recebido" },
   { value: "entregue", label: "Entregue" },
+  { value: "inativo", label: "Inativo" },
 ];
 
 export const PILOTO_OPTIONS: SearchableOption[] = [
