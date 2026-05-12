@@ -34,9 +34,9 @@ interface GradeEntregueRow {
 }
 
 const EntregaClientePage = () => {
-  const { ordens: ordensCorteDb } = useOrdensCorte();
+  const { ordens: ordensCorteDb, loading: loadingOrdens } = useOrdensCorte();
   const { salvarEntrega } = useEntregaCliente();
-  const { modelos: modelosDb } = useModelos();
+  const { modelos: modelosDb, loading: loadingModelos } = useModelos();
   const [currentOrdemCorteId, setCurrentOrdemCorteId] = useState<string | null>(null);
   // Consulta (read-only)
   const [ordemCorte, setOrdemCorte] = useState("");
@@ -181,6 +181,10 @@ const EntregaClientePage = () => {
   "bg-[hsl(48,100%,88%)] text-[hsl(220,15%,15%)] border-[hsl(48,80%,60%)] focus:ring-[hsl(48,80%,50%)] placeholder:text-[hsl(48,30%,50%)]";
   const readOnlyInput =
   "bg-muted text-foreground border-border cursor-default";
+
+  if (loadingOrdens || loadingModelos) {
+    return <PageLoading message="Carregando entrega..." />;
+  }
 
   return (
     <div className="p-4 md:p-6 space-y-4">
