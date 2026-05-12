@@ -128,6 +128,10 @@ const Dashboard = () => {
     },
   ];
 
+  if (loading) {
+    return <PageLoading message="Carregando dashboard..." />;
+  }
+
   return (
     <div className="p-6 space-y-6">
       <PageHeader title="Dashboard" description="Visão geral da produção MKTEC Flow" />
