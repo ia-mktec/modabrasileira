@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { PageLoading } from "@/components/shared/PageLoading";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
