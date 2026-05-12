@@ -244,6 +244,10 @@ const FichaZiperPage = () => {
   const readOnlyInput =
     "bg-muted text-foreground border-border cursor-not-allowed";
 
+  if (ordens.length === 0) {
+    return <PageLoading message="Carregando fichas de zíper..." />;
+  }
+
   return (
     <div className="p-4 md:p-6 space-y-4">
       {/* Header */}
