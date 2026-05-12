@@ -101,6 +101,27 @@ const CortePage = () => {
   // Imagem da referência
   const [refImage, setRefImage] = useState<string | null>(null);
 
+  // Cortador / Enfestador options (carregados de ordens_corte + permite novos)
+  const [cortadorOptions, setCortadorOptions] = useState<string[]>([]);
+  const [enfestadorOptions, setEnfestadorOptions] = useState<string[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("ordens_corte")
+        .select("cortador,enfestador")
+        .range(0, 9999);
+      const cs = new Set<string>();
+      const es = new Set<string>();
+      (data || []).forEach((r: any) => {
+        if (r.cortador) cs.add(String(r.cortador).trim());
+        if (r.enfestador) es.add(String(r.enfestador).trim());
+      });
+      setCortadorOptions(Array.from(cs).filter(Boolean).sort());
+      setEnfestadorOptions(Array.from(es).filter(Boolean).sort());
+    })();
+  }, [ordensCorteDb]);
+
   // Search
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
