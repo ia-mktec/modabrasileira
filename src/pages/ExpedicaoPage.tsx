@@ -13,11 +13,14 @@ import { Search, Truck, Printer, PackageCheck, ImageOff } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const TAMANHOS = ["PP", "P", "M", "G", "GG", "G1", "G2", "G3"];
+const TAM_KEYS: Record<string, string> = { PP: "pp", P: "p", M: "m", G: "g", GG: "gg", G1: "g1", G2: "g2", G3: "g3" };
 
 interface GradeExpRow {
   id: string;
   cor: string;
   qtdProduzida: Record<string, number>;
+  qtdEnviadaAnterior: Record<string, number>;
+  qtdEnviar: Record<string, string>;
 }
 
 // Gradação de aviamentos from Modelos
