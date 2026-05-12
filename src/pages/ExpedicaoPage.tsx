@@ -97,7 +97,7 @@ const ExpedicaoPage = () => {
     }
   };
 
-  const loadOrdem = (oc: any) => {
+  const loadOrdem = async (oc: any) => {
     setCurrentOrdemCorteId(oc.id);
     setNumero(oc.numero);
     setNumeroPedido(oc.numero_pedido || "");
@@ -109,6 +109,25 @@ const ExpedicaoPage = () => {
     setCortador(oc.cortador || "");
     setStatusOrdem(oc.status || "");
     setCliente("");
+    setRefImage(foundModelo?.imagem_url || null);
+    setSearchOpen(false);
+    setIsLoaded(true);
+    setDataSaida("");
+    setOficina("");
+    setPreco("");
+    setObservacoes("");
+    setStatusKanban("");
+    setGradeRows([]);
+    setAviamentosExp([]);
+    setGradacaoRows([]);
+
+    // Fetch full ordem detail (grade_corte + aviamentos_ordem) and modelo children in parallel
+    const [detalhe, modeloCompleto] = await Promise.all([
+      loadOrdemDetalhada(oc.id),
+      foundModelo?.id ? carregarModeloCompleto(foundModelo.id) : Promise.resolve(null),
+    ]);
+
+    const ordemFull = detalhe || oc;
 
     // Compute already shipped quantities (sum across previous expedicoes for this OC)
     const prevExps = (expedicoesDb || []).filter((e: any) => e.ordem_corte_id === oc.id);
@@ -125,8 +144,8 @@ const ExpedicaoPage = () => {
     });
 
     // Load grade from ordem corte
-    if (oc.grade_corte && oc.grade_corte.length > 0) {
-      setGradeRows(oc.grade_corte.map((g: any) => {
+    if (ordemFull.grade_corte && ordemFull.grade_corte.length > 0) {
+      setGradeRows(ordemFull.grade_corte.map((g: any) => {
         const cor = g.cor || "";
         const enviada = enviadoPorCor[cor] || {};
         return {
@@ -143,33 +162,42 @@ const ExpedicaoPage = () => {
           qtdEnviar: { PP: "", P: "", M: "", G: "", GG: "", G1: "", G2: "", G3: "" },
         };
       }));
-    } else {
-      setGradeRows([]);
     }
 
-    // Load aviamentos from ordem
-    if (oc.aviamentos_ordem && oc.aviamentos_ordem.length > 0) {
-      setAviamentosExp(oc.aviamentos_ordem.map((a: any) => ({
+    // Load aviamentos from ordem (fallback to model aviamentos when ordem has none)
+    if (ordemFull.aviamentos_ordem && ordemFull.aviamentos_ordem.length > 0) {
+      setAviamentosExp(ordemFull.aviamentos_ordem.map((a: any) => ({
         id: a.id || crypto.randomUUID(),
         descricao: a.descricao || "",
         tipo: "",
         qtdModelo: a.quantidade || 0,
         qtdEnvio: "",
       })));
-    } else {
-      setAviamentosExp([]);
+    } else if (modeloCompleto?.aviamentos?.length) {
+      setAviamentosExp(modeloCompleto.aviamentos.map((a: any) => ({
+        id: a.id || crypto.randomUUID(),
+        descricao: a.descricao || "",
+        tipo: a.unidade || "",
+        qtdModelo: Number(a.quantidade) || 0,
+        qtdEnvio: "",
+      })));
     }
 
-    setGradacaoRows([]);
-    const foundModeloImg = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
-    setRefImage(foundModeloImg?.imagem_url || null);
-    setSearchOpen(false);
-    setIsLoaded(true);
-    setDataSaida("");
-    setOficina("");
-    setPreco("");
-    setObservacoes("");
-    setStatusKanban("");
+    // Load gradação from modelo
+    if (modeloCompleto?.gradacao?.length) {
+      setGradacaoRows(modeloCompleto.gradacao.map((g: any) => {
+        const aumento = (g.observacao || "").match(/Aumento:\s*([0-9.,]+)/i)?.[1] || "";
+        return {
+          descricao: g.tamanho || "",
+          aumentoCm: aumento,
+          pp: g.medida_a != null ? String(g.medida_a) : "",
+          p: g.medida_b != null ? String(g.medida_b) : "",
+          m: g.medida_c != null ? String(g.medida_c) : "",
+          g: g.medida_d != null ? String(g.medida_d) : "",
+          gg: "", g1: "", g2: "", g3: "",
+        };
+      }));
+    }
   };
 
   const updateQtdEnviar = (rowId: string, tam: string, val: string) =>
