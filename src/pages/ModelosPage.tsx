@@ -23,7 +23,7 @@ const cadastroModelosList = [
   { id: "7", nome: "Macaquinho" }, { id: "8", nome: "Blazer" }, { id: "9", nome: "Colete" },
   { id: "10", nome: "Shorts-Saia" }, { id: "11", nome: "Camisa" }, { id: "12", nome: "Cropped" },
 ];
-import { Plus, Save, Trash2, Printer, Search, Shirt, Upload } from "lucide-react";
+import { Plus, Save, Trash2, Printer, Search, Shirt, Upload, ClipboardCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 // ── Types ──
@@ -435,6 +435,39 @@ const ModelosPage = () => {
   const handlePrint = useCallback(() => {
     window.print();
   }, []);
+
+  // ── Registrar Pedido ──
+  const handleRegistrarPedido = async () => {
+    if (!numeroPedido) {
+      toast({
+        title: "Nº de Pedido obrigatório",
+        description: "Gere o Nº de Pedido antes de registrar.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!referencia) {
+      toast({ title: "Referência obrigatória", description: "Informe a referência do modelo.", variant: "destructive" });
+      return;
+    }
+    const dataBase = dataPedido || new Date().toISOString().slice(0, 10);
+    const { error } = await supabase.from("modelo_pedidos").upsert({
+      numero_pedido: numeroPedido,
+      cliente: cliente || null,
+      modelo_ref: referencia,
+      data_pedido: dataBase,
+      tecido: tecido || null,
+      consumo_tecido: parseFloat(consumoMetros) || 0,
+      status_kanban: statusKanban || "pendente",
+      piloto_entregue: pilotoEntregue === "sim",
+    } as any, { onConflict: "numero_pedido" });
+
+    if (error) {
+      toast({ title: "Erro ao registrar pedido", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Pedido registrado", description: `Pedido ${numeroPedido} salvo com sucesso.` });
+  };
 
   const yellowInput = "bg-[hsl(48,100%,88%)] text-[hsl(220,15%,15%)] border-[hsl(48,80%,60%)] focus:ring-[hsl(48,80%,50%)] placeholder:text-[hsl(48,30%,50%)]";
 
@@ -939,6 +972,13 @@ const ModelosPage = () => {
           <Button variant="outline" className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0" onClick={handlePrint}>
             <Printer className="w-4 h-4" />
             <span>Imprimir Ficha</span>
+          </Button>
+
+          <Button
+            className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]"
+            onClick={handleRegistrarPedido}>
+            <ClipboardCheck className="w-4 h-4" />
+            <span>Registrar Pedido</span>
           </Button>
         </div>
 
