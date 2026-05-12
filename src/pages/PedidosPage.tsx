@@ -6,6 +6,8 @@ import { PedidoTimeline } from "@/components/shared/PedidoTimeline";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -21,7 +23,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, ChevronLeft, ChevronRight, FileText, Trash2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Search, ChevronLeft, ChevronRight, FileText, Trash2, Pencil } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,6 +53,9 @@ interface PedidoRow {
   cor: string | null;
   status_kanban: string;
   data_pedido: string;
+  consumo_tecido: number | null;
+  observacoes: string | null;
+  piloto_entregue: boolean | null;
 }
 
 const statusOptions = [
@@ -69,8 +81,11 @@ export default function PedidosPage() {
   const [deleting, setDeleting] = useState(false);
   const { hasRole } = useAuth();
   const canDelete = hasRole("modelagem") || hasRole("dev");
-  
+  const canEdit = hasRole("modelagem") || hasRole("dev");
 
+  const [editingPedido, setEditingPedido] = useState<PedidoRow | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -81,7 +96,7 @@ export default function PedidosPage() {
       while (true) {
         const { data, error } = await supabase
           .from("modelo_pedidos")
-          .select("numero_pedido,modelo_ref,cliente,tecido,cor,status_kanban,data_pedido")
+          .select("numero_pedido,modelo_ref,cliente,tecido,cor,status_kanban,data_pedido,consumo_tecido,observacoes,piloto_entregue")
           .order("data_pedido", { ascending: false })
           .range(from, from + step - 1);
         if (error || !data || data.length === 0) break;
@@ -166,6 +181,43 @@ export default function PedidosPage() {
     setPedidos((prev) => prev.filter((p) => p.numero_pedido !== pedidoToDelete));
     toast({ title: "Pedido excluído", description: `${pedidoToDelete} foi removido.` });
     setPedidoToDelete(null);
+  };
+
+  const handleOpenEdit = (pedido: PedidoRow) => {
+    setEditingPedido({ ...pedido });
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingPedido) return;
+    setSaving(true);
+
+    const { error } = await supabase
+      .from("modelo_pedidos")
+      .update({
+        cliente: editingPedido.cliente,
+        tecido: editingPedido.tecido,
+        cor: editingPedido.cor,
+        status_kanban: editingPedido.status_kanban,
+        consumo_tecido: editingPedido.consumo_tecido,
+        observacoes: editingPedido.observacoes,
+        piloto_entregue: editingPedido.piloto_entregue,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("numero_pedido", editingPedido.numero_pedido);
+
+    setSaving(false);
+    if (error) {
+      toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    setPedidos((prev) =>
+      prev.map((p) => (p.numero_pedido === editingPedido.numero_pedido ? editingPedido : p))
+    );
+    toast({ title: "Pedido atualizado", description: `${editingPedido.numero_pedido} foi salvo.` });
+    setEditDialogOpen(false);
+    setEditingPedido(null);
   };
 
   return (
@@ -261,6 +313,17 @@ export default function PedidosPage() {
                             <FileText className="w-3.5 h-3.5" />
                             Ver Ficha
                           </Button>
+                          {canEdit && (
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              className="gap-1 text-xs"
+                              onClick={() => handleOpenEdit(p)}
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                              Editar
+                            </Button>
+                          )}
                           {canDelete && (
                             <Button
                               variant="destructive"
@@ -338,6 +401,105 @@ export default function PedidosPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Editar Pedido {editingPedido?.numero_pedido}</DialogTitle>
+          </DialogHeader>
+          {editingPedido && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Cliente</Label>
+                  <Input
+                    value={editingPedido.cliente || ""}
+                    onChange={(e) => setEditingPedido({ ...editingPedido, cliente: e.target.value || null })}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Tecido</Label>
+                  <Input
+                    value={editingPedido.tecido || ""}
+                    onChange={(e) => setEditingPedido({ ...editingPedido, tecido: e.target.value || null })}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Cor</Label>
+                  <Input
+                    value={editingPedido.cor || ""}
+                    onChange={(e) => setEditingPedido({ ...editingPedido, cor: e.target.value || null })}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Consumo Tecido (m)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={editingPedido.consumo_tecido ?? ""}
+                    onChange={(e) =>
+                      setEditingPedido({
+                        ...editingPedido,
+                        consumo_tecido: e.target.value ? Number(e.target.value) : null,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Status</Label>
+                <Select
+                  value={editingPedido.status_kanban}
+                  onValueChange={(v) => setEditingPedido({ ...editingPedido, status_kanban: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {statusOptions
+                      .filter((s) => s.value !== "todos")
+                      .map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Observações</Label>
+                <textarea
+                  className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  value={editingPedido.observacoes || ""}
+                  onChange={(e) =>
+                    setEditingPedido({ ...editingPedido, observacoes: e.target.value || null })
+                  }
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="piloto"
+                  checked={editingPedido.piloto_entregue === true}
+                  onCheckedChange={(checked) =>
+                    setEditingPedido({ ...editingPedido, piloto_entregue: checked === true })
+                  }
+                />
+                <Label htmlFor="piloto" className="text-sm font-normal cursor-pointer">
+                  Piloto entregue
+                </Label>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)} disabled={saving}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveEdit} disabled={saving}>
+              {saving ? "Salvando..." : "Salvar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
