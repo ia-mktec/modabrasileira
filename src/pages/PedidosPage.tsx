@@ -93,7 +93,7 @@ export default function PedidosPage() {
       while (true) {
         const { data, error } = await supabase
           .from("modelo_pedidos")
-          .select("numero_pedido,modelo_ref,cliente,tecido,cor,status_kanban,data_pedido")
+          .select("numero_pedido,modelo_ref,cliente,tecido,cor,status_kanban,data_pedido,consumo_tecido,observacoes,piloto_entregue")
           .order("data_pedido", { ascending: false })
           .range(from, from + step - 1);
         if (error || !data || data.length === 0) break;
