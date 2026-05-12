@@ -395,6 +395,16 @@ const ExpedicaoPage = () => {
             <span>Registrar Saída</span>
           </Button>
 
+          <Button
+            variant="outline"
+            className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 border-[hsl(199,89%,40%)] text-[hsl(199,89%,25%)] hover:bg-[hsl(199,89%,95%)]"
+            onClick={handleEnvioTotal}
+            disabled={gradeRows.length === 0}
+          >
+            <Send className="w-4 h-4" />
+            <span>Enviar Tudo</span>
+          </Button>
+
           <Separator className="hidden md:block" />
 
           <Button variant="outline" className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0" onClick={handlePrint}>
