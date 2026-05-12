@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       aviamentos: {
         Row: {
+          codigo: string | null
           cor: string | null
           created_at: string
           descricao: string
@@ -26,6 +27,7 @@ export type Database = {
           tipo: string
         }
         Insert: {
+          codigo?: string | null
           cor?: string | null
           created_at?: string
           descricao: string
@@ -36,6 +38,7 @@ export type Database = {
           tipo: string
         }
         Update: {
+          codigo?: string | null
           cor?: string | null
           created_at?: string
           descricao?: string

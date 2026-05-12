@@ -1,0 +1,1 @@
+ALTER TABLE public.aviamentos ADD COLUMN IF NOT EXISTS codigo text;

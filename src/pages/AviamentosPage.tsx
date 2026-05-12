@@ -21,6 +21,7 @@ const AviamentosPage = () => {
   const { fornecedores } = useFornecedores();
 
   const [tipo, setTipo] = useState("");
+  const [codigo, setCodigo] = useState("");
   const [descricao, setDescricao] = useState("");
   const [tamanho, setTamanho] = useState("");
   const [cor, setCor] = useState("");
@@ -37,13 +38,15 @@ const AviamentosPage = () => {
     const matchSearch =
       (a.descricao || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (a.tamanho || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (a.cor || "").toLowerCase().includes(searchTerm.toLowerCase());
+      (a.cor || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (a.codigo || "").toLowerCase().includes(searchTerm.toLowerCase());
     const matchCat = searchCategoria === "todas" || a.tipo === searchCategoria;
     return matchSearch && matchCat;
   });
 
   const loadAviamento = (a: any) => {
     setTipo(a.tipo || "");
+    setCodigo(a.codigo || "");
     setDescricao(a.descricao || "");
     setTamanho(a.tamanho || "");
     setCor(a.cor || "");
@@ -54,7 +57,7 @@ const AviamentosPage = () => {
   };
 
   const limparFicha = () => {
-    setTipo(""); setDescricao(""); setTamanho(""); setCor(""); setPrecoUnMt(""); setFornecedorId(""); setEditingId(null);
+    setTipo(""); setCodigo(""); setDescricao(""); setTamanho(""); setCor(""); setPrecoUnMt(""); setFornecedorId(""); setEditingId(null);
   };
 
   const handleRegistrarClick = () => {
@@ -69,6 +72,7 @@ const AviamentosPage = () => {
     setConfirmDialogOpen(false);
     const data: any = {
       tipo,
+      codigo: codigo.trim() || null,
       descricao,
       tamanho: tamanho || null,
       cor: cor || null,
@@ -155,6 +159,10 @@ const AviamentosPage = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Código</Label>
+                  <Input value={codigo} onChange={(e) => setCodigo(e.target.value)} className={yellowInput} placeholder="Código do aviamento" />
+                </div>
                 <div className="space-y-1 md:col-span-2">
                   <Label className="text-xs font-semibold">Descrição</Label>
                   <Input value={descricao} onChange={(e) => setDescricao(e.target.value)} className={yellowInput} placeholder="Descrição do aviamento" />
@@ -216,6 +224,7 @@ const AviamentosPage = () => {
                   <thead className="sticky top-0 bg-muted/95 backdrop-blur z-10">
                     <tr className="border-b">
                       <th className="text-left py-2.5 px-3 font-semibold">Tipo</th>
+                      <th className="text-left py-2.5 px-3 font-semibold">Código</th>
                       <th className="text-left py-2.5 px-3 font-semibold">Descrição</th>
                       <th className="text-left py-2.5 px-3 font-semibold">Tamanho</th>
                       <th className="text-left py-2.5 px-3 font-semibold">Cor</th>
@@ -226,10 +235,11 @@ const AviamentosPage = () => {
                   </thead>
                   <tbody>
                     {loading ? (
-                      <tr><td colSpan={7} className="py-8 text-center text-muted-foreground">Carregando...</td></tr>
+                      <tr><td colSpan={8} className="py-8 text-center text-muted-foreground">Carregando...</td></tr>
                     ) : filteredAviamentos.map((r: any) => (
                       <tr key={r.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                         <td className="py-2 px-3 font-medium">{r.tipo}</td>
+                        <td className="py-2 px-3 font-mono">{r.codigo || "—"}</td>
                         <td className="py-2 px-3">{r.descricao}</td>
                         <td className="py-2 px-3">{r.tamanho}</td>
                         <td className="py-2 px-3">{r.cor}</td>
@@ -248,7 +258,7 @@ const AviamentosPage = () => {
                       </tr>
                     ))}
                     {!loading && filteredAviamentos.length === 0 && (
-                      <tr><td colSpan={7} className="py-8 text-center text-muted-foreground text-sm">
+                      <tr><td colSpan={8} className="py-8 text-center text-muted-foreground text-sm">
                         {aviamentos.length === 0 ? "Nenhum aviamento cadastrado." : "Nenhum aviamento corresponde ao filtro."}
                       </td></tr>
                     )}
