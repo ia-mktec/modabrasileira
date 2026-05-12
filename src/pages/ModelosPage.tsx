@@ -13,6 +13,8 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from
 "@/components/ui/alert-dialog";
 import { useModelos, useClientes, useAviamentos } from "@/hooks/useSupabaseData";
+import { SearchableSelect } from "@/components/shared/SearchableSelect";
+import { useEntityOptions } from "@/hooks/useEntityOptions";
 
 // Modelos from Cadastro module
 const cadastroModelosList = [
