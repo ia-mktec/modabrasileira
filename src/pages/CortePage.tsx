@@ -102,6 +102,18 @@ const CortePage = () => {
   const [filtroDataAte, setFiltroDataAte] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("");
 
+  // Auto-preenche o nome do modelo quando a referência muda (digitada ou via lista)
+  useEffect(() => {
+    if (!modeloRef) return;
+    const found = modelosDb.find((m: any) => (m.referencia || "").toLowerCase() === modeloRef.toLowerCase());
+    if (found) {
+      setModeloNome(found.modelo || found.descricao || "");
+      setRefImage((prev) => prev || found.imagem_url || null);
+    } else {
+      setModeloNome("");
+    }
+  }, [modeloRef, modelosDb]);
+
   const filteredOrdens = ordensCorteDb.filter(
     (oc: any) =>
     (oc.numero || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
