@@ -475,6 +475,7 @@ const ExpedicaoPage = () => {
                     <thead>
                       <tr className="border-b">
                         <th className="px-2 py-1.5 text-left font-semibold w-20">COR</th>
+                        <th className="px-1 py-1.5 text-center font-semibold w-20">TIPO</th>
                         {TAMANHOS.map((t) =>
                       <th key={t} className="px-1 py-1.5 text-center font-semibold w-14">{t}</th>
                       )}
