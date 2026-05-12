@@ -161,6 +161,32 @@ const CadastroPage = () => {
     setNovaCorOpen(false);
   };
 
+  const handleDeleteFornecedor = async () => {
+    if (!deletingFornecedor) return;
+    // Verifica vínculos na tabela aviamentos
+    const { data: vinculos, error } = await supabase
+      .from("aviamentos")
+      .select("id")
+      .eq("fornecedor_id", deletingFornecedor.id)
+      .limit(1);
+    if (error) {
+      toast({ title: "Erro ao verificar vínculos", description: error.message, variant: "destructive" });
+      setDeleteFornecedorOpen(false);
+      return;
+    }
+    if (vinculos && vinculos.length > 0) {
+      toast({ title: "Não é possível excluir", description: "Este fornecedor possui aviamentos vinculados.", variant: "destructive" });
+      setDeleteFornecedorOpen(false);
+      return;
+    }
+    const ok = await deletarFornecedor(deletingFornecedor.id);
+    if (ok) {
+      toast({ title: "Fornecedor excluído com sucesso" });
+    }
+    setDeleteFornecedorOpen(false);
+    setDeletingFornecedor(null);
+  };
+
   return (
     <div className="p-6 space-y-6">
       <PageHeader title="Cadastro" description="Fornecedores, clientes, modelos e cores" />
