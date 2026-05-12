@@ -197,6 +197,10 @@ const ExpedicaoPage = () => {
   const readOnlyInput =
   "bg-muted text-foreground border-border cursor-default";
 
+  if (loadingOrdens || loadingModelos) {
+    return <PageLoading message="Carregando expedição..." />;
+  }
+
   return (
     <div className="p-4 md:p-6 space-y-4">
       {/* Header */}
