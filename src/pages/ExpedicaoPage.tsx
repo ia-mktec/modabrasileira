@@ -35,10 +35,10 @@ interface GradacaoRow {
 }
 
 const ExpedicaoPage = () => {
-  const { ordens: ordensCorteDb } = useOrdensCorte();
+  const { ordens: ordensCorteDb, loading: loadingOrdens } = useOrdensCorte();
   const { salvarExpedicao } = useExpedicao();
   const { fornecedores: fornecedoresDb } = useFornecedores();
-  const { modelos: modelosDb } = useModelos();
+  const { modelos: modelosDb, loading: loadingModelos } = useModelos();
   const [currentOrdemCorteId, setCurrentOrdemCorteId] = useState<string | null>(null);
   // Dados da ordem (consulta - read only)
   const [numero, setNumero] = useState("");
