@@ -682,7 +682,7 @@ const CortePage = () => {
 
           <Button
             className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(38,92%,45%)] hover:bg-[hsl(38,92%,38%)] text-[hsl(0,0%,100%)]"
-            onClick={() => navigate("/ficha-ziper")}>
+            onClick={() => navigate("/ficha-ziper", { state: { numeroOC: numero } })}>
             
             <Scissors className="w-4 h-4" />
             <span>Ficha de Zíper</span>
