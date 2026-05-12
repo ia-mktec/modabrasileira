@@ -150,7 +150,7 @@ export default function FichaPedidoPage() {
   }, [numero]);
 
   if (loading) {
-    return <div className="p-8 text-center text-muted-foreground">Carregando ficha...</div>;
+    return <PageLoading message="Carregando ficha..." />;
   }
 
   if (notFound || !pedido) {

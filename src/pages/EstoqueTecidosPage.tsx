@@ -126,7 +126,7 @@ const EstoqueTecidosPage = () => {
   };
 
   if (loading) {
-    return <div className="p-6 text-center text-muted-foreground">Carregando estoque...</div>;
+    return <PageLoading message="Carregando estoque..." />;
   }
 
   return (
