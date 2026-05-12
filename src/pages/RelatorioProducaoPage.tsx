@@ -371,6 +371,10 @@ const RelatorioProducaoPage = () => {
     setDialogOpen(true);
   };
 
+  if (pedidos.length === 0 && ordens.length === 0) {
+    return <PageLoading message="Carregando produção..." />;
+  }
+
   return (
     <div className="p-6 space-y-6">
       <PageHeader
