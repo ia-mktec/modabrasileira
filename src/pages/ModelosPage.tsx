@@ -97,6 +97,7 @@ const ModelosPage = () => {
   const { modelos, salvarModelo, carregarModeloCompleto } = useModelos();
   const { clientes } = useClientes();
   const { aviamentos: dbAviamentos } = useAviamentos();
+  const { tecidos: tecidoOptions, cores: corOptions } = useEntityOptions();
   const [referencia, setReferencia] = useState("");
   const [numeroPedido, setNumeroPedido] = useState("");
   const [tecido, setTecido] = useState("");
