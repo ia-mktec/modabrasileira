@@ -810,6 +810,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           data_corte: string | null
+          enfestador: string | null
           enfestos: number | null
           id: string
           modelo_id: string | null
@@ -831,6 +832,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           data_corte?: string | null
+          enfestador?: string | null
           enfestos?: number | null
           id?: string
           modelo_id?: string | null
@@ -852,6 +854,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           data_corte?: string | null
+          enfestador?: string | null
           enfestos?: number | null
           id?: string
           modelo_id?: string | null
