@@ -428,6 +428,7 @@ const RelatorioProducaoPage = () => {
                     imagemUrl={modeloImgs[p.modelo_ref]}
                     onOpenTimeline={handleClick}
                     onOpenFicha={(n) => navigate(`/pedidos/${encodeURIComponent(n)}/ficha`)}
+                    numeroOrdemCorte={ordemNumeroByPedido[p.numero_pedido] || null}
                   />
                 ))
               ) : (
