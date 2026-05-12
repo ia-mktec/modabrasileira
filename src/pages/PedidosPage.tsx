@@ -53,6 +53,9 @@ interface PedidoRow {
   cor: string | null;
   status_kanban: string;
   data_pedido: string;
+  consumo_tecido: number | null;
+  observacoes: string | null;
+  piloto_entregue: boolean | null;
 }
 
 const statusOptions = [
