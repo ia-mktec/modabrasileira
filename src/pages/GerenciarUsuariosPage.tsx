@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { PageLoading } from "@/components/shared/PageLoading";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Navigate } from "react-router-dom";
