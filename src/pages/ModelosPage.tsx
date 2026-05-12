@@ -23,7 +23,7 @@ const cadastroModelosList = [
   { id: "7", nome: "Macaquinho" }, { id: "8", nome: "Blazer" }, { id: "9", nome: "Colete" },
   { id: "10", nome: "Shorts-Saia" }, { id: "11", nome: "Camisa" }, { id: "12", nome: "Cropped" },
 ];
-import { Plus, Save, Trash2, Printer, Search, Shirt, Upload } from "lucide-react";
+import { Plus, Save, Trash2, Printer, Search, Shirt, Upload, ClipboardCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 // ── Types ──
