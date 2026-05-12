@@ -240,6 +240,19 @@ const ExpedicaoPage = () => {
     }));
   };
 
+  const handleEnvioTotal = () => {
+    setGradeRows((prev) =>
+      prev.map((r) => {
+        const qtdEnviar: Record<string, string> = {};
+        TAMANHOS.forEach((t) => {
+          const saldo = Math.max(0, (r.qtdProduzida[t] || 0) - (r.qtdEnviadaAnterior[t] || 0));
+          qtdEnviar[t] = saldo > 0 ? String(saldo) : "";
+        });
+        return { ...r, qtdEnviar };
+      })
+    );
+  };
+
   const totalProdBySize = (tam: string) => gradeRows.reduce((s, r) => s + (r.qtdProduzida[tam] || 0), 0);
   const totalProdGeral = TAMANHOS.reduce((s, t) => s + totalProdBySize(t), 0);
   const saldoCell = (row: GradeExpRow, tam: string) =>
