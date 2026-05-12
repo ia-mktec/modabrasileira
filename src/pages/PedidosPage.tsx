@@ -272,8 +272,8 @@ export default function PedidosPage() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                      Carregando...
+                    <TableCell colSpan={7}>
+                      <PageLoading fullPage={false} />
                     </TableCell>
                   </TableRow>
                 ) : paginated.length === 0 ? (
