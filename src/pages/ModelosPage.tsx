@@ -13,6 +13,8 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from
 "@/components/ui/alert-dialog";
 import { useModelos, useClientes, useAviamentos } from "@/hooks/useSupabaseData";
+import { SearchableSelect } from "@/components/shared/SearchableSelect";
+import { useEntityOptions } from "@/hooks/useEntityOptions";
 
 // Modelos from Cadastro module
 const cadastroModelosList = [
@@ -95,6 +97,7 @@ const ModelosPage = () => {
   const { modelos, salvarModelo, carregarModeloCompleto } = useModelos();
   const { clientes } = useClientes();
   const { aviamentos: dbAviamentos } = useAviamentos();
+  const { tecidos: tecidoOptions, cores: corOptions } = useEntityOptions();
   const [referencia, setReferencia] = useState("");
   const [numeroPedido, setNumeroPedido] = useState("");
   const [tecido, setTecido] = useState("");
@@ -480,7 +483,14 @@ const ModelosPage = () => {
             </div>
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Tecido</Label>
-              <Input value={tecido} onChange={(e) => setTecido(e.target.value)} className={yellowInput} placeholder="Tecido principal" />
+              <SearchableSelect
+                options={tecidoOptions}
+                value={tecido || null}
+                onChange={(v) => setTecido(v || "")}
+                placeholder="Selecione tecido"
+                searchPlaceholder="Buscar tecido..."
+                className={yellowInput}
+              />
             </div>
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Cliente</Label>

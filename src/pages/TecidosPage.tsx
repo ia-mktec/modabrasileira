@@ -11,6 +11,8 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import { useTecidos, useClientes, useEstoqueMovimentacoes } from "@/hooks/useSupabaseData";
+import { SearchableSelect } from "@/components/shared/SearchableSelect";
+import { useEntityOptions } from "@/hooks/useEntityOptions";
 import { supabase } from "@/integrations/supabase/client";
 
 // Modelos from Cadastro module
@@ -68,6 +70,7 @@ type ViewMode = "ficha" | "historico" | "cadastro";
 const TecidosPage = () => {
   const { tecidos, salvarTecido } = useTecidos();
   const { clientes } = useClientes();
+  const { clientes: clienteOptions, tecidos: tecidoOptions } = useEntityOptions();
   const { registrarMovimentacao } = useEstoqueMovimentacoes();
   const [viewMode, setViewMode] = useState<ViewMode>("ficha");
 
@@ -467,7 +470,14 @@ const TecidosPage = () => {
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Cliente</Label>
-                  <Input value={cliente} onChange={(e) => setCliente(e.target.value)} className={yellowInput} placeholder="Nome do cliente" />
+                  <SearchableSelect
+                    options={clienteOptions}
+                    value={cliente || null}
+                    onChange={(v) => setCliente(v || "")}
+                    placeholder="Selecione cliente"
+                    searchPlaceholder="Buscar cliente..."
+                    className={yellowInput}
+                  />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Ordem de Corte</Label>
@@ -475,7 +485,14 @@ const TecidosPage = () => {
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Tecido</Label>
-                  <Input value={tecido} onChange={(e) => setTecido(e.target.value)} className={yellowInput} placeholder="Nome do tecido" />
+                  <SearchableSelect
+                    options={tecidoOptions}
+                    value={tecido || null}
+                    onChange={(v) => setTecido(v || "")}
+                    placeholder="Selecione tecido"
+                    searchPlaceholder="Buscar tecido..."
+                    className={yellowInput}
+                  />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Data de Entrada</Label>
