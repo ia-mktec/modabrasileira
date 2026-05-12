@@ -273,7 +273,7 @@ const FichaZiperPage = () => {
                       placeholder="OC-0000"
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
-                          const found = mockZiperData.find(
+                          const found = ordens.find(
                             (d) => d.ordemCorte.toLowerCase() === ordemCorte.toLowerCase()
                           );
                           if (found) {
