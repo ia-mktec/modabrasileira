@@ -64,12 +64,22 @@ const FichaZiperPage = () => {
 
   useEffect(() => {
     const loadAll = async () => {
-      // Buscar ordens de corte
-      const { data: ocs, error: ocErr } = await supabase
-        .from("ordens_corte")
-        .select("id, numero, modelo_ref, tecido_nome, data_corte, cliente_id, quantidade_pecas")
-        .order("created_at", { ascending: false });
-      if (ocErr || !ocs) return;
+      // Buscar todas as ordens de corte (paginado para superar o limite de 1000)
+      const pageSize = 1000;
+      let from = 0;
+      const ocs: any[] = [];
+      while (true) {
+        const { data, error } = await supabase
+          .from("ordens_corte")
+          .select("id, numero, modelo_ref, tecido_nome, data_corte, cliente_id, quantidade_pecas")
+          .order("created_at", { ascending: false })
+          .range(from, from + pageSize - 1);
+        if (error || !data) break;
+        ocs.push(...data);
+        if (data.length < pageSize) break;
+        from += pageSize;
+      }
+      if (ocs.length === 0) return;
 
       const ocIds = ocs.map((o) => o.id);
       const clienteIds = Array.from(new Set(ocs.map((o) => o.cliente_id).filter(Boolean))) as string[];
