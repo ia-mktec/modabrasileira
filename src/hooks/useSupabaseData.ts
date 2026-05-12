@@ -148,9 +148,25 @@ export function useModelos() {
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
-    const { data, error } = await supabase.from("modelos").select("*").order("referencia").range(0, 9999);
-    if (error) { toast({ title: "Erro ao buscar modelos", description: error.message, variant: "destructive" }); }
-    else setModelos(data || []);
+    const pageSize = 1000;
+    let from = 0;
+    const all: any[] = [];
+    while (true) {
+      const { data, error } = await supabase
+        .from("modelos")
+        .select("*")
+        .order("referencia")
+        .range(from, from + pageSize - 1);
+      if (error) {
+        toast({ title: "Erro ao buscar modelos", description: error.message, variant: "destructive" });
+        break;
+      }
+      const batch = data || [];
+      all.push(...batch);
+      if (batch.length < pageSize) break;
+      from += pageSize;
+    }
+    setModelos(all);
     setLoading(false);
   }, []);
 
