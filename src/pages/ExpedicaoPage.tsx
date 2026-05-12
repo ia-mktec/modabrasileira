@@ -482,30 +482,63 @@ const ExpedicaoPage = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {gradeRows.map((row) => {
+                      {gradeRows.flatMap((row) => {
                       const totalProd = TAMANHOS.reduce((s, t) => s + (row.qtdProduzida[t] || 0), 0);
-                      return (
-                        <tr key={row.id} className="border-b">
-                            <td className="px-2 py-1 font-medium">{row.cor}</td>
-                            {TAMANHOS.map((t) =>
-                          <td key={t} className="px-1 py-1 text-center">
-                                <div className="bg-muted rounded px-1 py-0.5 text-center font-mono">
-                                  {row.qtdProduzida[t] || 0}
-                                </div>
-                              </td>
+                      const totalEnviado = TAMANHOS.reduce((s, t) => s + (row.qtdEnviadaAnterior[t] || 0), 0);
+                      const totalSaldo = TAMANHOS.reduce((s, t) => s + saldoCell(row, t), 0);
+                      const totalEnv = totalEnviarRow(row);
+                      return [
+                        <tr key={`${row.id}-prod`}>
+                          <td className="px-2 py-0.5 font-medium align-top" rowSpan={4}>{row.cor}</td>
+                          <td className="px-1 py-0.5 text-[10px] text-muted-foreground text-right pr-2">Produzido</td>
+                          {TAMANHOS.map((t) =>
+                            <td key={t} className="px-1 py-0.5 text-center">
+                              <div className="bg-muted rounded px-1 py-0.5 text-center font-mono">{row.qtdProduzida[t] || 0}</div>
+                            </td>
                           )}
-                            <td className="px-2 py-1 text-center font-bold bg-muted rounded">{totalProd}</td>
-                          </tr>);
-
+                          <td className="px-2 py-0.5 text-center font-bold bg-muted rounded">{totalProd}</td>
+                        </tr>,
+                        <tr key={`${row.id}-env`}>
+                          <td className="px-1 py-0.5 text-[10px] text-muted-foreground text-right pr-2">Já enviado</td>
+                          {TAMANHOS.map((t) =>
+                            <td key={t} className="px-1 py-0.5 text-center font-mono text-muted-foreground">{row.qtdEnviadaAnterior[t] || 0}</td>
+                          )}
+                          <td className="px-2 py-0.5 text-center font-mono text-muted-foreground">{totalEnviado}</td>
+                        </tr>,
+                        <tr key={`${row.id}-saldo`}>
+                          <td className="px-1 py-0.5 text-[10px] text-muted-foreground text-right pr-2">Saldo</td>
+                          {TAMANHOS.map((t) =>
+                            <td key={t} className="px-1 py-0.5 text-center">
+                              <div className="bg-[hsl(199,89%,90%)] rounded px-1 py-0.5 text-center font-mono font-semibold text-[hsl(199,89%,25%)]">{saldoCell(row, t)}</div>
+                            </td>
+                          )}
+                          <td className="px-2 py-0.5 text-center font-mono font-semibold text-[hsl(199,89%,25%)]">{totalSaldo}</td>
+                        </tr>,
+                        <tr key={`${row.id}-enviar`} className="border-b-2">
+                          <td className="px-1 py-0.5 text-[10px] font-semibold text-right pr-2">Enviar agora</td>
+                          {TAMANHOS.map((t) => {
+                            const max = saldoCell(row, t);
+                            return (
+                              <td key={t} className="px-1 py-0.5 text-center">
+                                <Input type="number" min="0" max={max} value={row.qtdEnviar[t]}
+                                  onChange={(e) => updateQtdEnviar(row.id, t, e.target.value)}
+                                  disabled={max === 0}
+                                  className={`h-7 text-xs text-center ${yellowInput}`} placeholder="0" />
+                              </td>
+                            );
+                          })}
+                          <td className="px-2 py-0.5 text-center font-bold">{totalEnv}</td>
+                        </tr>,
+                      ];
                     })}
                     </tbody>
                     <tfoot>
                       <tr className="border-t-2 font-bold">
-                        <td className="px-2 py-1.5">TOTAL</td>
+                        <td className="px-2 py-1.5" colSpan={2}>TOTAL ENVIAR</td>
                         {TAMANHOS.map((t) =>
-                      <td key={t} className="px-1 py-1.5 text-center">{totalProdBySize(t)}</td>
+                      <td key={t} className="px-1 py-1.5 text-center">{gradeRows.reduce((s, r) => s + (parseInt(r.qtdEnviar[t]) || 0), 0)}</td>
                       )}
-                        <td className="px-2 py-1.5 text-center">{totalProdGeral}</td>
+                        <td className="px-2 py-1.5 text-center">{totalEnviarGeral}</td>
                       </tr>
                     </tfoot>
                   </table>
