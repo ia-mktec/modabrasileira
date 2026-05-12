@@ -488,7 +488,18 @@ const TecidosPage = () => {
                   <SearchableSelect
                     options={tecidoOptions}
                     value={tecido || null}
-                    onChange={(v) => setTecido(v || "")}
+                    onChange={(v) => {
+                      setTecido(v || "");
+                      const found = tecidos.find((t: any) => t.nome === v);
+                      if (found) {
+                        setComposicao(found.composicao || "");
+                        if (found.clientes?.razao_social) {
+                          setCliente(found.clientes.razao_social);
+                        }
+                      } else {
+                        setComposicao("");
+                      }
+                    }}
                     placeholder="Selecione tecido"
                     searchPlaceholder="Buscar tecido..."
                     className={yellowInput}
