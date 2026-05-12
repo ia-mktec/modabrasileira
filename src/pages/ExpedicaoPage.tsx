@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { useOrdensCorte, useExpedicao, useFornecedores, useModelos } from "@/hooks/useSupabaseData";
-import { Search, Truck, Printer, PackageCheck, ImageOff } from "lucide-react";
+import { Search, Truck, Printer, PackageCheck, ImageOff, Send } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const TAMANHOS = ["PP", "P", "M", "G", "GG", "G1", "G2", "G3"];
