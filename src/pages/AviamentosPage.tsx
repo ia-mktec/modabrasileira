@@ -38,13 +38,15 @@ const AviamentosPage = () => {
     const matchSearch =
       (a.descricao || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (a.tamanho || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (a.cor || "").toLowerCase().includes(searchTerm.toLowerCase());
+      (a.cor || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (a.codigo || "").toLowerCase().includes(searchTerm.toLowerCase());
     const matchCat = searchCategoria === "todas" || a.tipo === searchCategoria;
     return matchSearch && matchCat;
   });
 
   const loadAviamento = (a: any) => {
     setTipo(a.tipo || "");
+    setCodigo(a.codigo || "");
     setDescricao(a.descricao || "");
     setTamanho(a.tamanho || "");
     setCor(a.cor || "");
