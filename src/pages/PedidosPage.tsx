@@ -401,6 +401,105 @@ export default function PedidosPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Editar Pedido {editingPedido?.numero_pedido}</DialogTitle>
+          </DialogHeader>
+          {editingPedido && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Cliente</Label>
+                  <Input
+                    value={editingPedido.cliente || ""}
+                    onChange={(e) => setEditingPedido({ ...editingPedido, cliente: e.target.value || null })}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Tecido</Label>
+                  <Input
+                    value={editingPedido.tecido || ""}
+                    onChange={(e) => setEditingPedido({ ...editingPedido, tecido: e.target.value || null })}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Cor</Label>
+                  <Input
+                    value={editingPedido.cor || ""}
+                    onChange={(e) => setEditingPedido({ ...editingPedido, cor: e.target.value || null })}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Consumo Tecido (m)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={editingPedido.consumo_tecido ?? ""}
+                    onChange={(e) =>
+                      setEditingPedido({
+                        ...editingPedido,
+                        consumo_tecido: e.target.value ? Number(e.target.value) : null,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Status</Label>
+                <Select
+                  value={editingPedido.status_kanban}
+                  onValueChange={(v) => setEditingPedido({ ...editingPedido, status_kanban: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {statusOptions
+                      .filter((s) => s.value !== "todos")
+                      .map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Observações</Label>
+                <textarea
+                  className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  value={editingPedido.observacoes || ""}
+                  onChange={(e) =>
+                    setEditingPedido({ ...editingPedido, observacoes: e.target.value || null })
+                  }
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="piloto"
+                  checked={editingPedido.piloto_entregue === true}
+                  onCheckedChange={(checked) =>
+                    setEditingPedido({ ...editingPedido, piloto_entregue: checked === true })
+                  }
+                />
+                <Label htmlFor="piloto" className="text-sm font-normal cursor-pointer">
+                  Piloto entregue
+                </Label>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)} disabled={saving}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveEdit} disabled={saving}>
+              {saving ? "Salvando..." : "Salvar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
