@@ -251,7 +251,7 @@ export function useAviamentos() {
 
   const salvarAviamento = useCallback(async (aviamento: {
     tipo: string; descricao: string; tamanho?: string; cor?: string;
-    preco_un?: number; fornecedor_id?: string;
+    preco_un?: number; fornecedor_id?: string; codigo?: string | null;
   }, existingId?: string) => {
     try {
       if (existingId) {
