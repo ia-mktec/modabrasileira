@@ -32,6 +32,27 @@ const createEmptyGradeRow = (): GradeRow => ({
   quantidades: Object.fromEntries(TAMANHOS.map((t) => [t, ""]))
 });
 
+const normalizeReferencia = (value: string | null | undefined) =>
+  String(value || "").trim().replace(/\s+/g, " ").toLowerCase();
+
+const normalizeReferenciaLoose = (value: string | null | undefined) =>
+  normalizeReferencia(value).replace(/\s+/g, "");
+
+const getModeloNome = (modelo: any) => {
+  const nome = String(modelo?.modelo || "").trim();
+  const descricao = String(modelo?.descricao || "").trim();
+  return nome || (descricao && descricao !== "-" ? descricao : "");
+};
+
+const findModeloByReferencia = (modelos: any[], referencia: string | null | undefined) => {
+  const normalized = normalizeReferencia(referencia);
+  if (!normalized) return null;
+  const loose = normalizeReferenciaLoose(referencia);
+  return modelos.find((m: any) => normalizeReferencia(m.referencia) === normalized) ||
+    modelos.find((m: any) => normalizeReferenciaLoose(m.referencia) === loose) ||
+    null;
+};
+
 const CortePage = () => {
   const navigate = useNavigate();
   const { ordens: ordensCorteDb, salvarOrdem, deletarOrdem, loadOrdemDetalhada } = useOrdensCorte();
@@ -104,13 +125,18 @@ const CortePage = () => {
 
   // Auto-preenche o nome do modelo quando a referência muda (digitada ou via lista)
   useEffect(() => {
-    if (!modeloRef) return;
-    const found = modelosDb.find((m: any) => (m.referencia || "").toLowerCase() === modeloRef.toLowerCase());
+    if (!modeloRef.trim()) {
+      setModeloNome("");
+      setRefImage(null);
+      return;
+    }
+    const found = findModeloByReferencia(modelosDb, modeloRef);
     if (found) {
-      setModeloNome(found.modelo || found.descricao || "");
-      setRefImage((prev) => prev || found.imagem_url || null);
+      setModeloNome(getModeloNome(found));
+      setRefImage(found.imagem_url || null);
     } else {
       setModeloNome("");
+      setRefImage(null);
     }
   }, [modeloRef, modelosDb]);
 
@@ -166,8 +192,8 @@ const CortePage = () => {
     setNumero(oc.numero);
     setNumeroPedido(oc.numero_pedido || "");
     setModeloRef(oc.modelo_ref || "");
-    const foundModelo = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
-    setModeloNome(foundModelo?.descricao || "");
+    const foundModelo = findModeloByReferencia(modelosDb, oc.modelo_ref);
+    setModeloNome(getModeloNome(foundModelo));
     setRefImage(foundModelo?.imagem_url || null);
     setTecido(oc.tecido_nome || "");
     setSelectedTecidoId(oc.tecido_id || "");
@@ -245,11 +271,9 @@ const CortePage = () => {
   const aplicarPedido = (p: any) => {
     setNumeroPedido(p.numero_pedido);
     setModeloRef(p.modelo_ref || "");
-    const foundModelo = modelosDb.find((m: any) => m.referencia === p.modelo_ref);
-    if (foundModelo) {
-      setModeloNome(foundModelo.descricao || "");
-      setRefImage(foundModelo.imagem_url || null);
-    }
+    const foundModelo = findModeloByReferencia(modelosDb, p.modelo_ref);
+    setModeloNome(getModeloNome(foundModelo));
+    setRefImage(foundModelo?.imagem_url || null);
     if (p.tecido) setTecido(p.tecido);
     if (p.consumo_tecido) setConsumoPorPeca(String(p.consumo_tecido));
     if (p.cliente) {
@@ -299,7 +323,7 @@ const CortePage = () => {
       return;
     }
 
-    const foundModelo = modelosDb.find((m: any) => m.referencia === modeloRef);
+    const foundModelo = findModeloByReferencia(modelosDb, modeloRef);
 
     const ordemData = {
       numero,
@@ -738,9 +762,9 @@ const CortePage = () => {
                           <Input placeholder="Referência ou descrição..." value={modeloSearchTerm} onChange={(e) => setModeloSearchTerm(e.target.value)} />
                           <div className="space-y-1 max-h-[60vh] overflow-y-auto">
                             {filteredModelos.map((m) =>
-                            <button key={m.id} onClick={() => {setModeloRef(m.referencia);setModeloNome(m.descricao);setRefImage(m.imagem_url || null);setModeloSearchOpen(false);}} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
+                            <button key={m.id} onClick={() => {setModeloRef(m.referencia);setModeloNome(getModeloNome(m));setRefImage(m.imagem_url || null);setModeloSearchOpen(false);}} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
                                 <div className="font-mono text-xs font-semibold text-primary">{m.referencia}</div>
-                                <div className="text-muted-foreground text-xs">{m.descricao}</div>
+                                <div className="text-muted-foreground text-xs">{getModeloNome(m) || m.descricao}</div>
                               </button>
                             )}
                           </div>
