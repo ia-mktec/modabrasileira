@@ -206,7 +206,7 @@ const RelatorioProducaoPage = () => {
 
     Promise.all([
       fetchAll<PedidoRow>("modelo_pedidos", "*"),
-      fetchAll<OrdemCorteRow & { id: string }>("ordens_corte", "id,numero_pedido,status,updated_at"),
+      fetchAll<OrdemCorteRow & { id: string }>("ordens_corte", "id,numero,numero_pedido,status,updated_at"),
       fetchAll<ExpedicaoRow>("expedicao", "ordem_corte_id,status,updated_at"),
       fetchAll<RecebimentoRow>("recebimento", "ordem_corte_id,status,updated_at"),
       fetchAll<EntregaRow>("entrega_cliente", "ordem_corte_id,status,updated_at"),
