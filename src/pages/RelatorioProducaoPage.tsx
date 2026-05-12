@@ -312,6 +312,16 @@ const RelatorioProducaoPage = () => {
     }
   }, [pedidos, ordens, expedicoes, recebimentos, entregas, ordemToPedido]);
 
+  const ordemNumeroByPedido = useMemo(() => {
+    const m: Record<string, string> = {};
+    ordens.forEach((o) => {
+      if (o.numero_pedido && o.numero && !m[o.numero_pedido]) {
+        m[o.numero_pedido] = o.numero;
+      }
+    });
+    return m;
+  }, [ordens]);
+
   const clientesOptions = useMemo(() => {
     const set = new Set<string>();
     pedidos.forEach((p) => p.cliente && set.add(p.cliente));
