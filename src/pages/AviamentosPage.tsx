@@ -57,7 +57,7 @@ const AviamentosPage = () => {
   };
 
   const limparFicha = () => {
-    setTipo(""); setDescricao(""); setTamanho(""); setCor(""); setPrecoUnMt(""); setFornecedorId(""); setEditingId(null);
+    setTipo(""); setCodigo(""); setDescricao(""); setTamanho(""); setCor(""); setPrecoUnMt(""); setFornecedorId(""); setEditingId(null);
   };
 
   const handleRegistrarClick = () => {
@@ -72,6 +72,7 @@ const AviamentosPage = () => {
     setConfirmDialogOpen(false);
     const data: any = {
       tipo,
+      codigo: codigo.trim() || null,
       descricao,
       tamanho: tamanho || null,
       cor: cor || null,
