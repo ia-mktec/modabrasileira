@@ -245,12 +245,20 @@ const CadastroPage = () => {
                         <td className="py-3 px-4 text-center">{f.prazo_pagamento} dias</td>
                         <td className="py-3 px-4"><StatusBadge status={f.status} /></td>
                         <td className="py-3 px-4 text-center">
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
-                            setEditingFornecedor({ ...f });
-                            setEditFornecedorOpen(true);
-                          }}>
-                            <Pencil className="w-4 h-4" />
-                          </Button>
+                          <div className="flex items-center justify-center gap-1">
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
+                              setEditingFornecedor({ ...f });
+                              setEditFornecedorOpen(true);
+                            }}>
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => {
+                              setDeletingFornecedor(f);
+                              setDeleteFornecedorOpen(true);
+                            }}>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
