@@ -15,6 +15,7 @@ import { useOrdensCorte, useModelos, useTecidos, useClientes, useAviamentos } fr
 import { Plus, Save, Trash2, Printer, Search, ImageOff, Scissors, AlertTriangle, CheckCircle, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { CreatableCombobox } from "@/components/shared/CreatableCombobox";
 
 const TAMANHOS = ["PP", "P", "M", "G", "GG", "G1", "G2", "G3"];
 
@@ -72,7 +73,7 @@ const CortePage = () => {
   const [tecido, setTecido] = useState("");
   const [dataCorte, setDataCorte] = useState("");
   const [cortador, setCortador] = useState("");
-  const [enfestos, setEnfestos] = useState("");
+  const [enfestador, setEnfestador] = useState("");
   const [status, setStatus] = useState("");
   const [observacoes, setObservacoes] = useState("");
   const [consumoPorPeca, setConsumoPorPeca] = useState("");
@@ -99,6 +100,27 @@ const CortePage = () => {
 
   // Imagem da referência
   const [refImage, setRefImage] = useState<string | null>(null);
+
+  // Cortador / Enfestador options (carregados de ordens_corte + permite novos)
+  const [cortadorOptions, setCortadorOptions] = useState<string[]>([]);
+  const [enfestadorOptions, setEnfestadorOptions] = useState<string[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("ordens_corte")
+        .select("cortador,enfestador")
+        .range(0, 9999);
+      const cs = new Set<string>();
+      const es = new Set<string>();
+      (data || []).forEach((r: any) => {
+        if (r.cortador) cs.add(String(r.cortador).trim());
+        if (r.enfestador) es.add(String(r.enfestador).trim());
+      });
+      setCortadorOptions(Array.from(cs).filter(Boolean).sort());
+      setEnfestadorOptions(Array.from(es).filter(Boolean).sort());
+    })();
+  }, [ordensCorteDb]);
 
   // Search
   const [searchOpen, setSearchOpen] = useState(false);
@@ -202,7 +224,7 @@ const CortePage = () => {
     setClienteNome(foundCliente?.razao_social || "");
     setDataCorte(oc.data_corte || "");
     setCortador(oc.cortador || "");
-    setEnfestos(String(oc.enfestos || ""));
+    setEnfestador(oc.enfestador || "");
     setConsumoPorPeca(String(oc.consumo_por_peca || ""));
     setObservacoes(oc.observacoes || "");
     setStatus(oc.status || "");
@@ -239,7 +261,7 @@ const CortePage = () => {
     setCurrentOrdemId(null);
     setNumero("");setNumeroPedido("");setModeloRef("");setModeloNome("");setTecido("");setSelectedTecidoId("");
     setDataCorte("");setCortador("");
-    setEnfestos("");setStatus("");
+    setEnfestador("");setStatus("");
     setObservacoes("");setConsumoPorPeca("");
     setSelectedClienteId("");setClienteNome("");
     setGradeRows([createEmptyGradeRow()]);
@@ -335,7 +357,7 @@ const CortePage = () => {
       quantidade_pecas: totalGeral,
       data_corte: dataCorte || null,
       cortador: cortador || null,
-      enfestos: parseInt(enfestos) || 0,
+      enfestador: enfestador || null,
       perda_percent: 0,
       consumo_por_peca: parseFloat(consumoPorPeca) || 0,
       observacoes: observacoes || null,
@@ -822,11 +844,23 @@ const CortePage = () => {
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs font-semibold">Cortador</Label>
-                    <Input value={cortador} onChange={(e) => setCortador(e.target.value)} className={yellowInput} placeholder="Nome do cortador" />
+                    <CreatableCombobox
+                      options={cortadorOptions}
+                      value={cortador}
+                      onChange={setCortador}
+                      placeholder="Nome do cortador"
+                      triggerClassName={yellowInput}
+                    />
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs font-semibold">Enfestador</Label>
-                    <Input value={enfestos} onChange={(e) => setEnfestos(e.target.value)} className={yellowInput} placeholder="Nome do enfestador" />
+                    <CreatableCombobox
+                      options={enfestadorOptions}
+                      value={enfestador}
+                      onChange={setEnfestador}
+                      placeholder="Nome do enfestador"
+                      triggerClassName={yellowInput}
+                    />
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs font-semibold">Consumo/Peça (Mt-Kg)</Label>
