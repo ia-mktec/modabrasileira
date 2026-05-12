@@ -59,8 +59,86 @@ const FichaZiperPage = () => {
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [ordens, setOrdens] = useState<ZiperOrdemData[]>([]);
 
-  const filteredOrdens = mockZiperData.filter(
+  useEffect(() => {
+    const loadAll = async () => {
+      // Buscar ordens de corte
+      const { data: ocs, error: ocErr } = await supabase
+        .from("ordens_corte")
+        .select("id, numero, modelo_ref, tecido_nome, data_corte, cliente_id, quantidade_pecas")
+        .order("created_at", { ascending: false });
+      if (ocErr || !ocs) return;
+
+      const ocIds = ocs.map((o) => o.id);
+      const clienteIds = Array.from(new Set(ocs.map((o) => o.cliente_id).filter(Boolean))) as string[];
+
+      // Clientes
+      const { data: clientes } = clienteIds.length
+        ? await supabase.from("clientes").select("id, razao_social").in("id", clienteIds)
+        : { data: [] as any[] };
+      const clienteMap = new Map((clientes || []).map((c: any) => [c.id, c.razao_social]));
+
+      // Aviamentos da ordem
+      const { data: aviOrdem } = ocIds.length
+        ? await supabase
+            .from("aviamentos_ordem")
+            .select("ordem_corte_id, descricao, quantidade, aviamento_id")
+            .in("ordem_corte_id", ocIds)
+        : { data: [] as any[] };
+
+      // Detalhes dos aviamentos para filtrar zíperes
+      const aviIds = Array.from(
+        new Set((aviOrdem || []).map((a: any) => a.aviamento_id).filter(Boolean))
+      ) as string[];
+      const { data: aviInfo } = aviIds.length
+        ? await supabase
+            .from("aviamentos")
+            .select("id, tipo, descricao, cor")
+            .in("id", aviIds)
+        : { data: [] as any[] };
+      const aviMap = new Map((aviInfo || []).map((a: any) => [a.id, a]));
+
+      const result: ZiperOrdemData[] = ocs.map((oc: any) => {
+        const itens = (aviOrdem || []).filter((a: any) => a.ordem_corte_id === oc.id);
+        const ziperItens = itens.filter((it: any) => {
+          const info = it.aviamento_id ? aviMap.get(it.aviamento_id) : null;
+          const tipo = (info?.tipo || "").toLowerCase();
+          if (tipo.includes("zíper") || tipo.includes("ziper")) return true;
+          // fallback pela descrição livre
+          return (it.descricao || "").toLowerCase().includes("zíper") ||
+            (it.descricao || "").toLowerCase().includes("ziper");
+        });
+        const descricaoZiper = ziperItens
+          .map((it: any) => aviMap.get(it.aviamento_id)?.descricao || it.descricao)
+          .filter(Boolean)
+          .join(" | ");
+        const cores: ZiperCorRow[] = ziperItens.map((it: any) => {
+          const info = it.aviamento_id ? aviMap.get(it.aviamento_id) : null;
+          const cor = info?.cor || "-";
+          return {
+            cor,
+            codigo: it.aviamento_id ? String(it.aviamento_id).slice(0, 8).toUpperCase() : "-",
+            qtdePecas: it.quantidade || 0,
+            amostraCor: corParaHex(cor),
+          };
+        });
+        return {
+          ordemCorte: oc.numero,
+          cliente: oc.cliente_id ? clienteMap.get(oc.cliente_id) || "-" : "-",
+          dataCorte: oc.data_corte || "",
+          referencia: oc.modelo_ref || "",
+          tecido: oc.tecido_nome || "",
+          descricaoZiper,
+          cores,
+        };
+      });
+      setOrdens(result);
+    };
+    loadAll();
+  }, []);
+
+  const filteredOrdens = ordens.filter(
     (oc) =>
       oc.ordemCorte.toLowerCase().includes(searchTerm.toLowerCase()) ||
       oc.cliente.toLowerCase().includes(searchTerm.toLowerCase()) ||
