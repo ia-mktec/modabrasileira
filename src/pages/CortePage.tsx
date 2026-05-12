@@ -68,6 +68,7 @@ const CortePage = () => {
   const [pedidoSearchOpen, setPedidoSearchOpen] = useState(false);
   const [pedidoSearchTerm, setPedidoSearchTerm] = useState("");
   const [pedidos, setPedidos] = useState<any[]>([]);
+  const [pedidosVinculados, setPedidosVinculados] = useState<Set<string>>(new Set());
   const [modeloRef, setModeloRef] = useState("");
   const [modeloNome, setModeloNome] = useState("");
   const [tecido, setTecido] = useState("");
@@ -271,25 +272,40 @@ const CortePage = () => {
     setReservaAtiva(false);
   };
 
-  // Carrega pedidos de modelos
+  // Carrega pedidos de modelos (apenas nao vinculados a ordens de corte)
   useEffect(() => {
     const loadPedidos = async () => {
-      const { data } = await supabase
-        .from("modelo_pedidos")
-        .select("*")
-        .order("created_at", { ascending: false });
-      setPedidos(data || []);
+      const [{ data: pedidosData }, { data: ordensData }] = await Promise.all([
+        supabase
+          .from("modelo_pedidos")
+          .select("*")
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("ordens_corte")
+          .select("numero_pedido")
+          .not("numero_pedido", "is", null),
+      ]);
+      setPedidos(pedidosData || []);
+      const vinculados = new Set<string>();
+      (ordensData || []).forEach((o: any) => {
+        if (o.numero_pedido) vinculados.add(String(o.numero_pedido));
+      });
+      setPedidosVinculados(vinculados);
     };
     loadPedidos();
   }, []);
 
-  const filteredPedidos = pedidos.filter(
-    (p: any) =>
+  const filteredPedidos = pedidos.filter((p: any) => {
+    // Se estiver editando uma ordem existente, permite o proprio numero_pedido atual
+    const estaVinculado = pedidosVinculados.has(String(p.numero_pedido));
+    if (estaVinculado && String(p.numero_pedido) === numeroPedido) return true;
+    if (estaVinculado) return false;
+    return (
       (p.numero_pedido || "").toLowerCase().includes(pedidoSearchTerm.toLowerCase()) ||
       (p.modelo_ref || "").toLowerCase().includes(pedidoSearchTerm.toLowerCase()) ||
       (p.cliente || "").toLowerCase().includes(pedidoSearchTerm.toLowerCase())
-  );
-
+    );
+  });
   const aplicarPedido = (p: any) => {
     setNumeroPedido(p.numero_pedido);
     setModeloRef(p.modelo_ref || "");
@@ -719,8 +735,8 @@ const CortePage = () => {
                         <div className="mt-4 space-y-3">
                           <Input placeholder="Pedido, modelo ou cliente..." value={pedidoSearchTerm} onChange={(e) => setPedidoSearchTerm(e.target.value)} />
                           <div className="space-y-1 max-h-[60vh] overflow-y-auto">
-                            {filteredPedidos.map((p: any) => (
-                              <button key={p.numero_pedido} onClick={() => aplicarPedido(p)} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
+                            {filteredPedidos.map((p: any, idx: number) => (
+                              <button key={p.id || `${p.numero_pedido}-${idx}`} onClick={() => aplicarPedido(p)} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
                                 <div className="font-mono text-xs font-semibold text-primary">{p.numero_pedido}</div>
                                 <div className="text-muted-foreground text-xs">{p.modelo_ref} — {p.cliente || "—"}</div>
                                 <div className="text-muted-foreground text-[10px]">{p.tecido || ""} {p.cor ? `• ${p.cor}` : ""}</div>
