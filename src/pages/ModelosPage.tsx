@@ -891,6 +891,11 @@ const ModelosPage = () => {
     </div>;
 
 
+  const isLoading = loadingModelos || loadingClientes || loadingAviamentos;
+  if (isLoading) {
+    return <PageLoading message="Carregando modelos..." />;
+  }
+
   return (
     <div className="p-4 md:p-6 space-y-4">
       {/* Header */}
