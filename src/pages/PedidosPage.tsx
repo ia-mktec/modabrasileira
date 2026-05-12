@@ -87,6 +87,7 @@ export default function PedidosPage() {
   const [editingPedido, setEditingPedido] = useState<PedidoRow | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const { clientes: clienteOptions, tecidos: tecidoOptions, cores: corOptions } = useEntityOptions();
   useEffect(() => {
     (async () => {
       setLoading(true);
