@@ -973,6 +973,13 @@ const ModelosPage = () => {
             <Printer className="w-4 h-4" />
             <span>Imprimir Ficha</span>
           </Button>
+
+          <Button
+            className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]"
+            onClick={handleRegistrarPedido}>
+            <ClipboardCheck className="w-4 h-4" />
+            <span>Registrar Pedido</span>
+          </Button>
         </div>
 
         {fichaContent}
