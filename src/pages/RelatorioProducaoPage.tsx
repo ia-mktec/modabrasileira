@@ -24,6 +24,7 @@ interface PedidoRow {
 
 interface OrdemCorteRow {
   numero_pedido: string | null;
+  numero: string;
   status: string;
   updated_at: string;
 }
