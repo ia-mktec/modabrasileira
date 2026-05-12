@@ -313,6 +313,17 @@ export default function PedidosPage() {
                             <FileText className="w-3.5 h-3.5" />
                             Ver Ficha
                           </Button>
+                          {canEdit && (
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              className="gap-1 text-xs"
+                              onClick={() => handleOpenEdit(p)}
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                              Editar
+                            </Button>
+                          )}
                           {canDelete && (
                             <Button
                               variant="destructive"
