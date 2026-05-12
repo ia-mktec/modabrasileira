@@ -82,6 +82,16 @@ function PedidoCard({
   return (
     <Card className="mb-3 hover:shadow-md transition-shadow">
       <CardContent className="p-3">
+        <div className="flex justify-end mb-2">
+          <span
+            className={cn(
+              "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border whitespace-nowrap",
+              colBadgeStyles[col]
+            )}
+          >
+            {colLabel}
+          </span>
+        </div>
         <div className="flex gap-3">
           <button
             type="button"
@@ -96,21 +106,11 @@ function PedidoCard({
             )}
           </button>
           <div className="flex-1 min-w-0 space-y-1.5">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex flex-col min-w-0">
-                <span className="font-mono text-xs font-semibold text-primary truncate">{pedido.modelo_ref}</span>
-                {numeroOrdemCorte && (
-                  <span className="text-[10px] text-muted-foreground truncate">OC: {numeroOrdemCorte}</span>
-                )}
-              </div>
-              <span
-                className={cn(
-                  "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border whitespace-nowrap",
-                  colBadgeStyles[col]
-                )}
-              >
-                {colLabel}
-              </span>
+            <div className="flex flex-col min-w-0">
+              <span className="font-mono text-xs font-semibold text-primary truncate">{pedido.modelo_ref}</span>
+              {numeroOrdemCorte && (
+                <span className="text-[10px] text-muted-foreground truncate">OC: {numeroOrdemCorte}</span>
+              )}
             </div>
             <button
               type="button"
