@@ -248,7 +248,7 @@ const CadastroPage = () => {
                   </thead>
                   <tbody>
                     {loadingCli ? (
-                      <tr><td colSpan={8} className="py-8 text-center text-muted-foreground">Carregando...</td></tr>
+                      <tr><td colSpan={8}><PageLoading fullPage={false} /></td></tr>
                     ) : filteredClientes.map((c: any) => (
                       <tr key={c.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                         <td className="py-3 px-4 font-medium">{c.razao_social}</td>
