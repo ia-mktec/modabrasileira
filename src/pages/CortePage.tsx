@@ -306,9 +306,6 @@ const CortePage = () => {
       (p.cliente || "").toLowerCase().includes(pedidoSearchTerm.toLowerCase())
     );
   });
-  // eslint-disable-next-line no-console
-  console.log("DEBUG pedidos:", pedidos.length, "vinculados:", pedidosVinculados.size, "filtered:", filteredPedidos.length, "term:", pedidoSearchTerm);
-
   const aplicarPedido = (p: any) => {
     setNumeroPedido(p.numero_pedido);
     setModeloRef(p.modelo_ref || "");
