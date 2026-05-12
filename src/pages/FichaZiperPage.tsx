@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Search, Trash2, Printer } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -48,6 +48,7 @@ function corParaHex(cor: string): string {
 
 const FichaZiperPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [ordemCorte, setOrdemCorte] = useState("");
   const [cliente, setCliente] = useState("");
@@ -63,12 +64,22 @@ const FichaZiperPage = () => {
 
   useEffect(() => {
     const loadAll = async () => {
-      // Buscar ordens de corte
-      const { data: ocs, error: ocErr } = await supabase
-        .from("ordens_corte")
-        .select("id, numero, modelo_ref, tecido_nome, data_corte, cliente_id, quantidade_pecas")
-        .order("created_at", { ascending: false });
-      if (ocErr || !ocs) return;
+      // Buscar todas as ordens de corte (paginado para superar o limite de 1000)
+      const pageSize = 1000;
+      let from = 0;
+      const ocs: any[] = [];
+      while (true) {
+        const { data, error } = await supabase
+          .from("ordens_corte")
+          .select("id, numero, modelo_ref, tecido_nome, data_corte, cliente_id, quantidade_pecas")
+          .order("created_at", { ascending: false })
+          .range(from, from + pageSize - 1);
+        if (error || !data) break;
+        ocs.push(...data);
+        if (data.length < pageSize) break;
+        from += pageSize;
+      }
+      if (ocs.length === 0) return;
 
       const ocIds = ocs.map((o) => o.id);
       const clienteIds = Array.from(new Set(ocs.map((o) => o.cliente_id).filter(Boolean))) as string[];
@@ -134,8 +145,14 @@ const FichaZiperPage = () => {
         };
       });
       setOrdens(result);
+      const target = (location.state as any)?.numeroOC as string | undefined;
+      if (target) {
+        const found = result.find((r) => r.ordemCorte === target);
+        if (found) loadOrdem(found);
+      }
     };
     loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filteredOrdens = ordens.filter(
