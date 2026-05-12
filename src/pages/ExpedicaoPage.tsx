@@ -13,11 +13,14 @@ import { Search, Truck, Printer, PackageCheck, ImageOff } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const TAMANHOS = ["PP", "P", "M", "G", "GG", "G1", "G2", "G3"];
+const TAM_KEYS: Record<string, string> = { PP: "pp", P: "p", M: "m", G: "g", GG: "gg", G1: "g1", G2: "g2", G3: "g3" };
 
 interface GradeExpRow {
   id: string;
   cor: string;
   qtdProduzida: Record<string, number>;
+  qtdEnviadaAnterior: Record<string, number>;
+  qtdEnviar: Record<string, string>;
 }
 
 // Gradação de aviamentos from Modelos
@@ -36,7 +39,7 @@ interface GradacaoRow {
 
 const ExpedicaoPage = () => {
   const { ordens: ordensCorteDb, loading: loadingOrdens } = useOrdensCorte();
-  const { salvarExpedicao } = useExpedicao();
+  const { expedicoes: expedicoesDb, salvarExpedicao } = useExpedicao();
   const { fornecedores: fornecedoresDb } = useFornecedores();
   const { modelos: modelosDb, loading: loadingModelos } = useModelos();
   const [currentOrdemCorteId, setCurrentOrdemCorteId] = useState<string | null>(null);
@@ -107,16 +110,39 @@ const ExpedicaoPage = () => {
     setStatusOrdem(oc.status || "");
     setCliente("");
 
+    // Compute already shipped quantities (sum across previous expedicoes for this OC)
+    const prevExps = (expedicoesDb || []).filter((e: any) => e.ordem_corte_id === oc.id);
+    const enviadoPorCor: Record<string, Record<string, number>> = {};
+    prevExps.forEach((e: any) => {
+      (e.grade_expedicao || []).forEach((g: any) => {
+        const cor = g.cor || "";
+        if (!enviadoPorCor[cor]) enviadoPorCor[cor] = {};
+        TAMANHOS.forEach((t) => {
+          const k = `${TAM_KEYS[t]}_exp`;
+          enviadoPorCor[cor][t] = (enviadoPorCor[cor][t] || 0) + (g[k] || 0);
+        });
+      });
+    });
+
     // Load grade from ordem corte
     if (oc.grade_corte && oc.grade_corte.length > 0) {
-      setGradeRows(oc.grade_corte.map((g: any) => ({
-        id: g.id || crypto.randomUUID(),
-        cor: g.cor || "",
-        qtdProduzida: {
-          PP: g.pp || 0, P: g.p || 0, M: g.m || 0, G: g.g || 0,
-          GG: g.gg || 0, G1: g.g1 || 0, G2: g.g2 || 0, G3: g.g3 || 0,
-        }
-      })));
+      setGradeRows(oc.grade_corte.map((g: any) => {
+        const cor = g.cor || "";
+        const enviada = enviadoPorCor[cor] || {};
+        return {
+          id: g.id || crypto.randomUUID(),
+          cor,
+          qtdProduzida: {
+            PP: g.pp || 0, P: g.p || 0, M: g.m || 0, G: g.g || 0,
+            GG: g.gg || 0, G1: g.g1 || 0, G2: g.g2 || 0, G3: g.g3 || 0,
+          },
+          qtdEnviadaAnterior: {
+            PP: enviada.PP || 0, P: enviada.P || 0, M: enviada.M || 0, G: enviada.G || 0,
+            GG: enviada.GG || 0, G1: enviada.G1 || 0, G2: enviada.G2 || 0, G3: enviada.G3 || 0,
+          },
+          qtdEnviar: { PP: "", P: "", M: "", G: "", GG: "", G1: "", G2: "", G3: "" },
+        };
+      }));
     } else {
       setGradeRows([]);
     }
@@ -146,8 +172,16 @@ const ExpedicaoPage = () => {
     setStatusKanban("");
   };
 
+  const updateQtdEnviar = (rowId: string, tam: string, val: string) =>
+    setGradeRows((prev) => prev.map((r) => r.id === rowId ? { ...r, qtdEnviar: { ...r.qtdEnviar, [tam]: val } } : r));
+
   const totalProdBySize = (tam: string) => gradeRows.reduce((s, r) => s + (r.qtdProduzida[tam] || 0), 0);
   const totalProdGeral = TAMANHOS.reduce((s, t) => s + totalProdBySize(t), 0);
+  const saldoCell = (row: GradeExpRow, tam: string) =>
+    Math.max(0, (row.qtdProduzida[tam] || 0) - (row.qtdEnviadaAnterior[tam] || 0));
+  const totalEnviarRow = (row: GradeExpRow) =>
+    TAMANHOS.reduce((s, t) => s + (parseInt(row.qtdEnviar[t]) || 0), 0);
+  const totalEnviarGeral = gradeRows.reduce((s, r) => s + totalEnviarRow(r), 0);
 
   const updateAviamentoEnvio = (id: string, val: string) =>
   setAviamentosExp((prev) => prev.map((a) => a.id === id ? { ...a, qtdEnvio: val } : a));
@@ -161,18 +195,44 @@ const ExpedicaoPage = () => {
       toast({ title: "Campo obrigatório", description: "Preencha a data de saída.", variant: "destructive" });
       return;
     }
+    if (!oficina) {
+      toast({ title: "Campo obrigatório", description: "Informe a oficina/prestador desta saída.", variant: "destructive" });
+      return;
+    }
 
-    const gradeData = gradeRows.map((row) => ({
-      cor: row.cor,
-      pp_prod: row.qtdProduzida.PP || 0, p_prod: row.qtdProduzida.P || 0,
-      m_prod: row.qtdProduzida.M || 0, g_prod: row.qtdProduzida.G || 0,
-      gg_prod: row.qtdProduzida.GG || 0, g1_prod: row.qtdProduzida.G1 || 0,
-      g2_prod: row.qtdProduzida.G2 || 0, g3_prod: row.qtdProduzida.G3 || 0,
-      pp_exp: row.qtdProduzida.PP || 0, p_exp: row.qtdProduzida.P || 0,
-      m_exp: row.qtdProduzida.M || 0, g_exp: row.qtdProduzida.G || 0,
-      gg_exp: row.qtdProduzida.GG || 0, g1_exp: row.qtdProduzida.G1 || 0,
-      g2_exp: row.qtdProduzida.G2 || 0, g3_exp: row.qtdProduzida.G3 || 0,
-    }));
+    // Validação de saldo + filtra apenas linhas com quantidade enviada
+    const gradeData: any[] = [];
+    for (const row of gradeRows) {
+      const qtdEnviar: Record<string, number> = {};
+      let rowTotal = 0;
+      for (const t of TAMANHOS) {
+        const v = parseInt(row.qtdEnviar[t]) || 0;
+        if (v < 0) continue;
+        if (v > saldoCell(row, t)) {
+          toast({ title: "Quantidade excede o saldo", description: `Cor ${row.cor} tamanho ${t}: saldo disponível ${saldoCell(row, t)}.`, variant: "destructive" });
+          return;
+        }
+        qtdEnviar[t] = v;
+        rowTotal += v;
+      }
+      if (rowTotal === 0) continue;
+      gradeData.push({
+        cor: row.cor,
+        pp_prod: qtdEnviar.PP || 0, p_prod: qtdEnviar.P || 0,
+        m_prod: qtdEnviar.M || 0, g_prod: qtdEnviar.G || 0,
+        gg_prod: qtdEnviar.GG || 0, g1_prod: qtdEnviar.G1 || 0,
+        g2_prod: qtdEnviar.G2 || 0, g3_prod: qtdEnviar.G3 || 0,
+        pp_exp: qtdEnviar.PP || 0, p_exp: qtdEnviar.P || 0,
+        m_exp: qtdEnviar.M || 0, g_exp: qtdEnviar.G || 0,
+        gg_exp: qtdEnviar.GG || 0, g1_exp: qtdEnviar.G1 || 0,
+        g2_exp: qtdEnviar.G2 || 0, g3_exp: qtdEnviar.G3 || 0,
+      });
+    }
+
+    if (gradeData.length === 0) {
+      toast({ title: "Nenhuma quantidade informada", description: "Informe a quantidade a enviar nesta saída parcial.", variant: "destructive" });
+      return;
+    }
 
     const result = await salvarExpedicao({
       ordem_corte_id: currentOrdemCorteId,
@@ -185,7 +245,10 @@ const ExpedicaoPage = () => {
     }, gradeData);
 
     if (result) {
-      toast({ title: "Expedição registrada", description: `Saída da ordem ${numero} registrada com sucesso.` });
+      toast({ title: "Saída parcial registrada", description: `Oficina ${oficina} — ${totalEnviarGeral} peça(s).` });
+      // Recarrega a ordem para atualizar saldos e limpar formulário
+      const refreshed = ordensCorteDb.find((o: any) => o.id === currentOrdemCorteId);
+      if (refreshed) loadOrdem(refreshed);
     }
   };
 
@@ -401,6 +464,28 @@ const ExpedicaoPage = () => {
               <h3 className="text-sm font-bold tracking-wide text-center">GRADE DE TAMANHOS</h3>
             </div>
             <CardContent className="p-3">
+              {currentOrdemCorteId && (() => {
+                const prev = (expedicoesDb || []).filter((e: any) => e.ordem_corte_id === currentOrdemCorteId);
+                if (prev.length === 0) return null;
+                return (
+                  <div className="mb-3 p-2 rounded bg-muted/40 border border-border">
+                    <div className="text-[11px] font-semibold mb-1">Saídas parciais já registradas ({prev.length})</div>
+                    <ul className="text-[11px] space-y-0.5">
+                      {prev.map((e: any) => {
+                        const total = (e.grade_expedicao || []).reduce((s: number, g: any) =>
+                          s + TAMANHOS.reduce((ss, t) => ss + (g[`${TAM_KEYS[t]}_exp`] || 0), 0), 0);
+                        return (
+                          <li key={e.id} className="flex justify-between gap-2">
+                            <span className="font-mono">{e.data_saida || "—"}</span>
+                            <span className="flex-1 truncate">{e.oficina_nome || "—"}</span>
+                            <span className="font-semibold">{total} pç</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                );
+              })()}
               {gradeRows.length === 0 ?
               <div className="py-8 text-center">
                   <Truck className="w-10 h-10 mx-auto text-muted-foreground/40 mb-2" />
@@ -412,6 +497,7 @@ const ExpedicaoPage = () => {
                     <thead>
                       <tr className="border-b">
                         <th className="px-2 py-1.5 text-left font-semibold w-20">COR</th>
+                        <th className="px-1 py-1.5 text-center font-semibold w-20">TIPO</th>
                         {TAMANHOS.map((t) =>
                       <th key={t} className="px-1 py-1.5 text-center font-semibold w-14">{t}</th>
                       )}
@@ -419,30 +505,63 @@ const ExpedicaoPage = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {gradeRows.map((row) => {
+                      {gradeRows.flatMap((row) => {
                       const totalProd = TAMANHOS.reduce((s, t) => s + (row.qtdProduzida[t] || 0), 0);
-                      return (
-                        <tr key={row.id} className="border-b">
-                            <td className="px-2 py-1 font-medium">{row.cor}</td>
-                            {TAMANHOS.map((t) =>
-                          <td key={t} className="px-1 py-1 text-center">
-                                <div className="bg-muted rounded px-1 py-0.5 text-center font-mono">
-                                  {row.qtdProduzida[t] || 0}
-                                </div>
-                              </td>
+                      const totalEnviado = TAMANHOS.reduce((s, t) => s + (row.qtdEnviadaAnterior[t] || 0), 0);
+                      const totalSaldo = TAMANHOS.reduce((s, t) => s + saldoCell(row, t), 0);
+                      const totalEnv = totalEnviarRow(row);
+                      return [
+                        <tr key={`${row.id}-prod`}>
+                          <td className="px-2 py-0.5 font-medium align-top" rowSpan={4}>{row.cor}</td>
+                          <td className="px-1 py-0.5 text-[10px] text-muted-foreground text-right pr-2">Produzido</td>
+                          {TAMANHOS.map((t) =>
+                            <td key={t} className="px-1 py-0.5 text-center">
+                              <div className="bg-muted rounded px-1 py-0.5 text-center font-mono">{row.qtdProduzida[t] || 0}</div>
+                            </td>
                           )}
-                            <td className="px-2 py-1 text-center font-bold bg-muted rounded">{totalProd}</td>
-                          </tr>);
-
+                          <td className="px-2 py-0.5 text-center font-bold bg-muted rounded">{totalProd}</td>
+                        </tr>,
+                        <tr key={`${row.id}-env`}>
+                          <td className="px-1 py-0.5 text-[10px] text-muted-foreground text-right pr-2">Já enviado</td>
+                          {TAMANHOS.map((t) =>
+                            <td key={t} className="px-1 py-0.5 text-center font-mono text-muted-foreground">{row.qtdEnviadaAnterior[t] || 0}</td>
+                          )}
+                          <td className="px-2 py-0.5 text-center font-mono text-muted-foreground">{totalEnviado}</td>
+                        </tr>,
+                        <tr key={`${row.id}-saldo`}>
+                          <td className="px-1 py-0.5 text-[10px] text-muted-foreground text-right pr-2">Saldo</td>
+                          {TAMANHOS.map((t) =>
+                            <td key={t} className="px-1 py-0.5 text-center">
+                              <div className="bg-[hsl(199,89%,90%)] rounded px-1 py-0.5 text-center font-mono font-semibold text-[hsl(199,89%,25%)]">{saldoCell(row, t)}</div>
+                            </td>
+                          )}
+                          <td className="px-2 py-0.5 text-center font-mono font-semibold text-[hsl(199,89%,25%)]">{totalSaldo}</td>
+                        </tr>,
+                        <tr key={`${row.id}-enviar`} className="border-b-2">
+                          <td className="px-1 py-0.5 text-[10px] font-semibold text-right pr-2">Enviar agora</td>
+                          {TAMANHOS.map((t) => {
+                            const max = saldoCell(row, t);
+                            return (
+                              <td key={t} className="px-1 py-0.5 text-center">
+                                <Input type="number" min="0" max={max} value={row.qtdEnviar[t]}
+                                  onChange={(e) => updateQtdEnviar(row.id, t, e.target.value)}
+                                  disabled={max === 0}
+                                  className={`h-7 text-xs text-center ${yellowInput}`} placeholder="0" />
+                              </td>
+                            );
+                          })}
+                          <td className="px-2 py-0.5 text-center font-bold">{totalEnv}</td>
+                        </tr>,
+                      ];
                     })}
                     </tbody>
                     <tfoot>
                       <tr className="border-t-2 font-bold">
-                        <td className="px-2 py-1.5">TOTAL</td>
+                        <td className="px-2 py-1.5" colSpan={2}>TOTAL ENVIAR</td>
                         {TAMANHOS.map((t) =>
-                      <td key={t} className="px-1 py-1.5 text-center">{totalProdBySize(t)}</td>
+                      <td key={t} className="px-1 py-1.5 text-center">{gradeRows.reduce((s, r) => s + (parseInt(r.qtdEnviar[t]) || 0), 0)}</td>
                       )}
-                        <td className="px-2 py-1.5 text-center">{totalProdGeral}</td>
+                        <td className="px-2 py-1.5 text-center">{totalEnviarGeral}</td>
                       </tr>
                     </tfoot>
                   </table>
