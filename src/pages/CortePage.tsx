@@ -272,24 +272,40 @@ const CortePage = () => {
     setReservaAtiva(false);
   };
 
-  // Carrega pedidos de modelos
+  // Carrega pedidos de modelos (apenas nao vinculados a ordens de corte)
   useEffect(() => {
     const loadPedidos = async () => {
-      const { data } = await supabase
-        .from("modelo_pedidos")
-        .select("*")
-        .order("created_at", { ascending: false });
-      setPedidos(data || []);
+      const [{ data: pedidosData }, { data: ordensData }] = await Promise.all([
+        supabase
+          .from("modelo_pedidos")
+          .select("*")
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("ordens_corte")
+          .select("numero_pedido")
+          .not("numero_pedido", "is", null),
+      ]);
+      setPedidos(pedidosData || []);
+      const vinculados = new Set<string>();
+      (ordensData || []).forEach((o: any) => {
+        if (o.numero_pedido) vinculados.add(String(o.numero_pedido));
+      });
+      setPedidosVinculados(vinculados);
     };
     loadPedidos();
   }, []);
 
-  const filteredPedidos = pedidos.filter(
-    (p: any) =>
+  const filteredPedidos = pedidos.filter((p: any) => {
+    // Se estiver editando uma ordem existente, permite o proprio numero_pedido atual
+    const estaVinculado = pedidosVinculados.has(String(p.numero_pedido));
+    if (estaVinculado && String(p.numero_pedido) === numeroPedido) return true;
+    if (estaVinculado) return false;
+    return (
       (p.numero_pedido || "").toLowerCase().includes(pedidoSearchTerm.toLowerCase()) ||
       (p.modelo_ref || "").toLowerCase().includes(pedidoSearchTerm.toLowerCase()) ||
       (p.cliente || "").toLowerCase().includes(pedidoSearchTerm.toLowerCase())
-  );
+    );
+  });
 
   const aplicarPedido = (p: any) => {
     setNumeroPedido(p.numero_pedido);
