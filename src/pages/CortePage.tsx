@@ -627,6 +627,11 @@ const CortePage = () => {
     );
   }
 
+  const isLoading = loadingOrdens || loadingModelos || loadingTecidos || loadingClientes || loadingAviamentos;
+  if (isLoading) {
+    return <PageLoading message="Carregando ordens de corte..." />;
+  }
+
   return (
     <div className="p-4 md:p-6 space-y-4">
       {/* Header */}
