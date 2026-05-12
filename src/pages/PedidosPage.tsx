@@ -81,8 +81,11 @@ export default function PedidosPage() {
   const [deleting, setDeleting] = useState(false);
   const { hasRole } = useAuth();
   const canDelete = hasRole("modelagem") || hasRole("dev");
-  
+  const canEdit = hasRole("modelagem") || hasRole("dev");
 
+  const [editingPedido, setEditingPedido] = useState<PedidoRow | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   useEffect(() => {
     (async () => {
       setLoading(true);
