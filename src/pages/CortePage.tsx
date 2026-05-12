@@ -68,6 +68,7 @@ const CortePage = () => {
   const [pedidoSearchOpen, setPedidoSearchOpen] = useState(false);
   const [pedidoSearchTerm, setPedidoSearchTerm] = useState("");
   const [pedidos, setPedidos] = useState<any[]>([]);
+  const [pedidosVinculados, setPedidosVinculados] = useState<Set<string>>(new Set());
   const [modeloRef, setModeloRef] = useState("");
   const [modeloNome, setModeloNome] = useState("");
   const [tecido, setTecido] = useState("");
