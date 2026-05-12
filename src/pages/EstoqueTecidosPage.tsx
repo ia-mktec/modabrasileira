@@ -139,7 +139,7 @@ const EstoqueTecidosPage = () => {
           <CardContent className="p-4 text-center">
             <Layers className="w-5 h-5 mx-auto mb-1 text-primary" />
             <p className="text-xl font-bold font-mono">{totEntrada.toLocaleString("pt-BR", { maximumFractionDigits: 0 })}</p>
-            <p className="text-xs text-muted-foreground">Entrada Total (mt/kg)</p>
+            <p className="text-xs text-muted-foreground">Entrada Total (mt)</p>
           </CardContent>
         </Card>
         <Card>

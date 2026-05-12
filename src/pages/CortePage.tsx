@@ -816,7 +816,7 @@ const CortePage = () => {
                             <button key={t.id} onClick={() => {setTecido(t.nome);setSelectedTecidoId(t.id);setTecidoSearchOpen(false);}} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
                                 <div className="font-mono text-xs font-semibold text-primary">{t.nome}</div>
                                 <div className="text-muted-foreground text-xs">{t.cor} — {t.clientes?.razao_social || ""}</div>
-                                <div className="text-muted-foreground text-[10px]">Estoque: {t.estoque_kg} Kg</div>
+                                <div className="text-muted-foreground text-[10px]">Estoque: {t.estoque_kg} mt</div>
                               </button>
                             )}
                           </div>
@@ -863,11 +863,11 @@ const CortePage = () => {
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs font-semibold">Consumo/Peça (Mt-Kg)</Label>
+                    <Label className="text-xs font-semibold">Consumo/Peça (mt)</Label>
                     <Input type="number" step="0.01" value={consumoPorPeca} onChange={(e) => setConsumoPorPeca(e.target.value)} className={yellowInput} placeholder="0.00" />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs font-semibold">Consumo Total (Mt-Kg)</Label>
+                    <Label className="text-xs font-semibold">Consumo Total (mt)</Label>
                     <Input value={consumoTotal > 0 ? consumoTotal.toFixed(2) : ""} readOnly className="bg-muted text-foreground border-border cursor-default" placeholder="—" />
                   </div>
                   <div className="space-y-1">
@@ -892,7 +892,7 @@ const CortePage = () => {
                       <div className="flex items-center gap-2 text-xs">
                         <span className="font-semibold">Estoque disponível:</span>
                         <span className="font-mono font-bold text-primary">
-                          {Number(estoqueDisp).toFixed(2)} Kg
+                          {Number(estoqueDisp).toFixed(2)} mt
                         </span>
                       </div>
                     </div>
@@ -1149,7 +1149,7 @@ const CortePage = () => {
                     className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
                     
                     <div className="font-semibold text-xs">{t.cor}</div>
-                    <div className="text-muted-foreground text-[10px]">Estoque: {disponivel.toFixed(2)} Kg</div>
+                    <div className="text-muted-foreground text-[10px]">Estoque: {disponivel.toFixed(2)} mt</div>
                   </button>);
 
               })}
