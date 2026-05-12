@@ -145,8 +145,14 @@ const FichaZiperPage = () => {
         };
       });
       setOrdens(result);
+      const target = (location.state as any)?.numeroOC as string | undefined;
+      if (target) {
+        const found = result.find((r) => r.ordemCorte === target);
+        if (found) loadOrdem(found);
+      }
     };
     loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filteredOrdens = ordens.filter(
