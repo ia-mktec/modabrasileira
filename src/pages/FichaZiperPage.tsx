@@ -394,39 +394,55 @@ const FichaZiperPage = () => {
 
           {/* Repeating rows: COR (with swatch) | CÓD | QTDE PEÇAS */}
           {cores.length > 0 ? (
-            cores.map((row, idx) => (
-              <Card key={idx}>
+            <>
+              {cores.map((row, idx) => (
+                <Card key={idx}>
+                  <CardContent className="p-4">
+                    <div className="grid grid-cols-3 gap-4 items-end">
+                      {/* COR with color swatch */}
+                      <div className="space-y-1">
+                        <Label className="text-xs font-bold uppercase text-center block bg-muted py-1 rounded">COR</Label>
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-16 h-16 border-2 border-border rounded shrink-0"
+                            style={{ backgroundColor: row.amostraCor }}
+                          />
+                          <span className="text-sm font-medium">{row.cor || "-"}</span>
+                        </div>
+                      </div>
+                      {/* CÓD */}
+                      <div className="space-y-1">
+                        <Label className="text-xs font-bold uppercase text-center block bg-muted py-1 rounded">CÓD</Label>
+                        <div className="flex items-center justify-center h-16">
+                          <span className="text-sm font-mono">{row.codigo || "-"}</span>
+                        </div>
+                      </div>
+                      {/* QTDE PEÇAS */}
+                      <div className="space-y-1">
+                        <Label className="text-xs font-bold uppercase text-center block bg-muted py-1 rounded">QTDE PEÇAS</Label>
+                        <div className="flex items-center justify-center h-16">
+                          <span className="text-lg font-mono font-bold">{row.qtdePecas || 0}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              {/* Linha de TOTAL */}
+              <Card className="border-2 border-primary/40">
                 <CardContent className="p-4">
-                  <div className="grid grid-cols-3 gap-4 items-end">
-                    {/* COR with color swatch */}
-                    <div className="space-y-1">
-                      <Label className="text-xs font-bold uppercase text-center block bg-muted py-1 rounded">COR</Label>
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-16 h-16 border-2 border-border rounded shrink-0"
-                          style={{ backgroundColor: row.amostraCor }}
-                        />
-                        <span className="text-sm font-medium">{row.cor || "-"}</span>
-                      </div>
-                    </div>
-                    {/* CÓD */}
-                    <div className="space-y-1">
-                      <Label className="text-xs font-bold uppercase text-center block bg-muted py-1 rounded">CÓD</Label>
-                      <div className="flex items-center h-16">
-                        <span className="text-sm font-mono">{row.codigo || "-"}</span>
-                      </div>
-                    </div>
-                    {/* QTDE PEÇAS */}
-                    <div className="space-y-1">
-                      <Label className="text-xs font-bold uppercase text-center block bg-muted py-1 rounded">QTDE PEÇAS</Label>
-                      <div className="flex items-center h-16">
-                        <span className="text-lg font-mono font-bold">{row.qtdePecas || 0}</span>
-                      </div>
+                  <div className="grid grid-cols-3 gap-4 items-center">
+                    <div className="text-sm font-bold uppercase">Total</div>
+                    <div />
+                    <div className="flex items-center justify-center">
+                      <span className="text-xl font-mono font-bold">
+                        {cores.reduce((acc, r) => acc + (r.qtdePecas || 0), 0)}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            ))
+            </>
           ) : (
             <Card>
               <CardContent className="p-4">
@@ -440,13 +456,13 @@ const FichaZiperPage = () => {
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs font-bold uppercase text-center block bg-muted py-1 rounded">CÓD</Label>
-                    <div className="flex items-center h-16">
+                    <div className="flex items-center justify-center h-16">
                       <span className="text-sm text-muted-foreground">-</span>
                     </div>
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs font-bold uppercase text-center block bg-muted py-1 rounded">QTDE PEÇAS</Label>
-                    <div className="flex items-center h-16">
+                    <div className="flex items-center justify-center h-16">
                       <span className="text-lg font-mono font-bold text-muted-foreground">0</span>
                     </div>
                   </div>
