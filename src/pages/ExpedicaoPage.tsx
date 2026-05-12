@@ -615,7 +615,13 @@ const ExpedicaoPage = () => {
                               </td>
                             );
                           })}
-                          <td className="px-2 py-0.5 text-center font-bold">{totalEnv}</td>
+                          <td className="px-1 py-0.5 text-center">
+                            <Input type="number" min="0" max={totalSaldo}
+                              value={totalEnv > 0 ? String(totalEnv) : ""}
+                              onChange={(e) => updateRowTotal(row.id, e.target.value)}
+                              disabled={totalSaldo === 0}
+                              className={`h-7 text-xs text-center font-bold ${yellowInput}`} placeholder="0" />
+                          </td>
                         </tr>,
                       ];
                     })}
