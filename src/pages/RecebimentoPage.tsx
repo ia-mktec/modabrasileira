@@ -93,7 +93,7 @@ const RecebimentoPage = () => {
     }
   }, [dataEnvio, dataRecebimento]);
 
-  const loadOrdem = (oc: any) => {
+  const loadOrdem = async (oc: any) => {
     setCurrentOrdemCorteId(oc.id);
     // Find linked expedição for this ordem
     const linkedExp = expedicoes.find((e: any) => e.ordem_corte_id === oc.id);
@@ -111,10 +111,20 @@ const RecebimentoPage = () => {
     setCliente("");
     const foundModelo = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
     setModelo(foundModelo?.descricao || oc.modelo_ref || "");
+    setRefImage(foundModelo?.imagem_url || null);
+    setGradeRows([]);
+    setSearchOpen(false);
+    setIsLoaded(true);
+    setDataRecebimento("");
+    setObservacoes("");
+    setStatusKanban("");
 
-    // Load grade from ordem corte
-    if (oc.grade_corte && oc.grade_corte.length > 0) {
-      setGradeRows(oc.grade_corte.map((g: any) => ({
+    // Fetch full ordem detail (grade_corte) since list query doesn't include children
+    const detalhe = await loadOrdemDetalhada(oc.id);
+    const ordemFull = detalhe || oc;
+
+    if (ordemFull.grade_corte && ordemFull.grade_corte.length > 0) {
+      setGradeRows(ordemFull.grade_corte.map((g: any) => ({
         id: g.id || crypto.randomUUID(),
         cor: g.cor || "",
         qtdCortada: {
@@ -125,16 +135,7 @@ const RecebimentoPage = () => {
         totalDefeitos: "",
         totalRecebido: "",
       })));
-    } else {
-      setGradeRows([]);
     }
-
-    setRefImage(foundModelo?.imagem_url || null);
-    setSearchOpen(false);
-    setIsLoaded(true);
-    setDataRecebimento("");
-    setObservacoes("");
-    setStatusKanban("");
   };
 
   const handleSalvar = async () => {
