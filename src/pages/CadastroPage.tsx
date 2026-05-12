@@ -571,6 +571,26 @@ const CadastroPage = () => {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* AlertDialog: Confirmar exclusão de Fornecedor */}
+      <AlertDialog open={deleteFornecedorOpen} onOpenChange={setDeleteFornecedorOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir fornecedor?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir o fornecedor <strong>{deletingFornecedor?.razao_social}</strong>?
+              <br />
+              {deletingFornecedor?.id && "Se houver aviamentos vinculados, a exclusão será bloqueada automaticamente."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeletingFornecedor(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteFornecedor} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
