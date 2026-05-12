@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { useOrdensCorte, useExpedicao, useFornecedores, useModelos } from "@/hooks/useSupabaseData";
-import { Search, Truck, Printer, PackageCheck, ImageOff } from "lucide-react";
+import { Search, Truck, Printer, PackageCheck, ImageOff, Send } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const TAMANHOS = ["PP", "P", "M", "G", "GG", "G1", "G2", "G3"];
@@ -240,6 +240,19 @@ const ExpedicaoPage = () => {
     }));
   };
 
+  const handleEnvioTotal = () => {
+    setGradeRows((prev) =>
+      prev.map((r) => {
+        const qtdEnviar: Record<string, string> = {};
+        TAMANHOS.forEach((t) => {
+          const saldo = Math.max(0, (r.qtdProduzida[t] || 0) - (r.qtdEnviadaAnterior[t] || 0));
+          qtdEnviar[t] = saldo > 0 ? String(saldo) : "";
+        });
+        return { ...r, qtdEnviar };
+      })
+    );
+  };
+
   const totalProdBySize = (tam: string) => gradeRows.reduce((s, r) => s + (r.qtdProduzida[tam] || 0), 0);
   const totalProdGeral = TAMANHOS.reduce((s, t) => s + totalProdBySize(t), 0);
   const saldoCell = (row: GradeExpRow, tam: string) =>
@@ -380,6 +393,16 @@ const ExpedicaoPage = () => {
             
             <PackageCheck className="w-4 h-4" />
             <span>Registrar Saída</span>
+          </Button>
+
+          <Button
+            variant="outline"
+            className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 border-[hsl(199,89%,40%)] text-[hsl(199,89%,25%)] hover:bg-[hsl(199,89%,95%)]"
+            onClick={handleEnvioTotal}
+            disabled={gradeRows.length === 0}
+          >
+            <Send className="w-4 h-4" />
+            <span>Enviar Tudo</span>
           </Button>
 
           <Separator className="hidden md:block" />
