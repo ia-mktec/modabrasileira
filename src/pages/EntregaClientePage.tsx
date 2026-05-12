@@ -34,7 +34,7 @@ interface GradeEntregueRow {
 }
 
 const EntregaClientePage = () => {
-  const { ordens: ordensCorteDb, loading: loadingOrdens } = useOrdensCorte();
+  const { ordens: ordensCorteDb, loading: loadingOrdens, loadOrdemDetalhada } = useOrdensCorte();
   const { salvarEntrega } = useEntregaCliente();
   const { modelos: modelosDb, loading: loadingModelos } = useModelos();
   const [currentOrdemCorteId, setCurrentOrdemCorteId] = useState<string | null>(null);
