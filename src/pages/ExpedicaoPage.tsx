@@ -177,6 +177,11 @@ const ExpedicaoPage = () => {
 
   const totalProdBySize = (tam: string) => gradeRows.reduce((s, r) => s + (r.qtdProduzida[tam] || 0), 0);
   const totalProdGeral = TAMANHOS.reduce((s, t) => s + totalProdBySize(t), 0);
+  const saldoCell = (row: GradeExpRow, tam: string) =>
+    Math.max(0, (row.qtdProduzida[tam] || 0) - (row.qtdEnviadaAnterior[tam] || 0));
+  const totalEnviarRow = (row: GradeExpRow) =>
+    TAMANHOS.reduce((s, t) => s + (parseInt(row.qtdEnviar[t]) || 0), 0);
+  const totalEnviarGeral = gradeRows.reduce((s, r) => s + totalEnviarRow(r), 0);
 
   const updateAviamentoEnvio = (id: string, val: string) =>
   setAviamentosExp((prev) => prev.map((a) => a.id === id ? { ...a, qtdEnvio: val } : a));
@@ -190,18 +195,44 @@ const ExpedicaoPage = () => {
       toast({ title: "Campo obrigatório", description: "Preencha a data de saída.", variant: "destructive" });
       return;
     }
+    if (!oficina) {
+      toast({ title: "Campo obrigatório", description: "Informe a oficina/prestador desta saída.", variant: "destructive" });
+      return;
+    }
 
-    const gradeData = gradeRows.map((row) => ({
-      cor: row.cor,
-      pp_prod: row.qtdProduzida.PP || 0, p_prod: row.qtdProduzida.P || 0,
-      m_prod: row.qtdProduzida.M || 0, g_prod: row.qtdProduzida.G || 0,
-      gg_prod: row.qtdProduzida.GG || 0, g1_prod: row.qtdProduzida.G1 || 0,
-      g2_prod: row.qtdProduzida.G2 || 0, g3_prod: row.qtdProduzida.G3 || 0,
-      pp_exp: row.qtdProduzida.PP || 0, p_exp: row.qtdProduzida.P || 0,
-      m_exp: row.qtdProduzida.M || 0, g_exp: row.qtdProduzida.G || 0,
-      gg_exp: row.qtdProduzida.GG || 0, g1_exp: row.qtdProduzida.G1 || 0,
-      g2_exp: row.qtdProduzida.G2 || 0, g3_exp: row.qtdProduzida.G3 || 0,
-    }));
+    // Validação de saldo + filtra apenas linhas com quantidade enviada
+    const gradeData: any[] = [];
+    for (const row of gradeRows) {
+      const qtdEnviar: Record<string, number> = {};
+      let rowTotal = 0;
+      for (const t of TAMANHOS) {
+        const v = parseInt(row.qtdEnviar[t]) || 0;
+        if (v < 0) continue;
+        if (v > saldoCell(row, t)) {
+          toast({ title: "Quantidade excede o saldo", description: `Cor ${row.cor} tamanho ${t}: saldo disponível ${saldoCell(row, t)}.`, variant: "destructive" });
+          return;
+        }
+        qtdEnviar[t] = v;
+        rowTotal += v;
+      }
+      if (rowTotal === 0) continue;
+      gradeData.push({
+        cor: row.cor,
+        pp_prod: qtdEnviar.PP || 0, p_prod: qtdEnviar.P || 0,
+        m_prod: qtdEnviar.M || 0, g_prod: qtdEnviar.G || 0,
+        gg_prod: qtdEnviar.GG || 0, g1_prod: qtdEnviar.G1 || 0,
+        g2_prod: qtdEnviar.G2 || 0, g3_prod: qtdEnviar.G3 || 0,
+        pp_exp: qtdEnviar.PP || 0, p_exp: qtdEnviar.P || 0,
+        m_exp: qtdEnviar.M || 0, g_exp: qtdEnviar.G || 0,
+        gg_exp: qtdEnviar.GG || 0, g1_exp: qtdEnviar.G1 || 0,
+        g2_exp: qtdEnviar.G2 || 0, g3_exp: qtdEnviar.G3 || 0,
+      });
+    }
+
+    if (gradeData.length === 0) {
+      toast({ title: "Nenhuma quantidade informada", description: "Informe a quantidade a enviar nesta saída parcial.", variant: "destructive" });
+      return;
+    }
 
     const result = await salvarExpedicao({
       ordem_corte_id: currentOrdemCorteId,
@@ -214,7 +245,10 @@ const ExpedicaoPage = () => {
     }, gradeData);
 
     if (result) {
-      toast({ title: "Expedição registrada", description: `Saída da ordem ${numero} registrada com sucesso.` });
+      toast({ title: "Saída parcial registrada", description: `Oficina ${oficina} — ${totalEnviarGeral} peça(s).` });
+      // Recarrega a ordem para atualizar saldos e limpar formulário
+      const refreshed = ordensCorteDb.find((o: any) => o.id === currentOrdemCorteId);
+      if (refreshed) loadOrdem(refreshed);
     }
   };
 
