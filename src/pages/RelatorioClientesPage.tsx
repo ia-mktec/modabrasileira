@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { PageLoading } from "@/components/shared/PageLoading";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -167,6 +168,10 @@ const RelatorioClientesPage = () => {
   const toggleCliente = (name: string) => {
     setSelectedClientes((prev) => prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]);
   };
+
+  if (loading) {
+    return <PageLoading message="Carregando relatório..." />;
+  }
 
   return (
     <div className="p-4 md:p-6 space-y-6">

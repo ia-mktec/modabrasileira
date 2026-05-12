@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { PageLoading } from "@/components/shared/PageLoading";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -149,7 +150,7 @@ export default function FichaPedidoPage() {
   }, [numero]);
 
   if (loading) {
-    return <div className="p-8 text-center text-muted-foreground">Carregando ficha...</div>;
+    return <PageLoading message="Carregando ficha..." />;
   }
 
   if (notFound || !pedido) {

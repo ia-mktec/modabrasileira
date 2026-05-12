@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PageLoading } from "@/components/shared/PageLoading";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -186,7 +187,7 @@ const CadastroPage = () => {
                   </thead>
                   <tbody>
                     {loadingForn ? (
-                      <tr><td colSpan={9} className="py-8 text-center text-muted-foreground">Carregando...</td></tr>
+                      <tr><td colSpan={9}><PageLoading fullPage={false} /></td></tr>
                     ) : filtered.map((f: any) => (
                       <tr key={f.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                         <td className="py-3 px-4 font-medium">{f.razao_social}</td>
@@ -247,7 +248,7 @@ const CadastroPage = () => {
                   </thead>
                   <tbody>
                     {loadingCli ? (
-                      <tr><td colSpan={8} className="py-8 text-center text-muted-foreground">Carregando...</td></tr>
+                      <tr><td colSpan={8}><PageLoading fullPage={false} /></td></tr>
                     ) : filteredClientes.map((c: any) => (
                       <tr key={c.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                         <td className="py-3 px-4 font-medium">{c.razao_social}</td>

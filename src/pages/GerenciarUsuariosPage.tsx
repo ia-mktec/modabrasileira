@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { PageLoading } from "@/components/shared/PageLoading";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Navigate } from "react-router-dom";
@@ -115,9 +116,7 @@ export default function GerenciarUsuariosPage() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-            </div>
+            <PageLoading fullPage={false} />
           ) : (
             <Table>
               <TableHeader>

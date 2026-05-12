@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { PageLoading } from "@/components/shared/PageLoading";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -56,11 +57,11 @@ const findModeloByReferencia = (modelos: any[], referencia: string | null | unde
 
 const CortePage = () => {
   const navigate = useNavigate();
-  const { ordens: ordensCorteDb, salvarOrdem, deletarOrdem, loadOrdemDetalhada } = useOrdensCorte();
-  const { modelos: modelosDb } = useModelos();
-  const { tecidos: tecidosDb, refetch: refetchTecidos } = useTecidos();
-  const { clientes: clientesDb } = useClientes();
-  const { aviamentos: aviamentosDb } = useAviamentos();
+  const { ordens: ordensCorteDb, loading: loadingOrdens, salvarOrdem, deletarOrdem, loadOrdemDetalhada } = useOrdensCorte();
+  const { modelos: modelosDb, loading: loadingModelos } = useModelos();
+  const { tecidos: tecidosDb, loading: loadingTecidos, refetch: refetchTecidos } = useTecidos();
+  const { clientes: clientesDb, loading: loadingClientes } = useClientes();
+  const { aviamentos: aviamentosDb, loading: loadingAviamentos } = useAviamentos();
   const [selectedTecidoId, setSelectedTecidoId] = useState("");
   const [currentOrdemId, setCurrentOrdemId] = useState<string | null>(null);
   const [numero, setNumero] = useState("");
@@ -624,6 +625,11 @@ const CortePage = () => {
         </div>
       </div>
     );
+  }
+
+  const isLoading = loadingOrdens || loadingModelos || loadingTecidos || loadingClientes || loadingAviamentos;
+  if (isLoading) {
+    return <PageLoading message="Carregando ordens de corte..." />;
   }
 
   return (

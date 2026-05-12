@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PageLoading } from "@/components/shared/PageLoading";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -235,7 +236,7 @@ const AviamentosPage = () => {
                   </thead>
                   <tbody>
                     {loading ? (
-                      <tr><td colSpan={8} className="py-8 text-center text-muted-foreground">Carregando...</td></tr>
+                      <tr><td colSpan={8}><PageLoading fullPage={false} /></td></tr>
                     ) : filteredAviamentos.map((r: any) => (
                       <tr key={r.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                         <td className="py-2 px-3 font-medium">{r.tipo}</td>

@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { PageLoading } from "@/components/shared/PageLoading";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -225,6 +226,9 @@ const TecidosPage = () => {
 
   // ─── HISTÓRICO VIEW ───
   if (viewMode === "historico") {
+    if (loadingRegistros) {
+      return <PageLoading message="Carregando histórico..." />;
+    }
     return (
       <div className="p-4 md:p-6 space-y-4">
         <div className="bg-[hsl(217,71%,25%)] text-[hsl(0,0%,100%)] rounded-t-lg px-6 py-3 flex items-center gap-4">

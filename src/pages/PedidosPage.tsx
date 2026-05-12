@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { PageLoading } from "@/components/shared/PageLoading";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -271,8 +272,8 @@ export default function PedidosPage() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                      Carregando...
+                    <TableCell colSpan={7}>
+                      <PageLoading fullPage={false} />
                     </TableCell>
                   </TableRow>
                 ) : paginated.length === 0 ? (

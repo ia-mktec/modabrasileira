@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { PageLoading } from "@/components/shared/PageLoading";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,10 +35,10 @@ interface GradacaoRow {
 }
 
 const ExpedicaoPage = () => {
-  const { ordens: ordensCorteDb } = useOrdensCorte();
+  const { ordens: ordensCorteDb, loading: loadingOrdens } = useOrdensCorte();
   const { salvarExpedicao } = useExpedicao();
   const { fornecedores: fornecedoresDb } = useFornecedores();
-  const { modelos: modelosDb } = useModelos();
+  const { modelos: modelosDb, loading: loadingModelos } = useModelos();
   const [currentOrdemCorteId, setCurrentOrdemCorteId] = useState<string | null>(null);
   // Dados da ordem (consulta - read only)
   const [numero, setNumero] = useState("");
@@ -195,6 +196,10 @@ const ExpedicaoPage = () => {
 
   const readOnlyInput =
   "bg-muted text-foreground border-border cursor-default";
+
+  if (loadingOrdens || loadingModelos) {
+    return <PageLoading message="Carregando expedição..." />;
+  }
 
   return (
     <div className="p-4 md:p-6 space-y-4">

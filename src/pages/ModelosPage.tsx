@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { PageLoading } from "@/components/shared/PageLoading";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -94,9 +95,9 @@ const calcGradacao = (p: string, aumento: string): Partial<GradacaoRow> => {
 const ACCEPTED_FILE_FORMATS = ".dxf,.ads,.dwg,.plt,.hpgl,.svg,.pdf,.ai,.zip,.cdr";
 
 const ModelosPage = () => {
-  const { modelos, salvarModelo, carregarModeloCompleto } = useModelos();
-  const { clientes } = useClientes();
-  const { aviamentos: dbAviamentos } = useAviamentos();
+  const { modelos, loading: loadingModelos, salvarModelo, carregarModeloCompleto } = useModelos();
+  const { clientes, loading: loadingClientes } = useClientes();
+  const { aviamentos: dbAviamentos, loading: loadingAviamentos } = useAviamentos();
   const { tecidos: tecidoOptions, cores: corOptions } = useEntityOptions();
   const [referencia, setReferencia] = useState("");
   const [numeroPedido, setNumeroPedido] = useState("");
@@ -889,6 +890,11 @@ const ModelosPage = () => {
       </Card>
     </div>;
 
+
+  const isLoading = loadingModelos || loadingClientes || loadingAviamentos;
+  if (isLoading) {
+    return <PageLoading message="Carregando modelos..." />;
+  }
 
   return (
     <div className="p-4 md:p-6 space-y-4">
