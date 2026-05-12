@@ -504,7 +504,14 @@ const EntregaClientePage = () => {
                             
                               </td>
                           )}
-                            <td className="px-2 py-1 text-center font-bold text-[hsl(38,92%,40%)]">{totalRow}</td>
+                            <td className="px-2 py-1 text-center">
+                              <Input
+                                type="number" min="0"
+                                value={totalRow > 0 ? String(totalRow) : ""}
+                                onChange={(e) => updateRowTotalEntregue(row.id, e.target.value)}
+                                className={`h-7 text-xs text-center font-bold ${yellowInput}`}
+                                placeholder="0" />
+                            </td>
                             <td className="px-1 py-1">
                               <Input
                               type="number" min="0"
