@@ -103,7 +103,7 @@ const initialCores = [
 ];
 
 const CadastroPage = () => {
-  const { fornecedores, loading: loadingForn, salvarFornecedor } = useFornecedores();
+  const { fornecedores, loading: loadingForn, salvarFornecedor, deletarFornecedor } = useFornecedores();
   const { clientes, loading: loadingCli, salvarCliente } = useClientes();
 
   const [search, setSearch] = useState("");
@@ -113,6 +113,8 @@ const CadastroPage = () => {
 
   const [editFornecedorOpen, setEditFornecedorOpen] = useState(false);
   const [editingFornecedor, setEditingFornecedor] = useState<any>(null);
+  const [deleteFornecedorOpen, setDeleteFornecedorOpen] = useState(false);
+  const [deletingFornecedor, setDeletingFornecedor] = useState<any>(null);
   const [editClienteOpen, setEditClienteOpen] = useState(false);
   const [editingCliente, setEditingCliente] = useState<any>(null);
   const [novaCorOpen, setNovaCorOpen] = useState(false);
