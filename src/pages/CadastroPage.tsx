@@ -473,6 +473,18 @@ const CadastroPage = () => {
                 <Label>Prazo de Pagamento (dias)</Label>
                 <Input type="number" value={editingFornecedor.prazo_pagamento || 0} onChange={(e) => setEditingFornecedor((prev: any) => ({ ...prev, prazo_pagamento: parseInt(e.target.value) || 0 }))} />
               </div>
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select value={editingFornecedor.status || "ativo"} onValueChange={(val) => setEditingFornecedor((prev: any) => ({ ...prev, status: val }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ativo">Ativo</SelectItem>
+                    <SelectItem value="inativo">Inativo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="flex gap-2 pt-4">
                 <Button className="flex-1" onClick={handleSaveFornecedor}>Salvar</Button>
                 <Button variant="outline" className="flex-1" onClick={() => setEditFornecedorOpen(false)}>Cancelar</Button>
