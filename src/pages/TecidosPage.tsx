@@ -70,6 +70,7 @@ type ViewMode = "ficha" | "historico" | "cadastro";
 const TecidosPage = () => {
   const { tecidos, salvarTecido } = useTecidos();
   const { clientes } = useClientes();
+  const { clientes: clienteOptions, tecidos: tecidoOptions } = useEntityOptions();
   const { registrarMovimentacao } = useEstoqueMovimentacoes();
   const [viewMode, setViewMode] = useState<ViewMode>("ficha");
 
