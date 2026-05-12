@@ -24,6 +24,7 @@ interface PedidoRow {
 
 interface OrdemCorteRow {
   numero_pedido: string | null;
+  numero: string;
   status: string;
   updated_at: string;
 }
@@ -67,12 +68,14 @@ function PedidoCard({
   imagemUrl,
   onOpenTimeline,
   onOpenFicha,
+  numeroOrdemCorte,
 }: {
   pedido: PedidoRow;
   col: ColKey;
   imagemUrl?: string | null;
   onOpenTimeline: (n: string) => void;
   onOpenFicha: (n: string) => void;
+  numeroOrdemCorte?: string | null;
 }) {
   const colLabel = kanbanColumns.find((c) => c.key === col)?.label || "";
   return (
@@ -93,7 +96,12 @@ function PedidoCard({
           </button>
           <div className="flex-1 min-w-0 space-y-1.5">
             <div className="flex items-center justify-between gap-2">
-              <span className="font-mono text-xs font-semibold text-primary truncate">{pedido.modelo_ref}</span>
+              <div className="flex flex-col min-w-0">
+                <span className="font-mono text-xs font-semibold text-primary truncate">{pedido.modelo_ref}</span>
+                {numeroOrdemCorte && (
+                  <span className="text-[10px] text-muted-foreground truncate">OC: {numeroOrdemCorte}</span>
+                )}
+              </div>
               <span
                 className={cn(
                   "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border whitespace-nowrap",
@@ -312,6 +320,16 @@ const RelatorioProducaoPage = () => {
     }
   }, [pedidos, ordens, expedicoes, recebimentos, entregas, ordemToPedido]);
 
+  const ordemNumeroByPedido = useMemo(() => {
+    const m: Record<string, string> = {};
+    ordens.forEach((o) => {
+      if (o.numero_pedido && o.numero && !m[o.numero_pedido]) {
+        m[o.numero_pedido] = o.numero;
+      }
+    });
+    return m;
+  }, [ordens]);
+
   const clientesOptions = useMemo(() => {
     const set = new Set<string>();
     pedidos.forEach((p) => p.cliente && set.add(p.cliente));
@@ -410,6 +428,7 @@ const RelatorioProducaoPage = () => {
                     imagemUrl={modeloImgs[p.modelo_ref]}
                     onOpenTimeline={handleClick}
                     onOpenFicha={(n) => navigate(`/pedidos/${encodeURIComponent(n)}/ficha`)}
+                    numeroOrdemCorte={ordemNumeroByPedido[p.numero_pedido] || null}
                   />
                 ))
               ) : (
