@@ -264,6 +264,10 @@ const RelatorioProducaoPage = () => {
 
     pedidos.forEach((p) => {
       const np = p.numero_pedido;
+      if (p.status_kanban === "inativo") {
+        map[np] = null;
+        return;
+      }
       const ents = entByPed[np] || [];
       const recs = recByPed[np] || [];
       const exps = expByPed[np] || [];
