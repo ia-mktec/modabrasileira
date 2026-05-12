@@ -226,6 +226,9 @@ const TecidosPage = () => {
 
   // ─── HISTÓRICO VIEW ───
   if (viewMode === "historico") {
+    if (loadingRegistros) {
+      return <PageLoading message="Carregando histórico..." />;
+    }
     return (
       <div className="p-4 md:p-6 space-y-4">
         <div className="bg-[hsl(217,71%,25%)] text-[hsl(0,0%,100%)] rounded-t-lg px-6 py-3 flex items-center gap-4">
