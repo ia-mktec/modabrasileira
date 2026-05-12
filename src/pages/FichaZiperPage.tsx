@@ -48,6 +48,7 @@ function corParaHex(cor: string): string {
 
 const FichaZiperPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [ordemCorte, setOrdemCorte] = useState("");
   const [cliente, setCliente] = useState("");
