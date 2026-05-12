@@ -139,6 +139,43 @@ const EntregaClientePage = () => {
   const updateEntregueField = (rowId: string, field: "segundaQualidade", val: string) =>
   setGradeEntregue((prev) => prev.map((r) => r.id === rowId ? { ...r, [field]: val } : r));
 
+  // Distribui um total proporcionalmente conforme pesos (qtd cortada por tamanho)
+  const distributeByWeights = (total: number, weights: number[]): number[] => {
+    const sumW = weights.reduce((a, b) => a + b, 0);
+    if (sumW <= 0 || total <= 0) return weights.map(() => 0);
+    const raw = weights.map((w) => (total * w) / sumW);
+    const floored = raw.map((v) => Math.floor(v));
+    let resto = total - floored.reduce((a, b) => a + b, 0);
+    const fracs = raw
+      .map((v, i) => ({ i, frac: v - Math.floor(v), w: weights[i] }))
+      .sort((a, b) => b.frac - a.frac || b.w - a.w);
+    let k = 0;
+    while (resto > 0 && k < fracs.length * 4) {
+      const idx = fracs[k % fracs.length].i;
+      if (floored[idx] < weights[idx]) {
+        floored[idx] += 1;
+        resto -= 1;
+      }
+      k += 1;
+    }
+    return floored;
+  };
+
+  const updateRowTotalEntregue = (rowId: string, totalStr: string) => {
+    setGradeEntregue((prev) => prev.map((r) => {
+      if (r.id !== rowId) return r;
+      const cortadaRow = gradeCortada.find((c) => c.cor === r.cor);
+      const weights = TAMANHOS.map((t) => cortadaRow?.qtdCortada[t] || 0);
+      const sumW = weights.reduce((a, b) => a + b, 0);
+      let total = parseInt(totalStr) || 0;
+      if (total > sumW && sumW > 0) total = sumW;
+      const dist = distributeByWeights(total, weights);
+      const qtdEntregue: Record<string, string> = {};
+      TAMANHOS.forEach((t, i) => { qtdEntregue[t] = dist[i] > 0 ? String(dist[i]) : ""; });
+      return { ...r, qtdEntregue };
+    }));
+  };
+
   const totalEntregueBySize = (tam: string) => gradeEntregue.reduce((s, r) => s + (parseInt(r.qtdEntregue[tam]) || 0), 0);
   const totalEntregueGeral = TAMANHOS.reduce((s, t) => s + totalEntregueBySize(t), 0);
 
