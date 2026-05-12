@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Search, Trash2, Printer } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ZiperCorRow {
   cor: string;
@@ -26,38 +27,24 @@ interface ZiperOrdemData {
   cores: ZiperCorRow[];
 }
 
-const mockZiperData: ZiperOrdemData[] = [
-  {
-    ordemCorte: "OC-0001", cliente: "Lojas Renner S.A.", dataCorte: "2025-02-20",
-    referencia: "MK-2024-001", tecido: "Malha Cotton 30/1", descricaoZiper: "Invisível de 20 cm PTO",
-    cores: [
-      { cor: "Preto", codigo: "ZP-INV-20-PTO", qtdePecas: 300, amostraCor: "#000000" },
-      { cor: "Marinho", codigo: "ZP-INV-20-MRN", qtdePecas: 200, amostraCor: "#001f4d" },
-    ],
-  },
-  {
-    ordemCorte: "OC-0002", cliente: "Riachuelo Modas Ltda", dataCorte: "2025-02-22",
-    referencia: "MK-2024-002", tecido: "Piquet PA", descricaoZiper: "Comum de 15 cm COLOR",
-    cores: [
-      { cor: "Vermelho", codigo: "ZP-COM-15-VRM", qtdePecas: 300, amostraCor: "#cc0000" },
-    ],
-  },
-  {
-    ordemCorte: "OC-0003", cliente: "C&A Modas S.A.", dataCorte: "2025-02-25",
-    referencia: "MK-2024-005", tecido: "Jeans Denim 10oz", descricaoZiper: "Destacável de 25 cm PTO/BR",
-    cores: [
-      { cor: "Preto/Branco", codigo: "ZP-DST-25-PB", qtdePecas: 120, amostraCor: "#000000" },
-      { cor: "Azul Índigo", codigo: "ZP-DST-25-AZI", qtdePecas: 80, amostraCor: "#1a237e" },
-    ],
-  },
-  {
-    ordemCorte: "OC-0004", cliente: "Hering Store Ltda", dataCorte: "2025-02-28",
-    referencia: "MK-2024-003", tecido: "Moletom Flanelado", descricaoZiper: "Invisível de 40 cm COLOR",
-    cores: [
-      { cor: "Cinza", codigo: "ZP-INV-40-CNZ", qtdePecas: 150, amostraCor: "#808080" },
-    ],
-  },
-];
+// Mapa simples de nomes de cor PT-BR -> hex para a amostra visual
+const COR_HEX: Record<string, string> = {
+  preto: "#000000", branco: "#ffffff", marinho: "#001f4d", azul: "#1e40af",
+  "azul marinho": "#001f4d", "azul royal": "#1d4ed8", "azul claro": "#60a5fa",
+  vermelho: "#cc0000", verde: "#16a34a", amarelo: "#facc15", cinza: "#808080",
+  bege: "#d6c6a8", marrom: "#7b3f00", rosa: "#ec4899", roxo: "#7c3aed",
+  laranja: "#f97316", colorido: "#a855f7", diversos: "#a855f7",
+  niquelado: "#c0c0c0", "preto/branco": "#000000",
+};
+
+function corParaHex(cor: string): string {
+  if (!cor) return "#e5e7eb";
+  const c = cor.trim().toLowerCase();
+  if (COR_HEX[c]) return COR_HEX[c];
+  // tenta primeira palavra
+  const first = c.split(/[\s/]/)[0];
+  return COR_HEX[first] || "#e5e7eb";
+}
 
 const FichaZiperPage = () => {
   const navigate = useNavigate();
