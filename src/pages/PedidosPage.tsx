@@ -183,6 +183,43 @@ export default function PedidosPage() {
     setPedidoToDelete(null);
   };
 
+  const handleOpenEdit = (pedido: PedidoRow) => {
+    setEditingPedido({ ...pedido });
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingPedido) return;
+    setSaving(true);
+
+    const { error } = await supabase
+      .from("modelo_pedidos")
+      .update({
+        cliente: editingPedido.cliente,
+        tecido: editingPedido.tecido,
+        cor: editingPedido.cor,
+        status_kanban: editingPedido.status_kanban,
+        consumo_tecido: editingPedido.consumo_tecido,
+        observacoes: editingPedido.observacoes,
+        piloto_entregue: editingPedido.piloto_entregue,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("numero_pedido", editingPedido.numero_pedido);
+
+    setSaving(false);
+    if (error) {
+      toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    setPedidos((prev) =>
+      prev.map((p) => (p.numero_pedido === editingPedido.numero_pedido ? editingPedido : p))
+    );
+    toast({ title: "Pedido atualizado", description: `${editingPedido.numero_pedido} foi salvo.` });
+    setEditDialogOpen(false);
+    setEditingPedido(null);
+  };
+
   return (
     <div className="p-6 space-y-6">
       <PageHeader
