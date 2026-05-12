@@ -464,6 +464,28 @@ const ExpedicaoPage = () => {
               <h3 className="text-sm font-bold tracking-wide text-center">GRADE DE TAMANHOS</h3>
             </div>
             <CardContent className="p-3">
+              {currentOrdemCorteId && (() => {
+                const prev = (expedicoesDb || []).filter((e: any) => e.ordem_corte_id === currentOrdemCorteId);
+                if (prev.length === 0) return null;
+                return (
+                  <div className="mb-3 p-2 rounded bg-muted/40 border border-border">
+                    <div className="text-[11px] font-semibold mb-1">Saídas parciais já registradas ({prev.length})</div>
+                    <ul className="text-[11px] space-y-0.5">
+                      {prev.map((e: any) => {
+                        const total = (e.grade_expedicao || []).reduce((s: number, g: any) =>
+                          s + TAMANHOS.reduce((ss, t) => ss + (g[`${TAM_KEYS[t]}_exp`] || 0), 0), 0);
+                        return (
+                          <li key={e.id} className="flex justify-between gap-2">
+                            <span className="font-mono">{e.data_saida || "—"}</span>
+                            <span className="flex-1 truncate">{e.oficina_nome || "—"}</span>
+                            <span className="font-semibold">{total} pç</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                );
+              })()}
               {gradeRows.length === 0 ?
               <div className="py-8 text-center">
                   <Truck className="w-10 h-10 mx-auto text-muted-foreground/40 mb-2" />
