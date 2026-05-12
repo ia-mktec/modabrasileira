@@ -66,74 +66,79 @@ const FichaZiperPage = () => {
     const loadAll = async () => {
       // Buscar todas as ordens de corte (paginado para superar o limite de 1000)
       const pageSize = 1000;
-      let from = 0;
-      const ocs: any[] = [];
-      while (true) {
-        const { data, error } = await supabase
-          .from("ordens_corte")
-          .select("id, numero, modelo_ref, tecido_nome, data_corte, cliente_id, quantidade_pecas")
-          .order("created_at", { ascending: false })
-          .range(from, from + pageSize - 1);
-        if (error || !data) break;
-        ocs.push(...data);
-        if (data.length < pageSize) break;
-        from += pageSize;
-      }
+      const fetchAll = async (table: string, columns: string) => {
+        const rows: any[] = [];
+        let from = 0;
+        while (true) {
+          const { data, error } = await supabase
+            .from(table as any)
+            .select(columns)
+            .range(from, from + pageSize - 1);
+          if (error || !data) break;
+          rows.push(...data);
+          if (data.length < pageSize) break;
+          from += pageSize;
+        }
+        return rows;
+      };
+
+      const ocs = await fetchAll(
+        "ordens_corte",
+        "id, numero, modelo_ref, tecido_nome, data_corte, cliente_id, quantidade_pecas, numero_pedido"
+      );
       if (ocs.length === 0) return;
 
-      const ocIds = ocs.map((o) => o.id);
       const clienteIds = Array.from(new Set(ocs.map((o) => o.cliente_id).filter(Boolean))) as string[];
-
-      // Clientes
       const { data: clientes } = clienteIds.length
         ? await supabase.from("clientes").select("id, razao_social").in("id", clienteIds)
         : { data: [] as any[] };
       const clienteMap = new Map((clientes || []).map((c: any) => [c.id, c.razao_social]));
 
-      // Aviamentos da ordem
-      const { data: aviOrdem } = ocIds.length
-        ? await supabase
-            .from("aviamentos_ordem")
-            .select("ordem_corte_id, descricao, quantidade, aviamento_id")
-            .in("ordem_corte_id", ocIds)
-        : { data: [] as any[] };
+      // Aviamentos do pedido (zíperes registrados no pedido)
+      const aviPedido = await fetchAll(
+        "aviamentos_pedido",
+        "numero_pedido, modelo_ref, tipo, descricao_item, cor, partes_qtde, tamanho, id"
+      );
+      // Grade de corte por OC -> cores e quantidades
+      const grades = await fetchAll(
+        "grade_corte",
+        "ordem_corte_id, cor, pp, p, m, g, gg, g1, g2, g3"
+      );
+      const gradesByOC = new Map<string, any[]>();
+      grades.forEach((g: any) => {
+        const arr = gradesByOC.get(g.ordem_corte_id) || [];
+        arr.push(g);
+        gradesByOC.set(g.ordem_corte_id, arr);
+      });
 
-      // Detalhes dos aviamentos para filtrar zíperes
-      const aviIds = Array.from(
-        new Set((aviOrdem || []).map((a: any) => a.aviamento_id).filter(Boolean))
-      ) as string[];
-      const { data: aviInfo } = aviIds.length
-        ? await supabase
-            .from("aviamentos")
-            .select("id, tipo, descricao, cor")
-            .in("id", aviIds)
-        : { data: [] as any[] };
-      const aviMap = new Map((aviInfo || []).map((a: any) => [a.id, a]));
+      const isZiper = (t: string | null | undefined) =>
+        !!t && (t.toLowerCase().includes("zíper") || t.toLowerCase().includes("ziper"));
 
       const result: ZiperOrdemData[] = ocs.map((oc: any) => {
-        const itens = (aviOrdem || []).filter((a: any) => a.ordem_corte_id === oc.id);
-        const ziperItens = itens.filter((it: any) => {
-          const info = it.aviamento_id ? aviMap.get(it.aviamento_id) : null;
-          const tipo = (info?.tipo || "").toLowerCase();
-          if (tipo.includes("zíper") || tipo.includes("ziper")) return true;
-          // fallback pela descrição livre
-          return (it.descricao || "").toLowerCase().includes("zíper") ||
-            (it.descricao || "").toLowerCase().includes("ziper");
-        });
-        const descricaoZiper = ziperItens
-          .map((it: any) => aviMap.get(it.aviamento_id)?.descricao || it.descricao)
-          .filter(Boolean)
-          .join(" | ");
-        const cores: ZiperCorRow[] = ziperItens.map((it: any) => {
-          const info = it.aviamento_id ? aviMap.get(it.aviamento_id) : null;
-          const cor = info?.cor || "-";
+        const zips = aviPedido.filter(
+          (a: any) =>
+            a.numero_pedido === oc.numero_pedido &&
+            (a.modelo_ref === oc.modelo_ref || !a.modelo_ref) &&
+            (isZiper(a.tipo) || isZiper(a.descricao_item))
+        );
+        const descricaoZiper = Array.from(
+          new Set(zips.map((z: any) => z.descricao_item).filter(Boolean))
+        ).join(" | ");
+
+        const gradesOC = gradesByOC.get(oc.id) || [];
+        const cores: ZiperCorRow[] = gradesOC.map((g: any) => {
+          const qtde =
+            (g.pp || 0) + (g.p || 0) + (g.m || 0) + (g.g || 0) +
+            (g.gg || 0) + (g.g1 || 0) + (g.g2 || 0) + (g.g3 || 0);
+          const codigo = zips[0]?.id ? String(zips[0].id).slice(0, 8).toUpperCase() : "-";
           return {
-            cor,
-            codigo: it.aviamento_id ? String(it.aviamento_id).slice(0, 8).toUpperCase() : "-",
-            qtdePecas: it.quantidade || 0,
-            amostraCor: corParaHex(cor),
+            cor: g.cor || "-",
+            codigo,
+            qtdePecas: qtde,
+            amostraCor: corParaHex(g.cor || ""),
           };
         });
+
         return {
           ordemCorte: oc.numero,
           cliente: oc.cliente_id ? clienteMap.get(oc.cliente_id) || "-" : "-",
