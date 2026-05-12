@@ -68,12 +68,14 @@ function PedidoCard({
   imagemUrl,
   onOpenTimeline,
   onOpenFicha,
+  numeroOrdemCorte,
 }: {
   pedido: PedidoRow;
   col: ColKey;
   imagemUrl?: string | null;
   onOpenTimeline: (n: string) => void;
   onOpenFicha: (n: string) => void;
+  numeroOrdemCorte?: string | null;
 }) {
   const colLabel = kanbanColumns.find((c) => c.key === col)?.label || "";
   return (
