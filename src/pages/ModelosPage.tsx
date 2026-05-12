@@ -483,7 +483,14 @@ const ModelosPage = () => {
             </div>
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Tecido</Label>
-              <Input value={tecido} onChange={(e) => setTecido(e.target.value)} className={yellowInput} placeholder="Tecido principal" />
+              <SearchableSelect
+                options={tecidoOptions}
+                value={tecido || null}
+                onChange={(v) => setTecido(v || "")}
+                placeholder="Selecione tecido"
+                searchPlaceholder="Buscar tecido..."
+                className={yellowInput}
+              />
             </div>
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Cliente</Label>
