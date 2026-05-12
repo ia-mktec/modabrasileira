@@ -138,7 +138,7 @@ const FichaZiperPage = () => {
       // Catálogo de aviamentos para resolver código do zíper por cor + descrição
       const avis = await fetchAll(
         "aviamentos",
-        "id, tipo, descricao, cor, tamanho"
+        "id, codigo, tipo, descricao, cor, tamanho"
       );
 
       const isZiper = (t: string | null | undefined) =>
@@ -148,13 +148,6 @@ const FichaZiperPage = () => {
         (s || "").toString().trim().toLowerCase();
 
       const ziperAvis = avis.filter((a: any) => isZiper(a.tipo));
-
-      // Gera um código curto a partir da descrição quando não há aviamento cadastrado
-      const fallbackCodigo = (descricao: string, cor: string) => {
-        const base = (descricao || "ZIP").toUpperCase().replace(/[^A-Z0-9]+/g, "").slice(0, 6) || "ZIP";
-        const cc = (cor || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3);
-        return cc ? `${base}-${cc}` : base;
-      };
 
       const result: ZiperOrdemData[] = ocs.map((oc: any) => {
         const zips = aviPedido.filter(
@@ -174,28 +167,17 @@ const FichaZiperPage = () => {
             (g.pp || 0) + (g.p || 0) + (g.m || 0) + (g.g || 0) +
             (g.gg || 0) + (g.g1 || 0) + (g.g2 || 0) + (g.g3 || 0);
 
-          // 1) tenta achar aviamento que combine cor + descrição
+          // Casa por cor + descrição, depois por cor, depois por descrição
           const corNorm = norm(g.cor);
           let match = ziperAvis.find(
-            (a: any) =>
-              norm(a.cor) === corNorm &&
-              norm(a.descricao) === norm(descricaoBase)
+            (a: any) => norm(a.cor) === corNorm && norm(a.descricao) === norm(descricaoBase)
           );
-          // 2) tenta apenas pela cor + tipo zíper (qualquer descrição)
           if (!match) match = ziperAvis.find((a: any) => norm(a.cor) === corNorm);
-          // 3) tenta apenas pela descrição
-          if (!match)
-            match = ziperAvis.find((a: any) => norm(a.descricao) === norm(descricaoBase));
-
-          const codigo = match
-            ? String(match.id).slice(0, 8).toUpperCase()
-            : zips[0]?.id
-            ? String(zips[0].id).slice(0, 8).toUpperCase()
-            : fallbackCodigo(descricaoBase, g.cor);
+          if (!match) match = ziperAvis.find((a: any) => norm(a.descricao) === norm(descricaoBase));
 
           return {
             cor: g.cor || "-",
-            codigo,
+            codigo: match?.codigo || "-",
             qtdePecas: qtde,
             amostraCor: corParaHex(g.cor || ""),
           };
