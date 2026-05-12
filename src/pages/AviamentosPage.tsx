@@ -21,6 +21,7 @@ const AviamentosPage = () => {
   const { fornecedores } = useFornecedores();
 
   const [tipo, setTipo] = useState("");
+  const [codigo, setCodigo] = useState("");
   const [descricao, setDescricao] = useState("");
   const [tamanho, setTamanho] = useState("");
   const [cor, setCor] = useState("");
