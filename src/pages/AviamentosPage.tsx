@@ -159,6 +159,10 @@ const AviamentosPage = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Código</Label>
+                  <Input value={codigo} onChange={(e) => setCodigo(e.target.value)} className={yellowInput} placeholder="Código do aviamento" />
+                </div>
                 <div className="space-y-1 md:col-span-2">
                   <Label className="text-xs font-semibold">Descrição</Label>
                   <Input value={descricao} onChange={(e) => setDescricao(e.target.value)} className={yellowInput} placeholder="Descrição do aviamento" />
