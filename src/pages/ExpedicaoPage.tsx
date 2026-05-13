@@ -81,6 +81,91 @@ const ExpedicaoPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
 
+  // View mode (ficha | historico)
+  type ViewMode = "ficha" | "historico";
+  const [viewMode, setViewMode] = useState<ViewMode>("ficha");
+
+  // Histórico — filtros
+  const [filtroOrdem, setFiltroOrdem] = useState("");
+  const [filtroPedido, setFiltroPedido] = useState("");
+  const [filtroOficina, setFiltroOficina] = useState("");
+  const [filtroStatus, setFiltroStatus] = useState("");
+  const [filtroDataDe, setFiltroDataDe] = useState("");
+  const [filtroDataAte, setFiltroDataAte] = useState("");
+
+  interface RegistroExpedicao {
+    id: string;
+    data_saida: string | null;
+    oficina_nome: string | null;
+    status: string | null;
+    preco_peca: number | null;
+    observacoes: string | null;
+    created_at: string;
+    ordem_corte_id: string;
+    ordens_corte?: { numero: string; numero_pedido: string | null; modelo_ref: string | null; tecido_nome: string | null } | null;
+    grade_expedicao?: any[];
+  }
+  const [registros, setRegistros] = useState<RegistroExpedicao[]>([]);
+  const [loadingRegistros, setLoadingRegistros] = useState(false);
+
+  useEffect(() => {
+    if (viewMode !== "historico") return;
+    let cancelled = false;
+    (async () => {
+      setLoadingRegistros(true);
+      let q = supabase
+        .from("expedicao")
+        .select("id,data_saida,oficina_nome,status,preco_peca,observacoes,created_at,ordem_corte_id,grade_expedicao(pp_exp,p_exp,m_exp,g_exp,gg_exp,g1_exp,g2_exp,g3_exp)")
+        .order("data_saida", { ascending: false, nullsFirst: false })
+        .limit(2000);
+      if (filtroOficina) q = q.ilike("oficina_nome", `%${filtroOficina}%`);
+      if (filtroStatus) q = q.eq("status", filtroStatus);
+      if (filtroDataDe) q = q.gte("data_saida", filtroDataDe);
+      if (filtroDataAte) q = q.lte("data_saida", filtroDataAte);
+      const { data, error } = await q;
+      if (!cancelled) {
+        let rows: any[] = error ? [] : (data || []);
+        if (rows.length && (filtroOrdem || filtroPedido)) {
+          const ocMap: Record<string, any> = {};
+          ordensCorteDb.forEach((o: any) => { ocMap[o.id] = o; });
+          rows = rows.filter((r) => {
+            const oc = ocMap[r.ordem_corte_id];
+            if (!oc) return false;
+            if (filtroOrdem && !(oc.numero || "").toLowerCase().includes(filtroOrdem.toLowerCase())) return false;
+            if (filtroPedido && !(oc.numero_pedido || "").toLowerCase().includes(filtroPedido.toLowerCase())) return false;
+            return true;
+          });
+        }
+        // anexa dados da OC para exibição
+        const ocMap: Record<string, any> = {};
+        ordensCorteDb.forEach((o: any) => { ocMap[o.id] = o; });
+        rows = rows.map((r) => ({ ...r, ordens_corte: ocMap[r.ordem_corte_id] || null }));
+        setRegistros(rows as RegistroExpedicao[]);
+        setLoadingRegistros(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [viewMode, filtroOrdem, filtroPedido, filtroOficina, filtroStatus, filtroDataDe, filtroDataAte, ordensCorteDb]);
+
+  const limparFiltros = () => {
+    setFiltroOrdem(""); setFiltroPedido(""); setFiltroOficina("");
+    setFiltroStatus(""); setFiltroDataDe(""); setFiltroDataAte("");
+  };
+
+  const totalPecasGrade = (grades: any[] | undefined) =>
+    (grades || []).reduce((s, g: any) =>
+      s + (g.pp_exp||0)+(g.p_exp||0)+(g.m_exp||0)+(g.g_exp||0)+(g.gg_exp||0)+(g.g1_exp||0)+(g.g2_exp||0)+(g.g3_exp||0), 0);
+
+  const loadRegistroExpedicao = (r: RegistroExpedicao) => {
+    const oc = ordensCorteDb.find((o: any) => o.id === r.ordem_corte_id);
+    if (!oc) {
+      toast({ title: "Ordem não encontrada", description: "A ordem de corte vinculada a esta expedição não está disponível.", variant: "destructive" });
+      return;
+    }
+    setViewMode("ficha");
+    loadOrdem(oc);
+  };
+
   const filteredOrdens = ordensCorteDb.filter(
     (oc: any) =>
     (oc.numero || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
