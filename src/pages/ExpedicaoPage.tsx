@@ -491,6 +491,13 @@ const ExpedicaoPage = () => {
             <span>Enviar Tudo</span>
           </Button>
 
+          <Button
+            className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]"
+            onClick={() => setViewMode("historico")}>
+            <CheckCircle className="w-4 h-4" />
+            <span>Conferir</span>
+          </Button>
+
           <Separator className="hidden md:block" />
 
           <Button variant="outline" className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0" onClick={handlePrint}>
