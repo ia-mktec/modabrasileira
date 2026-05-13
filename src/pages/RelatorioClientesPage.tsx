@@ -63,13 +63,26 @@ const RelatorioClientesPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchAll = async <T,>(table: string, columns: string): Promise<T[]> => {
+      const PAGE = 1000;
+      let from = 0;
+      const all: T[] = [];
+      while (true) {
+        const { data, error } = await supabase.from(table as any).select(columns).range(from, from + PAGE - 1);
+        if (error || !data) break;
+        all.push(...(data as T[]));
+        if (data.length < PAGE) break;
+        from += PAGE;
+      }
+      return all;
+    };
     (async () => {
       const [c, o] = await Promise.all([
-        supabase.from("clientes").select("id,razao_social,status"),
-        supabase.from("ordens_corte").select("id,cliente_id,modelo_ref,quantidade_pecas,data_corte,status"),
+        fetchAll<any>("clientes", "id,razao_social,status"),
+        fetchAll<any>("ordens_corte", "id,cliente_id,modelo_ref,quantidade_pecas,data_corte,status"),
       ]);
-      setClientes(c.data || []);
-      setOrdens(o.data || []);
+      setClientes(c);
+      setOrdens(o);
       setLoading(false);
     })();
   }, []);
