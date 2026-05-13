@@ -745,6 +745,7 @@ export type Database = {
           id: string
           imagem_url: string | null
           modelo: string | null
+          observacoes: string | null
           referencia: string
           status: string
           tamanhos_grade: string | null
@@ -768,6 +769,7 @@ export type Database = {
           id?: string
           imagem_url?: string | null
           modelo?: string | null
+          observacoes?: string | null
           referencia: string
           status?: string
           tamanhos_grade?: string | null
@@ -791,6 +793,7 @@ export type Database = {
           id?: string
           imagem_url?: string | null
           modelo?: string | null
+          observacoes?: string | null
           referencia?: string
           status?: string
           tamanhos_grade?: string | null

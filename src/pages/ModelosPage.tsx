@@ -113,6 +113,7 @@ const ModelosPage = () => {
   const [forroTecido2, setForroTecido2] = useState(false);
   const [forroDescricao, setForroDescricao] = useState("");
   const [forroQtde, setForroQtde] = useState("");
+  const [observacoes, setObservacoes] = useState("");
 
   const [aviamentos, setAviamentos] = useState<AviamentoRow[]>(defaultAviamentos.map((a) => ({ ...a })));
   const [servicos, setServicos] = useState<ServicoRow[]>(defaultServicos.map((s) => ({ ...s })));
@@ -168,6 +169,7 @@ const ModelosPage = () => {
     setForroDescricao(m.forro_tecido2_descricao || "");
     setForroQtde(m.forro_tecido2_quantidade ? String(m.forro_tecido2_quantidade) : "");
     setModelImage(m.imagem_url || null);
+    setObservacoes(m.observacoes || "");
     setModelagemUrl(m.arquivo_modelagem_url || null);
     setModelagemFile(null);
     setCurrentModeloId(m.id);
@@ -206,6 +208,7 @@ const ModelosPage = () => {
     setServicos(defaultServicos.map((s) => ({ ...s })));
     setConsumoMetros("");setConsumoGramas("");
     setGradacao(Array.from({ length: 6 }, emptyGradacao));
+    setObservacoes("");
     setModelagemFile(null);
     setModelagemUrl(null);
     setModelImage(null);
@@ -348,6 +351,7 @@ const ModelosPage = () => {
     arquivo_modelagem_url: modelagemUrl || null,
     status: statusKanban === "concluido" ? "ativo" : statusKanban === "pendente" ? "desenvolvimento" : "ativo",
     imagem_url: modelImage || null,
+    observacoes: observacoes || null,
   });
 
   const buildChildren = () => ({
@@ -886,6 +890,20 @@ const ModelosPage = () => {
             )}
             </tbody>
           </table>
+        </CardContent>
+      </Card>
+
+      {/* Observações */}
+      <Card>
+        <div className="bg-[hsl(220,14%,40%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
+          <h3 className="text-sm font-bold tracking-wide text-center">OBSERVAÇÕES</h3>
+        </div>
+        <CardContent className="p-4">
+          <textarea
+            value={observacoes}
+            onChange={(e) => setObservacoes(e.target.value)}
+            className={`w-full rounded-md border px-3 py-2 text-sm min-h-[60px] resize-y ${yellowInput}`}
+            placeholder="Anotações sobre o modelo..." />
         </CardContent>
       </Card>
     </div>;

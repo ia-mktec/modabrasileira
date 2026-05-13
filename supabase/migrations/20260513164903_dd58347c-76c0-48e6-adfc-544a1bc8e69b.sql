@@ -1,0 +1,1 @@
+ALTER TABLE public.modelos ADD COLUMN IF NOT EXISTS observacoes text;
