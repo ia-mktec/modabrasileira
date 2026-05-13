@@ -113,6 +113,7 @@ const ModelosPage = () => {
   const [forroTecido2, setForroTecido2] = useState(false);
   const [forroDescricao, setForroDescricao] = useState("");
   const [forroQtde, setForroQtde] = useState("");
+  const [observacoes, setObservacoes] = useState("");
 
   const [aviamentos, setAviamentos] = useState<AviamentoRow[]>(defaultAviamentos.map((a) => ({ ...a })));
   const [servicos, setServicos] = useState<ServicoRow[]>(defaultServicos.map((s) => ({ ...s })));
