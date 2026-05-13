@@ -57,7 +57,6 @@ function getMockExpedicaoData(item: ConsultaProdutoDialogProps["item"]) {
   return {
     dataSaida: "2025-02-22",
     oficina: "Têxtil Brasil Ltda",
-    destino: item.cliente,
     
     statusExpedicao: "expedido",
     preco: item.precoPeca.toFixed(2),
