@@ -123,6 +123,16 @@ const Dashboard = () => {
   }, [ordens, expedidasSet, recebidasSet, entreguesSet]);
 
   const producaoMensal = useMemo(() => {
+    // Janela fixa: últimos 6 meses incluindo o atual, em ordem crescente
+    const meses: { y: number; m: number; key: string }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(anoAtual, mesAtual - i, 1);
+      meses.push({
+        y: d.getFullYear(),
+        m: d.getMonth(),
+        key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
+      });
+    }
     const buckets: Record<string, number> = {};
     ordens.forEach((o) => {
       if (!o.data_corte || o.status !== "concluido") return;
@@ -130,15 +140,11 @@ const Dashboard = () => {
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
       buckets[key] = (buckets[key] || 0) + (o.quantidade_pecas || 0);
     });
-    return Object.entries(buckets)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .slice(-6)
-      .map(([k, v]) => {
-        const [y, m] = k.split("-");
-        const label = new Date(Number(y), Number(m) - 1, 1).toLocaleDateString("pt-BR", { month: "short" });
-        return { mes: label, pecas: v };
-      });
-  }, [ordens]);
+    return meses.map(({ y, m, key }) => {
+      const label = new Date(y, m, 1).toLocaleDateString("pt-BR", { month: "short", year: "2-digit" });
+      return { mes: label.replace(".", ""), pecas: buckets[key] || 0 };
+    });
+  }, [ordens, mesAtual, anoAtual]);
 
   const ultimasOrdens = ordens.slice(0, 6);
 
