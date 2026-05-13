@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { PageLoading } from "@/components/shared/PageLoading";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { useOrdensCorte, useExpedicao, useFornecedores, useModelos } from "@/hooks/useSupabaseData";
-import { Search, Truck, Printer, PackageCheck, ImageOff, Send } from "lucide-react";
+import { Search, Truck, Printer, PackageCheck, ImageOff, Send, CheckCircle, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const TAMANHOS = ["PP", "P", "M", "G", "GG", "G1", "G2", "G3"];
 const TAM_KEYS: Record<string, string> = { PP: "pp", P: "p", M: "m", G: "g", GG: "gg", G1: "g1", G2: "g2", G3: "g3" };
@@ -79,6 +80,91 @@ const ExpedicaoPage = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
+
+  // View mode (ficha | historico)
+  type ViewMode = "ficha" | "historico";
+  const [viewMode, setViewMode] = useState<ViewMode>("ficha");
+
+  // Histórico — filtros
+  const [filtroOrdem, setFiltroOrdem] = useState("");
+  const [filtroPedido, setFiltroPedido] = useState("");
+  const [filtroOficina, setFiltroOficina] = useState("");
+  const [filtroStatus, setFiltroStatus] = useState("");
+  const [filtroDataDe, setFiltroDataDe] = useState("");
+  const [filtroDataAte, setFiltroDataAte] = useState("");
+
+  interface RegistroExpedicao {
+    id: string;
+    data_saida: string | null;
+    oficina_nome: string | null;
+    status: string | null;
+    preco_peca: number | null;
+    observacoes: string | null;
+    created_at: string;
+    ordem_corte_id: string;
+    ordens_corte?: { numero: string; numero_pedido: string | null; modelo_ref: string | null; tecido_nome: string | null } | null;
+    grade_expedicao?: any[];
+  }
+  const [registros, setRegistros] = useState<RegistroExpedicao[]>([]);
+  const [loadingRegistros, setLoadingRegistros] = useState(false);
+
+  useEffect(() => {
+    if (viewMode !== "historico") return;
+    let cancelled = false;
+    (async () => {
+      setLoadingRegistros(true);
+      let q = supabase
+        .from("expedicao")
+        .select("id,data_saida,oficina_nome,status,preco_peca,observacoes,created_at,ordem_corte_id,grade_expedicao(pp_exp,p_exp,m_exp,g_exp,gg_exp,g1_exp,g2_exp,g3_exp)")
+        .order("data_saida", { ascending: false, nullsFirst: false })
+        .limit(2000);
+      if (filtroOficina) q = q.ilike("oficina_nome", `%${filtroOficina}%`);
+      if (filtroStatus) q = q.eq("status", filtroStatus);
+      if (filtroDataDe) q = q.gte("data_saida", filtroDataDe);
+      if (filtroDataAte) q = q.lte("data_saida", filtroDataAte);
+      const { data, error } = await q;
+      if (!cancelled) {
+        let rows: any[] = error ? [] : (data || []);
+        if (rows.length && (filtroOrdem || filtroPedido)) {
+          const ocMap: Record<string, any> = {};
+          ordensCorteDb.forEach((o: any) => { ocMap[o.id] = o; });
+          rows = rows.filter((r) => {
+            const oc = ocMap[r.ordem_corte_id];
+            if (!oc) return false;
+            if (filtroOrdem && !(oc.numero || "").toLowerCase().includes(filtroOrdem.toLowerCase())) return false;
+            if (filtroPedido && !(oc.numero_pedido || "").toLowerCase().includes(filtroPedido.toLowerCase())) return false;
+            return true;
+          });
+        }
+        // anexa dados da OC para exibição
+        const ocMap: Record<string, any> = {};
+        ordensCorteDb.forEach((o: any) => { ocMap[o.id] = o; });
+        rows = rows.map((r) => ({ ...r, ordens_corte: ocMap[r.ordem_corte_id] || null }));
+        setRegistros(rows as RegistroExpedicao[]);
+        setLoadingRegistros(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [viewMode, filtroOrdem, filtroPedido, filtroOficina, filtroStatus, filtroDataDe, filtroDataAte, ordensCorteDb]);
+
+  const limparFiltros = () => {
+    setFiltroOrdem(""); setFiltroPedido(""); setFiltroOficina("");
+    setFiltroStatus(""); setFiltroDataDe(""); setFiltroDataAte("");
+  };
+
+  const totalPecasGrade = (grades: any[] | undefined) =>
+    (grades || []).reduce((s, g: any) =>
+      s + (g.pp_exp||0)+(g.p_exp||0)+(g.m_exp||0)+(g.g_exp||0)+(g.gg_exp||0)+(g.g1_exp||0)+(g.g2_exp||0)+(g.g3_exp||0), 0);
+
+  const loadRegistroExpedicao = (r: RegistroExpedicao) => {
+    const oc = ordensCorteDb.find((o: any) => o.id === r.ordem_corte_id);
+    if (!oc) {
+      toast({ title: "Ordem não encontrada", description: "A ordem de corte vinculada a esta expedição não está disponível.", variant: "destructive" });
+      return;
+    }
+    setViewMode("ficha");
+    loadOrdem(oc);
+  };
 
   const filteredOrdens = ordensCorteDb.filter(
     (oc: any) =>
@@ -342,6 +428,145 @@ const ExpedicaoPage = () => {
     return <PageLoading message="Carregando expedição..." />;
   }
 
+  // ─── HISTÓRICO / CONFERIR ───
+  if (viewMode === "historico") {
+    return (
+      <div className="p-4 md:p-6 space-y-4">
+        <div className="bg-[hsl(217,71%,25%)] text-[hsl(0,0%,100%)] rounded-t-lg px-6 py-3 flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-[hsl(0,0%,100%)] hover:bg-[hsl(217,71%,35%)] shrink-0"
+            onClick={() => setViewMode("ficha")}
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <h1 className="text-xl md:text-2xl font-bold tracking-wide font-mono flex-1 text-center pr-9">
+            HISTÓRICO DE REGISTROS — EXPEDIÇÃO
+          </h1>
+        </div>
+
+        {/* Filters */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold">Filtros</h3>
+              <Button variant="ghost" size="sm" className="text-xs h-7" onClick={limparFiltros}>
+                Limpar filtros
+              </Button>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs">Ordem de Corte</Label>
+                <Input value={filtroOrdem} onChange={(e) => setFiltroOrdem(e.target.value)} placeholder="OC-..." className="h-8 text-xs" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Pedido</Label>
+                <Input value={filtroPedido} onChange={(e) => setFiltroPedido(e.target.value)} placeholder="Filtrar..." className="h-8 text-xs" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Oficina</Label>
+                <Input value={filtroOficina} onChange={(e) => setFiltroOficina(e.target.value)} placeholder="Filtrar..." className="h-8 text-xs" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Status</Label>
+                <Select value={filtroStatus || "__all__"} onValueChange={(v) => setFiltroStatus(v === "__all__" ? "" : v)}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Todos" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__all__">Todos</SelectItem>
+                    <SelectItem value="pendente">Pendente</SelectItem>
+                    <SelectItem value="em_andamento">Em Andamento</SelectItem>
+                    <SelectItem value="concluido">Concluído</SelectItem>
+                    <SelectItem value="cancelado">Cancelado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Data de</Label>
+                <Input type="date" value={filtroDataDe} onChange={(e) => setFiltroDataDe(e.target.value)} className="h-8 text-xs" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Data até</Label>
+                <Input type="date" value={filtroDataAte} onChange={(e) => setFiltroDataAte(e.target.value)} className="h-8 text-xs" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Results */}
+        <Card>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b bg-muted/50">
+                    <th className="text-left py-3 px-4 font-semibold">Data Saída</th>
+                    <th className="text-left py-3 px-4 font-semibold">Ordem</th>
+                    <th className="text-left py-3 px-4 font-semibold">Pedido</th>
+                    <th className="text-left py-3 px-4 font-semibold">Modelo</th>
+                    <th className="text-left py-3 px-4 font-semibold">Tecido</th>
+                    <th className="text-left py-3 px-4 font-semibold">Oficina</th>
+                    <th className="text-center py-3 px-4 font-semibold">Peças</th>
+                    <th className="text-right py-3 px-4 font-semibold">Preço/Peça</th>
+                    <th className="text-center py-3 px-4 font-semibold">Status</th>
+                    <th className="text-center py-3 px-4 font-semibold w-16">Ação</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {registros.map((r) => {
+                    const oc = r.ordens_corte;
+                    const pecas = totalPecasGrade(r.grade_expedicao);
+                    const isConcluido = (r.status || "").toLowerCase() === "concluido";
+                    return (
+                      <tr key={r.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                        <td className="py-2 px-4 font-mono">{r.data_saida ? new Date(r.data_saida).toLocaleDateString("pt-BR") : "—"}</td>
+                        <td className="py-2 px-4 font-mono font-medium">{oc?.numero || "—"}</td>
+                        <td className="py-2 px-4 font-mono text-muted-foreground">{oc?.numero_pedido || "—"}</td>
+                        <td className="py-2 px-4">{oc?.modelo_ref || "—"}</td>
+                        <td className="py-2 px-4 text-muted-foreground">{oc?.tecido_nome || "—"}</td>
+                        <td className="py-2 px-4">{r.oficina_nome || "—"}</td>
+                        <td className="py-2 px-4 text-center font-mono">{pecas}</td>
+                        <td className="py-2 px-4 text-right font-mono">{Number(r.preco_peca || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
+                        <td className="py-2 px-4 text-center">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${
+                            isConcluido
+                              ? "bg-[hsl(142_71%_35%/0.15)] text-[hsl(142,71%,35%)] border-[hsl(142_71%_35%/0.3)]"
+                              : "bg-[hsl(38_92%_50%/0.15)] text-[hsl(38,92%,50%)] border-[hsl(38_92%_50%/0.3)]"
+                          }`}>{statusLabel(r.status || "")}</span>
+                        </td>
+                        <td className="py-2 px-4 text-center">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => loadRegistroExpedicao(r)} title="Abrir registro">
+                            <Pencil className="w-3.5 h-3.5" />
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {!loadingRegistros && registros.length === 0 && (
+                    <tr>
+                      <td colSpan={10} className="py-8 text-center text-muted-foreground text-sm">
+                        Nenhum registro encontrado com os filtros aplicados.
+                      </td>
+                    </tr>
+                  )}
+                  {loadingRegistros && (
+                    <tr>
+                      <td colSpan={10} className="py-8 text-center text-muted-foreground text-sm">Carregando...</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="text-xs text-muted-foreground text-right">
+          {registros.length} registro(s){registros.length >= 2000 ? " (limite atingido — refine os filtros)" : ""}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 md:p-6 space-y-4">
       {/* Header */}
@@ -403,6 +628,13 @@ const ExpedicaoPage = () => {
           >
             <Send className="w-4 h-4" />
             <span>Enviar Tudo</span>
+          </Button>
+
+          <Button
+            className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]"
+            onClick={() => setViewMode("historico")}>
+            <CheckCircle className="w-4 h-4" />
+            <span>Conferir</span>
           </Button>
 
           <Separator className="hidden md:block" />
