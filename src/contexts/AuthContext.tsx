@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { loadRoutePermissionsFromDB, subscribeRoutePermissions } from "@/lib/permissions";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
@@ -24,6 +25,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [loading, setLoading] = useState(true);
+  const [, setPermsVersion] = useState(0);
+
+  // Re-render all auth consumers whenever the permissions matrix changes
+  useEffect(() => {
+    const unsub = subscribeRoutePermissions(() => setPermsVersion((v) => v + 1));
+    // Load from DB once on mount
+    loadRoutePermissionsFromDB();
+    return () => { unsub(); };
+  }, []);
 
   const fetchRoles = useCallback(async (userId: string): Promise<AppRole[]> => {
     const { data, error } = await supabase.rpc("get_user_roles", { _user_id: userId });
