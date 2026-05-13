@@ -169,6 +169,7 @@ const ModelosPage = () => {
     setForroDescricao(m.forro_tecido2_descricao || "");
     setForroQtde(m.forro_tecido2_quantidade ? String(m.forro_tecido2_quantidade) : "");
     setModelImage(m.imagem_url || null);
+    setObservacoes(m.observacoes || "");
     setModelagemUrl(m.arquivo_modelagem_url || null);
     setModelagemFile(null);
     setCurrentModeloId(m.id);
