@@ -69,9 +69,6 @@ const Dashboard = () => {
     }).reduce((s, o) => s + (o.quantidade_pecas || 0), 0),
   [ordens, mesAtual, anoAtual]);
 
-  const ordensAbertas = useMemo(() =>
-    ordens.filter((o) => o.status === "pendente" || o.status === "em_andamento").length,
-  [ordens]);
 
   const statusProducao = useMemo(() => {
     const counts: Record<string, number> = {};
