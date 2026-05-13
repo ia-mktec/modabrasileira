@@ -60,6 +60,9 @@ const RelatorioClientesPage = () => {
   const [selectedClientes, setSelectedClientes] = useState<string[]>([]);
   const [clientes, setClientes] = useState<any[]>([]);
   const [ordens, setOrdens] = useState<any[]>([]);
+  const [expedidasSet, setExpedidasSet] = useState<Set<string>>(new Set());
+  const [recebidasSet, setRecebidasSet] = useState<Set<string>>(new Set());
+  const [entreguesSet, setEntreguesSet] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
