@@ -60,6 +60,9 @@ const RelatorioClientesPage = () => {
   const [selectedClientes, setSelectedClientes] = useState<string[]>([]);
   const [clientes, setClientes] = useState<any[]>([]);
   const [ordens, setOrdens] = useState<any[]>([]);
+  const [expedidasSet, setExpedidasSet] = useState<Set<string>>(new Set());
+  const [recebidasSet, setRecebidasSet] = useState<Set<string>>(new Set());
+  const [entreguesSet, setEntreguesSet] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -77,12 +80,18 @@ const RelatorioClientesPage = () => {
       return all;
     };
     (async () => {
-      const [c, o] = await Promise.all([
+      const [c, o, exp, rec, ent] = await Promise.all([
         fetchAll<any>("clientes", "id,razao_social,status"),
         fetchAll<any>("ordens_corte", "id,cliente_id,modelo_ref,quantidade_pecas,data_corte,status"),
+        fetchAll<any>("expedicao", "ordem_corte_id"),
+        fetchAll<any>("recebimento", "ordem_corte_id"),
+        fetchAll<any>("entrega_cliente", "ordem_corte_id"),
       ]);
       setClientes(c);
       setOrdens(o);
+      setExpedidasSet(new Set(exp.map((r: any) => r.ordem_corte_id).filter(Boolean)));
+      setRecebidasSet(new Set(rec.map((r: any) => r.ordem_corte_id).filter(Boolean)));
+      setEntreguesSet(new Set(ent.map((r: any) => r.ordem_corte_id).filter(Boolean)));
       setLoading(false);
     })();
   }, []);
@@ -136,15 +145,29 @@ const RelatorioClientesPage = () => {
   }, [ordensFiltradas, clienteById]);
 
   const statusPedidos = useMemo(() => {
-    const counts: Record<string, number> = {};
-    ordensFiltradas.forEach((o) => { counts[o.status] = (counts[o.status] || 0) + 1; });
+    const etapas = [
+      { key: "Corte", color: "hsl(38, 92%, 50%)" },
+      { key: "Produção", color: "hsl(217, 71%, 55%)" },
+      { key: "Acabamento", color: "hsl(262, 60%, 55%)" },
+      { key: "Entregue", color: "hsl(142, 71%, 35%)" },
+    ];
+    const counts: Record<string, number> = { Corte: 0, "Produção": 0, Acabamento: 0, Entregue: 0 };
+    ordensFiltradas.forEach((o) => {
+      let label = "Corte";
+      if (entreguesSet.has(o.id)) label = "Entregue";
+      else if (recebidasSet.has(o.id)) label = "Acabamento";
+      else if (expedidasSet.has(o.id)) label = "Produção";
+      counts[label] = (counts[label] || 0) + 1;
+    });
     const total = ordensFiltradas.length || 1;
-    return Object.entries(counts).map(([k, v]) => ({
-      name: STATUS_LABELS[k] || k,
-      value: Math.round((v / total) * 100),
-      fill: STATUS_COLORS[k] || "hsl(220, 14%, 50%)",
-    }));
-  }, [ordensFiltradas]);
+    return etapas
+      .map((e) => ({
+        name: e.key,
+        value: Math.round((counts[e.key] / total) * 100),
+        fill: e.color,
+      }))
+      .filter((e) => e.value > 0);
+  }, [ordensFiltradas, expedidasSet, recebidasSet, entreguesSet]);
 
   const evolucaoMensal = useMemo(() => {
     const buckets: Record<string, number> = {};
