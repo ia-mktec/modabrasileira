@@ -260,9 +260,6 @@ const RelatorioClientesPage = () => {
         <KpiCard title="Clientes Ativos" value={loading ? "—" : String(clientesAtivos)} subtitle={`${clientes.length} cadastrados`} icon={Users} />
         <KpiCard title="Ordens de Corte" value={loading ? "—" : String(totalOrdens)} subtitle="no período" icon={ShoppingBag} />
         <KpiCard title="Peças Produzidas" value={loading ? "—" : totalPecas.toLocaleString("pt-BR")} subtitle="no período" icon={PackageCheck} />
-        <KpiCard title="Clientes Ativos" value={loading ? "—" : String(clientesAtivos)} subtitle={`${clientes.length} cadastrados`} icon={Users} />
-        <KpiCard title="Ordens de Corte" value={loading ? "—" : String(totalOrdens)} subtitle="no período" icon={ShoppingBag} />
-        <KpiCard title="Peças Produzidas" value={loading ? "—" : totalPecas.toLocaleString("pt-BR")} subtitle="no período" icon={PackageCheck} />
         <KpiCard title="Modelos Únicos" value={loading ? "—" : String(modelosUnicos)} subtitle="referências usadas" icon={TrendingUp} />
       </div>
 
