@@ -176,7 +176,16 @@ const RelatorioClientesPage = () => {
 
   const totalPecas = pedidosPorCliente.reduce((s, c) => s + c.pecas, 0);
   const totalOrdens = pedidosPorCliente.reduce((s, c) => s + c.ordens, 0);
-  const clientesAtivos = clientes.filter((c) => c.status === "ativo").length;
+  const modelosUnicos = useMemo(() => {
+    const set = new Set<string>();
+    ordensFiltradas.forEach((o) => { if (o.modelo_ref) set.add(o.modelo_ref); });
+    return set.size;
+  }, [ordensFiltradas]);
+  const clientesAtivos = useMemo(() => {
+    const ativos = new Set<string>();
+    clientes.forEach((c) => { if (c.status === "ativo") ativos.add(c.razao_social); });
+    return activeFilter.filter((n) => ativos.has(n)).length;
+  }, [clientes, activeFilter]);
 
   const toggleCliente = (name: string) => {
     setSelectedClientes((prev) => prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]);
@@ -251,7 +260,7 @@ const RelatorioClientesPage = () => {
         <KpiCard title="Clientes Ativos" value={loading ? "—" : String(clientesAtivos)} subtitle={`${clientes.length} cadastrados`} icon={Users} />
         <KpiCard title="Ordens de Corte" value={loading ? "—" : String(totalOrdens)} subtitle="no período" icon={ShoppingBag} />
         <KpiCard title="Peças Produzidas" value={loading ? "—" : totalPecas.toLocaleString("pt-BR")} subtitle="no período" icon={PackageCheck} />
-        <KpiCard title="Modelos Únicos" value={loading ? "—" : String(topModelos.length)} subtitle="referências usadas" icon={TrendingUp} />
+        <KpiCard title="Modelos Únicos" value={loading ? "—" : String(modelosUnicos)} subtitle="referências usadas" icon={TrendingUp} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
