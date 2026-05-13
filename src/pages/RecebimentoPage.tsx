@@ -112,10 +112,10 @@ const RecebimentoPage = () => {
     }
   }, [dataEnvio, dataRecebimento]);
 
-  const loadOrdem = async (oc: any) => {
+  const loadOrdem = async (oc: any, exp?: any) => {
     setCurrentOrdemCorteId(oc.id);
-    // Find linked expedição for this ordem
-    const linkedExp = expedicoes.find((e: any) => e.ordem_corte_id === oc.id);
+    // Use chosen expedição if provided; otherwise pick first matching
+    const linkedExp = exp || expedicoes.find((e: any) => e.ordem_corte_id === oc.id);
     setCurrentExpedicaoId(linkedExp?.id || null);
     if (linkedExp) {
       setOficina(linkedExp.oficina_nome || "");
