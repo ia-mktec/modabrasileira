@@ -117,7 +117,7 @@ const Dashboard = () => {
     {
       title: "Ordens em Aberto",
       value: ordensAbertas.toString(),
-      subtitle: "Pendentes / em andamento",
+      subtitle: "Expedidas sem recebimento",
       icon: Scissors,
     },
     {
