@@ -29,21 +29,30 @@ const Dashboard = () => {
   const [tecidoEstoque, setTecidoEstoque] = useState(0);
   const [pecasExpedidas, setPecasExpedidas] = useState(0);
   const [aviamentosCount, setAviamentosCount] = useState(0);
+  const [ordensAbertas, setOrdensAbertas] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const [oc, tec, expGrade, av] = await Promise.all([
+      const [oc, tec, expGrade, av, expIds, recIds] = await Promise.all([
         supabase.from("ordens_corte").select("id,numero,modelo_ref,tecido_nome,quantidade_pecas,data_corte,status").order("data_corte", { ascending: false }),
         supabase.from("tecidos").select("estoque_kg"),
         supabase.from("grade_expedicao").select("pp_exp,p_exp,m_exp,g_exp,gg_exp,g1_exp,g2_exp,g3_exp"),
         supabase.from("aviamentos").select("id", { count: "exact", head: true }),
+        supabase.from("expedicao").select("ordem_corte_id"),
+        supabase.from("recebimento").select("ordem_corte_id"),
       ]);
       setOrdens(oc.data || []);
       setTecidoEstoque((tec.data || []).reduce((s, t: any) => s + Number(t.estoque_kg || 0), 0));
       setPecasExpedidas((expGrade.data || []).reduce((s, g: any) =>
         s + (g.pp_exp||0)+(g.p_exp||0)+(g.m_exp||0)+(g.g_exp||0)+(g.gg_exp||0)+(g.g1_exp||0)+(g.g2_exp||0)+(g.g3_exp||0), 0));
       setAviamentosCount(av.count || 0);
+
+      const expedidas = new Set((expIds.data || []).map((e: any) => e.ordem_corte_id).filter(Boolean));
+      const recebidas = new Set((recIds.data || []).map((r: any) => r.ordem_corte_id).filter(Boolean));
+      const emAberto = [...expedidas].filter((id) => !recebidas.has(id)).length;
+      setOrdensAbertas(emAberto);
+
       setLoading(false);
     })();
   }, []);
@@ -60,9 +69,6 @@ const Dashboard = () => {
     }).reduce((s, o) => s + (o.quantidade_pecas || 0), 0),
   [ordens, mesAtual, anoAtual]);
 
-  const ordensAbertas = useMemo(() =>
-    ordens.filter((o) => o.status === "pendente" || o.status === "em_andamento").length,
-  [ordens]);
 
   const statusProducao = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -111,7 +117,7 @@ const Dashboard = () => {
     {
       title: "Ordens em Aberto",
       value: ordensAbertas.toString(),
-      subtitle: "Pendentes / em andamento",
+      subtitle: "Expedidas sem recebimento",
       icon: Scissors,
     },
     {
