@@ -52,6 +52,41 @@ export default function GerenciarUsuariosPage() {
   const [users, setUsers] = useState<UserWithRoles[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRole, setSelectedRole] = useState<Record<string, AppRole>>({});
+  const [resetTarget, setResetTarget] = useState<UserWithRoles | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPwd, setShowPwd] = useState(false);
+  const [resetting, setResetting] = useState(false);
+
+  const openReset = (u: UserWithRoles) => {
+    setResetTarget(u);
+    setNewPassword("");
+    setConfirmPassword("");
+    setShowPwd(false);
+  };
+
+  const submitReset = async () => {
+    if (!resetTarget) return;
+    if (newPassword.length < 8) {
+      toast({ title: "Senha inválida", description: "A senha deve ter pelo menos 8 caracteres.", variant: "destructive" });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast({ title: "Senhas diferentes", description: "A confirmação não confere com a nova senha.", variant: "destructive" });
+      return;
+    }
+    setResetting(true);
+    const { data, error } = await supabase.functions.invoke("admin-reset-password", {
+      body: { user_id: resetTarget.id, new_password: newPassword },
+    });
+    setResetting(false);
+    if (error || (data as any)?.error) {
+      toast({ title: "Erro", description: (data as any)?.error || error?.message || "Falha ao redefinir senha", variant: "destructive" });
+      return;
+    }
+    toast({ title: "Senha redefinida", description: `Nova senha definida para ${resetTarget.full_name || resetTarget.email}.` });
+    setResetTarget(null);
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
