@@ -256,6 +256,54 @@ export default function GerenciarUsuariosPage() {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle>Matriz de Permissões por Tela</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Mapa de acesso por perfil. <strong className="text-emerald-700">Editar</strong> permite alterar dados.{" "}
+            <strong className="text-amber-700">Visualizar</strong> permite apenas consultar.{" "}
+            <strong className="text-muted-foreground">—</strong> indica sem acesso.
+          </p>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="min-w-[200px]">Tela</TableHead>
+                {ROLE_ORDER.map((r) => (
+                  <TableHead key={r} className="text-center">{ROLE_LABELS[r]}</TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {Object.entries(routePermissions).map(([route, perms]) => (
+                <TableRow key={route}>
+                  <TableCell className="font-medium">
+                    {ROUTE_LABELS[route] || route}
+                    <div className="text-[10px] text-muted-foreground font-mono">{route}</div>
+                  </TableCell>
+                  {ROLE_ORDER.map((r) => {
+                    const p = r === "dev" ? "edit" : perms[r];
+                    return (
+                      <TableCell key={r} className="text-center">
+                        {p === "edit" && (
+                          <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">Editar</Badge>
+                        )}
+                        {p === "view" && (
+                          <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">Visualizar</Badge>
+                        )}
+                        {!p && <span className="text-muted-foreground">—</span>}
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+
       <Dialog open={!!resetTarget} onOpenChange={(o) => !o && setResetTarget(null)}>
         <DialogContent>
           <DialogHeader>
