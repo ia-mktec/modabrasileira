@@ -30,17 +30,21 @@ const Dashboard = () => {
   const [pecasExpedidas, setPecasExpedidas] = useState(0);
   const [aviamentosCount, setAviamentosCount] = useState(0);
   const [ordensAbertas, setOrdensAbertas] = useState(0);
+  const [expedidasSet, setExpedidasSet] = useState<Set<string>>(new Set());
+  const [recebidasSet, setRecebidasSet] = useState<Set<string>>(new Set());
+  const [entreguesSet, setEntreguesSet] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const [oc, tec, expGrade, av, expIds, recIds] = await Promise.all([
+      const [oc, tec, expGrade, av, expIds, recIds, entIds] = await Promise.all([
         supabase.from("ordens_corte").select("id,numero,modelo_ref,tecido_nome,quantidade_pecas,data_corte,status").order("data_corte", { ascending: false }),
         supabase.from("tecidos").select("estoque_kg"),
         supabase.from("grade_expedicao").select("pp_exp,p_exp,m_exp,g_exp,gg_exp,g1_exp,g2_exp,g3_exp"),
         supabase.from("aviamentos").select("id", { count: "exact", head: true }),
         supabase.from("expedicao").select("ordem_corte_id"),
         supabase.from("recebimento").select("ordem_corte_id"),
+        supabase.from("entrega_cliente").select("ordem_corte_id"),
       ]);
       setOrdens(oc.data || []);
       setTecidoEstoque((tec.data || []).reduce((s, t: any) => s + Number(t.estoque_kg || 0), 0));
@@ -48,14 +52,24 @@ const Dashboard = () => {
         s + (g.pp_exp||0)+(g.p_exp||0)+(g.m_exp||0)+(g.g_exp||0)+(g.gg_exp||0)+(g.g1_exp||0)+(g.g2_exp||0)+(g.g3_exp||0), 0));
       setAviamentosCount(av.count || 0);
 
-      const expedidas = new Set((expIds.data || []).map((e: any) => e.ordem_corte_id).filter(Boolean));
-      const recebidas = new Set((recIds.data || []).map((r: any) => r.ordem_corte_id).filter(Boolean));
-      const emAberto = [...expedidas].filter((id) => !recebidas.has(id)).length;
-      setOrdensAbertas(emAberto);
+      const expedidas = new Set<string>((expIds.data || []).map((e: any) => e.ordem_corte_id).filter(Boolean));
+      const recebidas = new Set<string>((recIds.data || []).map((r: any) => r.ordem_corte_id).filter(Boolean));
+      const entregues = new Set<string>((entIds.data || []).map((e: any) => e.ordem_corte_id).filter(Boolean));
+      setExpedidasSet(expedidas);
+      setRecebidasSet(recebidas);
+      setEntreguesSet(entregues);
+      setOrdensAbertas([...expedidas].filter((id) => !recebidas.has(id)).length);
 
       setLoading(false);
     })();
   }, []);
+
+  const getEtapa = (ocId: string): { label: string; color: string } => {
+    if (entreguesSet.has(ocId)) return { label: "Entregue", color: "hsl(142 71% 35%)" };
+    if (recebidasSet.has(ocId)) return { label: "Acabamento", color: "hsl(262 60% 55%)" };
+    if (expedidasSet.has(ocId)) return { label: "Produção", color: "hsl(217 71% 55%)" };
+    return { label: "Corte", color: "hsl(38 92% 50%)" };
+  };
 
   const now = new Date();
   const mesAtual = now.getMonth();
