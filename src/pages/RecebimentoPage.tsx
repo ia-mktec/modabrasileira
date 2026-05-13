@@ -57,12 +57,31 @@ const RecebimentoPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const filteredOrdens = ordensCorteDb.filter(
-    (oc: any) =>
-      (oc.numero || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (oc.numero_pedido || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (oc.modelo_ref || "").toLowerCase().includes(searchTerm.toLowerCase())
+  // Build list of envios (one row per expedição), enriched with ordem data
+  const recebidosExpIds = useMemo(
+    () => new Set((recebimentos || []).map((r: any) => r.expedicao_id).filter(Boolean)),
+    [recebimentos]
   );
+
+  const envios = useMemo(() => {
+    return (expedicoes || [])
+      .map((exp: any) => {
+        const oc = ordensCorteDb.find((o: any) => o.id === exp.ordem_corte_id);
+        if (!oc) return null;
+        return { exp, oc, jaRecebido: recebidosExpIds.has(exp.id) };
+      })
+      .filter(Boolean) as { exp: any; oc: any; jaRecebido: boolean }[];
+  }, [expedicoes, ordensCorteDb, recebidosExpIds]);
+
+  const filteredEnvios = envios.filter(({ exp, oc }) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      (oc.numero || "").toLowerCase().includes(term) ||
+      (oc.numero_pedido || "").toLowerCase().includes(term) ||
+      (oc.modelo_ref || "").toLowerCase().includes(term) ||
+      (exp.oficina_nome || "").toLowerCase().includes(term)
+    );
+  });
 
   const statusLabel = (s: string) => {
     switch (s) {
