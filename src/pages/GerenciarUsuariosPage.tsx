@@ -47,6 +47,27 @@ const ROLE_COLORS: Record<AppRole, string> = {
   dev: "bg-red-100 text-red-800",
 };
 
+const ROUTE_LABELS: Record<string, string> = {
+  "/": "Dashboard",
+  "/tecidos": "Tecidos",
+  "/estoque-tecidos": "Estoque de Tecidos",
+  "/modelos": "Modelos",
+  "/pedidos": "Pedidos",
+  "/corte": "Ordem de Corte",
+  "/cadastro": "Cadastros",
+  "/aviamentos": "Aviamentos",
+  "/expedicao": "Expedição",
+  "/recebimento": "Recebimento",
+  "/entrega-cliente": "Entrega ao Cliente",
+  "/relatorio-clientes": "Relatório de Clientes",
+  "/relatorio-producao": "Relatório de Produção",
+  "/cash-flow": "Fluxo de Caixa",
+  "/ficha-ziper": "Ficha Zíper",
+  "/gerenciar-usuarios": "Gerenciar Usuários",
+};
+
+const ROLE_ORDER: AppRole[] = ["modelagem", "corte", "expedicao", "recebimento", "acabamento", "gestao", "dev"];
+
 export default function GerenciarUsuariosPage() {
   const { isDev } = useAuth();
   const { toast } = useToast();
