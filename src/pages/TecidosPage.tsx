@@ -211,9 +211,39 @@ const TecidosPage = () => {
       estoque_kg: totalMetragem,
       preco_kg: 0,
     });
-    if (result) {
-      toast({ title: "Tecido registrado", description: "As informações foram salvas no banco de dados." });
+
+    // Também registra a entrada no estoque (tecido_entradas) — uma linha por cor
+    const entradas = cores
+      .filter((c) => c.cor || c.qtdeRolos || c.metragemTotal)
+      .map((c) => ({
+        cliente_id: clienteMatch?.id || null,
+        cliente_nome: cliente || null,
+        nome_tecido: tecido,
+        composicao: composicao || null,
+        cor: c.cor || null,
+        qtde_rolos: parseInt(c.qtdeRolos) || 0,
+        metragem_total: parseFloat(c.metragemTotal) || 0,
+        unidade_medida: "mt",
+        data_entrada: dataEntrada || new Date().toISOString().slice(0, 10),
+        ordem_corte1: ordemCorte || null,
+        status: "Disponível",
+      }));
+
+    let entradaError: any = null;
+    if (entradas.length > 0) {
+      const { error } = await supabase.from("tecido_entradas").insert(entradas);
+      entradaError = error;
+    }
+
+    if (result && !entradaError) {
+      toast({ title: "Tecido registrado", description: "As informações foram salvas no estoque." });
       limparRegistro();
+    } else if (entradaError) {
+      toast({
+        title: "Erro ao registrar entrada no estoque",
+        description: entradaError.message,
+        variant: "destructive",
+      });
     }
   };
 
