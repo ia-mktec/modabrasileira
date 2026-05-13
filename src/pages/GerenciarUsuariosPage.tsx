@@ -288,9 +288,9 @@ export default function GerenciarUsuariosPage() {
         <CardHeader>
           <CardTitle>Matriz de Permissões por Tela</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Mapa de acesso por perfil. <strong className="text-emerald-700">Editar</strong> permite alterar dados.{" "}
-            <strong className="text-amber-700">Visualizar</strong> permite apenas consultar.{" "}
-            <strong className="text-muted-foreground">—</strong> indica sem acesso.
+            Edite o acesso de cada perfil em cada tela. <strong className="text-emerald-700">Editar</strong> permite alterar dados,{" "}
+            <strong className="text-amber-700">Visualizar</strong> permite apenas consultar,{" "}
+            <strong>Sem acesso</strong> bloqueia a tela. O perfil <strong>Dev</strong> tem acesso total e não pode ser alterado.
           </p>
         </CardHeader>
         <CardContent className="overflow-x-auto">
