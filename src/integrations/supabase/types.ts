@@ -309,7 +309,6 @@ export type Database = {
           data_saida: string | null
           destino: string | null
           id: string
-          nota_fiscal: string | null
           observacoes: string | null
           oficina_id: string | null
           oficina_nome: string | null
@@ -324,7 +323,6 @@ export type Database = {
           data_saida?: string | null
           destino?: string | null
           id?: string
-          nota_fiscal?: string | null
           observacoes?: string | null
           oficina_id?: string | null
           oficina_nome?: string | null
@@ -339,7 +337,6 @@ export type Database = {
           data_saida?: string | null
           destino?: string | null
           id?: string
-          nota_fiscal?: string | null
           observacoes?: string | null
           oficina_id?: string | null
           oficina_nome?: string | null
