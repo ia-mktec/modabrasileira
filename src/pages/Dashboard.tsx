@@ -36,17 +36,33 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchAll = async <T,>(table: string, columns: string, order?: { col: string; asc: boolean }): Promise<T[]> => {
+      const PAGE = 1000;
+      let from = 0;
+      const all: T[] = [];
+      while (true) {
+        let q: any = supabase.from(table as any).select(columns).range(from, from + PAGE - 1);
+        if (order) q = q.order(order.col, { ascending: order.asc });
+        const { data, error } = await q;
+        if (error || !data) break;
+        all.push(...(data as T[]));
+        if (data.length < PAGE) break;
+        from += PAGE;
+      }
+      return all;
+    };
+
     (async () => {
       const [oc, tec, expGrade, av, expIds, recIds, entIds] = await Promise.all([
-        supabase.from("ordens_corte").select("id,numero,modelo_ref,tecido_nome,quantidade_pecas,data_corte,status").order("data_corte", { ascending: false }),
+        fetchAll<any>("ordens_corte", "id,numero,modelo_ref,tecido_nome,quantidade_pecas,data_corte,status", { col: "data_corte", asc: false }),
         supabase.from("tecidos").select("estoque_kg"),
-        supabase.from("grade_expedicao").select("pp_exp,p_exp,m_exp,g_exp,gg_exp,g1_exp,g2_exp,g3_exp"),
+        fetchAll<any>("grade_expedicao", "pp_exp,p_exp,m_exp,g_exp,gg_exp,g1_exp,g2_exp,g3_exp"),
         supabase.from("aviamentos").select("id", { count: "exact", head: true }),
-        supabase.from("expedicao").select("ordem_corte_id"),
-        supabase.from("recebimento").select("ordem_corte_id"),
-        supabase.from("entrega_cliente").select("ordem_corte_id"),
+        fetchAll<any>("expedicao", "ordem_corte_id"),
+        fetchAll<any>("recebimento", "ordem_corte_id"),
+        fetchAll<any>("entrega_cliente", "ordem_corte_id"),
       ]);
-      setOrdens(oc.data || []);
+      setOrdens(oc || []);
       setTecidoEstoque((tec.data || []).reduce((s, t: any) => s + Number(t.estoque_kg || 0), 0));
       setPecasExpedidas((expGrade.data || []).reduce((s, g: any) =>
         s + (g.pp_exp||0)+(g.p_exp||0)+(g.m_exp||0)+(g.g_exp||0)+(g.gg_exp||0)+(g.g1_exp||0)+(g.g2_exp||0)+(g.g3_exp||0), 0));
