@@ -1013,6 +1013,33 @@ export type Database = {
           },
         ]
       }
+      route_permissions: {
+        Row: {
+          created_at: string
+          id: string
+          permission: string
+          role: Database["public"]["Enums"]["app_role"]
+          route: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          permission: string
+          role: Database["public"]["Enums"]["app_role"]
+          route: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          permission?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          route?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tecido_entradas: {
         Row: {
           cliente_id: string | null

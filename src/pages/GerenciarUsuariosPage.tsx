@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
-import { routePermissions } from "@/lib/permissions";
+import { routePermissions, loadRoutePermissionsFromDB, type Permission } from "@/lib/permissions";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
@@ -79,6 +79,34 @@ export default function GerenciarUsuariosPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [savingCell, setSavingCell] = useState<string | null>(null);
+
+  const updatePermission = async (route: string, role: AppRole, value: Permission | "none") => {
+    if (role === "dev") return;
+    const cellKey = `${route}__${role}`;
+    setSavingCell(cellKey);
+    try {
+      if (value === "none") {
+        const { error } = await supabase
+          .from("route_permissions")
+          .delete()
+          .eq("route", route)
+          .eq("role", role);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("route_permissions")
+          .upsert({ route, role, permission: value }, { onConflict: "route,role" });
+        if (error) throw error;
+      }
+      await loadRoutePermissionsFromDB();
+      toast({ title: "Permissão atualizada" });
+    } catch (e: any) {
+      toast({ title: "Erro", description: e.message ?? "Falha ao salvar permissão", variant: "destructive" });
+    } finally {
+      setSavingCell(null);
+    }
+  };
 
   const openReset = (u: UserWithRoles) => {
     setResetTarget(u);
@@ -260,9 +288,9 @@ export default function GerenciarUsuariosPage() {
         <CardHeader>
           <CardTitle>Matriz de Permissões por Tela</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Mapa de acesso por perfil. <strong className="text-emerald-700">Editar</strong> permite alterar dados.{" "}
-            <strong className="text-amber-700">Visualizar</strong> permite apenas consultar.{" "}
-            <strong className="text-muted-foreground">—</strong> indica sem acesso.
+            Edite o acesso de cada perfil em cada tela. <strong className="text-emerald-700">Editar</strong> permite alterar dados,{" "}
+            <strong className="text-amber-700">Visualizar</strong> permite apenas consultar,{" "}
+            <strong>Sem acesso</strong> bloqueia a tela. O perfil <strong>Dev</strong> tem acesso total e não pode ser alterado.
           </p>
         </CardHeader>
         <CardContent className="overflow-x-auto">
@@ -283,16 +311,34 @@ export default function GerenciarUsuariosPage() {
                     <div className="text-[10px] text-muted-foreground font-mono">{route}</div>
                   </TableCell>
                   {ROLE_ORDER.map((r) => {
-                    const p = r === "dev" ? "edit" : perms[r];
+                    const current = (perms[r] ?? "none") as Permission | "none";
+                    const isDevRole = r === "dev";
+                    const cellKey = `${route}__${r}`;
+                    const saving = savingCell === cellKey;
                     return (
                       <TableCell key={r} className="text-center">
-                        {p === "edit" && (
-                          <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">Editar</Badge>
-                        )}
-                        {p === "view" && (
-                          <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">Visualizar</Badge>
-                        )}
-                        {!p && <span className="text-muted-foreground">—</span>}
+                        <Select
+                          disabled={isDevRole || saving}
+                          value={isDevRole ? "edit" : current}
+                          onValueChange={(v) => updatePermission(route, r, v as Permission | "none")}
+                        >
+                          <SelectTrigger
+                            className={`h-8 w-[120px] mx-auto text-xs ${
+                              (isDevRole || current === "edit")
+                                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                                : current === "view"
+                                ? "bg-amber-50 text-amber-800 border-amber-200"
+                                : "text-muted-foreground"
+                            }`}
+                          >
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="edit">Editar</SelectItem>
+                            <SelectItem value="view">Visualizar</SelectItem>
+                            <SelectItem value="none">Sem acesso</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </TableCell>
                     );
                   })}
