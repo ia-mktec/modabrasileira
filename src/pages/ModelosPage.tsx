@@ -892,6 +892,20 @@ const ModelosPage = () => {
           </table>
         </CardContent>
       </Card>
+
+      {/* Observações */}
+      <Card>
+        <div className="bg-[hsl(220,14%,40%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
+          <h3 className="text-sm font-bold tracking-wide text-center">OBSERVAÇÕES</h3>
+        </div>
+        <CardContent className="p-4">
+          <textarea
+            value={observacoes}
+            onChange={(e) => setObservacoes(e.target.value)}
+            className={`w-full rounded-md border px-3 py-2 text-sm min-h-[60px] resize-y ${yellowInput}`}
+            placeholder="Anotações sobre o modelo..." />
+        </CardContent>
+      </Card>
     </div>;
 
 
