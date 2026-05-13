@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
+import { routePermissions } from "@/lib/permissions";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
