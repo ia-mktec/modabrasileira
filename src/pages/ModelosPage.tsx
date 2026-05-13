@@ -351,6 +351,7 @@ const ModelosPage = () => {
     arquivo_modelagem_url: modelagemUrl || null,
     status: statusKanban === "concluido" ? "ativo" : statusKanban === "pendente" ? "desenvolvimento" : "ativo",
     imagem_url: modelImage || null,
+    observacoes: observacoes || null,
   });
 
   const buildChildren = () => ({
