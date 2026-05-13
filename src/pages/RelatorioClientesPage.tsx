@@ -80,12 +80,18 @@ const RelatorioClientesPage = () => {
       return all;
     };
     (async () => {
-      const [c, o] = await Promise.all([
+      const [c, o, exp, rec, ent] = await Promise.all([
         fetchAll<any>("clientes", "id,razao_social,status"),
         fetchAll<any>("ordens_corte", "id,cliente_id,modelo_ref,quantidade_pecas,data_corte,status"),
+        fetchAll<any>("expedicao", "ordem_corte_id"),
+        fetchAll<any>("recebimento", "ordem_corte_id"),
+        fetchAll<any>("entrega_cliente", "ordem_corte_id"),
       ]);
       setClientes(c);
       setOrdens(o);
+      setExpedidasSet(new Set(exp.map((r: any) => r.ordem_corte_id).filter(Boolean)));
+      setRecebidasSet(new Set(rec.map((r: any) => r.ordem_corte_id).filter(Boolean)));
+      setEntreguesSet(new Set(ent.map((r: any) => r.ordem_corte_id).filter(Boolean)));
       setLoading(false);
     })();
   }, []);
