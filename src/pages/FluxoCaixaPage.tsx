@@ -79,7 +79,7 @@ export default function FluxoCaixaPage() {
           categoria: "Serviços de Facção",
           tipo: "saida" as const,
           valor: Number(r.total_pagar || 0),
-          status: (r.status || "").toLowerCase() === "pago" ? "pago" : "pendente",
+          status: ((r.status || "").toLowerCase() === "pago" ? "pago" : "pendente") as "pago" | "pendente",
         }))
         .filter((l) => l.data)
         .sort((a, b) => b.data.localeCompare(a.data));
