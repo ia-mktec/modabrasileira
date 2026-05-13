@@ -307,7 +307,6 @@ export type Database = {
           created_at: string
           created_by: string | null
           data_saida: string | null
-          destino: string | null
           id: string
           observacoes: string | null
           oficina_id: string | null
@@ -321,7 +320,6 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           data_saida?: string | null
-          destino?: string | null
           id?: string
           observacoes?: string | null
           oficina_id?: string | null
@@ -335,7 +333,6 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           data_saida?: string | null
-          destino?: string | null
           id?: string
           observacoes?: string | null
           oficina_id?: string | null

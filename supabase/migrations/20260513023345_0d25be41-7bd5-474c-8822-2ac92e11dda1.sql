@@ -1,0 +1,1 @@
+ALTER TABLE public.expedicao DROP COLUMN IF EXISTS destino;
