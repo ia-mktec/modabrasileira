@@ -170,10 +170,13 @@ const RelatorioClientesPage = () => {
   }, [ordensFiltradas, expedidasSet, recebidasSet, entreguesSet]);
 
   const evolucaoMensal = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const buckets: Record<string, number> = {};
     ordensFiltradas.forEach((o) => {
       if (!o.data_corte) return;
       const d = new Date(o.data_corte);
+      if (d > today) return; // ignora datas futuras
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
       buckets[key] = (buckets[key] || 0) + (o.quantidade_pecas || 0);
     });
