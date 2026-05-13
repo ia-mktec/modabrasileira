@@ -163,6 +163,7 @@ export default function GerenciarUsuariosPage() {
                   <TableHead>Email</TableHead>
                   <TableHead>Perfis</TableHead>
                   <TableHead>Adicionar Perfil</TableHead>
+                  <TableHead className="text-right">Senha</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
