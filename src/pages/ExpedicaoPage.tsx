@@ -316,7 +316,7 @@ const ExpedicaoPage = () => {
       ordem_corte_id: currentOrdemCorteId,
       data_saida: dataSaida || null,
       oficina_nome: oficina || null,
-      destino: cliente || null,
+      
       preco_peca: parseFloat(preco) || 0,
       observacoes: observacoes || null,
       status: statusKanban || "pendente",
