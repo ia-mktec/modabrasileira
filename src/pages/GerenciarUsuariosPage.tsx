@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
+import { routePermissions } from "@/lib/permissions";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
@@ -45,6 +46,27 @@ const ROLE_COLORS: Record<AppRole, string> = {
   gestao: "bg-yellow-100 text-yellow-800",
   dev: "bg-red-100 text-red-800",
 };
+
+const ROUTE_LABELS: Record<string, string> = {
+  "/": "Dashboard",
+  "/tecidos": "Tecidos",
+  "/estoque-tecidos": "Estoque de Tecidos",
+  "/modelos": "Modelos",
+  "/pedidos": "Pedidos",
+  "/corte": "Ordem de Corte",
+  "/cadastro": "Cadastros",
+  "/aviamentos": "Aviamentos",
+  "/expedicao": "Expedição",
+  "/recebimento": "Recebimento",
+  "/entrega-cliente": "Entrega ao Cliente",
+  "/relatorio-clientes": "Relatório de Clientes",
+  "/relatorio-producao": "Relatório de Produção",
+  "/cash-flow": "Fluxo de Caixa",
+  "/ficha-ziper": "Ficha Zíper",
+  "/gerenciar-usuarios": "Gerenciar Usuários",
+};
+
+const ROLE_ORDER: AppRole[] = ["modelagem", "corte", "expedicao", "recebimento", "acabamento", "gestao", "dev"];
 
 export default function GerenciarUsuariosPage() {
   const { isDev } = useAuth();
@@ -233,6 +255,54 @@ export default function GerenciarUsuariosPage() {
           )}
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Matriz de Permissões por Tela</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Mapa de acesso por perfil. <strong className="text-emerald-700">Editar</strong> permite alterar dados.{" "}
+            <strong className="text-amber-700">Visualizar</strong> permite apenas consultar.{" "}
+            <strong className="text-muted-foreground">—</strong> indica sem acesso.
+          </p>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="min-w-[200px]">Tela</TableHead>
+                {ROLE_ORDER.map((r) => (
+                  <TableHead key={r} className="text-center">{ROLE_LABELS[r]}</TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {Object.entries(routePermissions).map(([route, perms]) => (
+                <TableRow key={route}>
+                  <TableCell className="font-medium">
+                    {ROUTE_LABELS[route] || route}
+                    <div className="text-[10px] text-muted-foreground font-mono">{route}</div>
+                  </TableCell>
+                  {ROLE_ORDER.map((r) => {
+                    const p = r === "dev" ? "edit" : perms[r];
+                    return (
+                      <TableCell key={r} className="text-center">
+                        {p === "edit" && (
+                          <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">Editar</Badge>
+                        )}
+                        {p === "view" && (
+                          <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">Visualizar</Badge>
+                        )}
+                        {!p && <span className="text-muted-foreground">—</span>}
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
 
       <Dialog open={!!resetTarget} onOpenChange={(o) => !o && setResetTarget(null)}>
         <DialogContent>

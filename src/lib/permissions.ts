@@ -5,7 +5,7 @@ type AppRole = Database["public"]["Enums"]["app_role"];
 type Permission = "edit" | "view";
 
 // Route -> which roles can edit, which can view
-const routePermissions: Record<string, Partial<Record<AppRole, Permission>>> = {
+export const routePermissions: Record<string, Partial<Record<AppRole, Permission>>> = {
   "/": {
     corte: "view",
     modelagem: "view",
