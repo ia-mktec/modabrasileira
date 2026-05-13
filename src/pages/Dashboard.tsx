@@ -64,13 +64,13 @@ const Dashboard = () => {
       ]);
       setOrdens(oc || []);
       setTecidoEstoque((tec.data || []).reduce((s, t: any) => s + Number(t.estoque_kg || 0), 0));
-      setPecasExpedidas((expGrade.data || []).reduce((s, g: any) =>
+      setPecasExpedidas((expGrade || []).reduce((s, g: any) =>
         s + (g.pp_exp||0)+(g.p_exp||0)+(g.m_exp||0)+(g.g_exp||0)+(g.gg_exp||0)+(g.g1_exp||0)+(g.g2_exp||0)+(g.g3_exp||0), 0));
       setAviamentosCount(av.count || 0);
 
-      const expedidas = new Set<string>((expIds.data || []).map((e: any) => e.ordem_corte_id).filter(Boolean));
-      const recebidas = new Set<string>((recIds.data || []).map((r: any) => r.ordem_corte_id).filter(Boolean));
-      const entregues = new Set<string>((entIds.data || []).map((e: any) => e.ordem_corte_id).filter(Boolean));
+      const expedidas = new Set<string>((expIds || []).map((e: any) => e.ordem_corte_id).filter(Boolean));
+      const recebidas = new Set<string>((recIds || []).map((r: any) => r.ordem_corte_id).filter(Boolean));
+      const entregues = new Set<string>((entIds || []).map((e: any) => e.ordem_corte_id).filter(Boolean));
       setExpedidasSet(expedidas);
       setRecebidasSet(recebidas);
       setEntreguesSet(entregues);
