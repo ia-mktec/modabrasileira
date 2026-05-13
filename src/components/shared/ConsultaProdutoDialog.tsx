@@ -58,7 +58,7 @@ function getMockExpedicaoData(item: ConsultaProdutoDialogProps["item"]) {
     dataSaida: "2025-02-22",
     oficina: "Têxtil Brasil Ltda",
     destino: item.cliente,
-    notaFiscal: "NF-00456",
+    
     statusExpedicao: "expedido",
     preco: item.precoPeca.toFixed(2),
     grade: [
@@ -258,11 +258,10 @@ export function ConsultaProdutoDialog({ open, onOpenChange, item, imagemSrc }: C
               <SectionHeader title="EXPEDIÇÃO" icon={Truck} color="hsl(38 92% 50%)" />
               <Card>
                 <CardContent className="p-3 space-y-3">
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                     <ReadOnlyField label="Data Saída" value={expedicao?.dataSaida ? new Date(expedicao.dataSaida).toLocaleDateString("pt-BR") : "—"} />
                     <ReadOnlyField label="Oficina" value={expedicao?.oficina || "—"} />
                     <ReadOnlyField label="Destino" value={expedicao?.destino || "—"} />
-                    <ReadOnlyField label="Nota Fiscal" value={expedicao?.notaFiscal || "—"} />
                     <ReadOnlyField label="Preço (R$)" value={expedicao?.preco || "—"} />
                   </div>
 

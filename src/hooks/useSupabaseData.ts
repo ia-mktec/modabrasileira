@@ -421,7 +421,7 @@ export function useExpedicao() {
 
   const salvarExpedicao = useCallback(async (exp: {
     ordem_corte_id: string; data_saida?: string; oficina_id?: string;
-    oficina_nome?: string; destino?: string; nota_fiscal?: string;
+    oficina_nome?: string; destino?: string;
     preco_peca?: number; observacoes?: string; status: string;
   }, grade: { cor: string; pp_prod: number; p_prod: number; m_prod: number; g_prod: number; gg_prod: number; g1_prod: number; g2_prod: number; g3_prod: number; pp_exp: number; p_exp: number; m_exp: number; g_exp: number; gg_exp: number; g1_exp: number; g2_exp: number; g3_exp: number; }[], existingId?: string) => {
     try {
