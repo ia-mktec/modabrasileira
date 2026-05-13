@@ -893,21 +893,8 @@ const ModelosPage = () => {
         </CardContent>
       </Card>
 
-      {/* Observações + Foto Costas (simulação) */}
+      {/* Foto Costas (simulação) + Observações */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="md:col-span-2">
-          <div className="bg-[hsl(220,14%,40%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
-            <h3 className="text-sm font-bold tracking-wide text-center">OBSERVAÇÕES</h3>
-          </div>
-          <CardContent className="p-4">
-            <textarea
-              value={observacoes}
-              onChange={(e) => setObservacoes(e.target.value)}
-              className={`w-full rounded-md border px-3 py-2 text-sm min-h-[180px] resize-y ${yellowInput}`}
-              placeholder="Anotações sobre o modelo..." />
-          </CardContent>
-        </Card>
-
         <Card>
           <div className="bg-[hsl(220,14%,40%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
             <h3 className="text-sm font-bold tracking-wide text-center">FOTO COSTAS</h3>
@@ -919,6 +906,19 @@ const ModelosPage = () => {
               <Button variant="outline" size="sm" className="text-xs" disabled>Upload Imagem</Button>
               <p className="text-[10px] italic opacity-60">(simulação — não salva ainda)</p>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="md:col-span-2">
+          <div className="bg-[hsl(220,14%,40%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
+            <h3 className="text-sm font-bold tracking-wide text-center">OBSERVAÇÕES</h3>
+          </div>
+          <CardContent className="p-4">
+            <textarea
+              value={observacoes}
+              onChange={(e) => setObservacoes(e.target.value)}
+              className={`w-full rounded-md border px-3 py-2 text-sm min-h-[180px] resize-y ${yellowInput}`}
+              placeholder="Anotações sobre o modelo..." />
           </CardContent>
         </Card>
       </div>
