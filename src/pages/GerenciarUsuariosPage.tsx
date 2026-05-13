@@ -9,8 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, Plus, Trash2 } from "lucide-react";
+import { Users, Plus, Trash2, KeyRound, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -49,6 +52,41 @@ export default function GerenciarUsuariosPage() {
   const [users, setUsers] = useState<UserWithRoles[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRole, setSelectedRole] = useState<Record<string, AppRole>>({});
+  const [resetTarget, setResetTarget] = useState<UserWithRoles | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPwd, setShowPwd] = useState(false);
+  const [resetting, setResetting] = useState(false);
+
+  const openReset = (u: UserWithRoles) => {
+    setResetTarget(u);
+    setNewPassword("");
+    setConfirmPassword("");
+    setShowPwd(false);
+  };
+
+  const submitReset = async () => {
+    if (!resetTarget) return;
+    if (newPassword.length < 8) {
+      toast({ title: "Senha inválida", description: "A senha deve ter pelo menos 8 caracteres.", variant: "destructive" });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast({ title: "Senhas diferentes", description: "A confirmação não confere com a nova senha.", variant: "destructive" });
+      return;
+    }
+    setResetting(true);
+    const { data, error } = await supabase.functions.invoke("admin-reset-password", {
+      body: { user_id: resetTarget.id, new_password: newPassword },
+    });
+    setResetting(false);
+    if (error || (data as any)?.error) {
+      toast({ title: "Erro", description: (data as any)?.error || error?.message || "Falha ao redefinir senha", variant: "destructive" });
+      return;
+    }
+    toast({ title: "Senha redefinida", description: `Nova senha definida para ${resetTarget.full_name || resetTarget.email}.` });
+    setResetTarget(null);
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -125,6 +163,7 @@ export default function GerenciarUsuariosPage() {
                   <TableHead>Email</TableHead>
                   <TableHead>Perfis</TableHead>
                   <TableHead>Adicionar Perfil</TableHead>
+                  <TableHead className="text-right">Senha</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -182,6 +221,11 @@ export default function GerenciarUsuariosPage() {
                         </Button>
                       </div>
                     </TableCell>
+                    <TableCell className="text-right">
+                      <Button size="sm" variant="outline" onClick={() => openReset(u)} className="gap-1">
+                        <KeyRound className="w-3.5 h-3.5" /> Redefinir
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -189,6 +233,60 @@ export default function GerenciarUsuariosPage() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={!!resetTarget} onOpenChange={(o) => !o && setResetTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Redefinir senha</DialogTitle>
+            <DialogDescription>
+              Defina uma nova senha para <strong>{resetTarget?.full_name || resetTarget?.email}</strong>. Mínimo de 8 caracteres. A nova senha entra em vigor imediatamente.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-1">
+              <Label htmlFor="new-pwd">Nova senha</Label>
+              <div className="relative">
+                <Input
+                  id="new-pwd"
+                  type={showPwd ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPwd((s) => !s)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  aria-label={showPwd ? "Ocultar senha" : "Mostrar senha"}
+                >
+                  {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="confirm-pwd">Confirmar nova senha</Label>
+              <Input
+                id="confirm-pwd"
+                type={showPwd ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                autoComplete="new-password"
+              />
+              {confirmPassword && newPassword !== confirmPassword && (
+                <p className="text-xs text-destructive">As senhas não conferem.</p>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResetTarget(null)} disabled={resetting}>
+              Cancelar
+            </Button>
+            <Button onClick={submitReset} disabled={resetting || !newPassword || newPassword !== confirmPassword}>
+              {resetting ? "Salvando..." : "Salvar nova senha"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
