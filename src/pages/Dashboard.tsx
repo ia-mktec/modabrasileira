@@ -85,15 +85,26 @@ const Dashboard = () => {
 
 
   const statusProducao = useMemo(() => {
-    const counts: Record<string, number> = {};
-    ordens.forEach((o) => { counts[o.status] = (counts[o.status] || 0) + 1; });
+    const etapas = [
+      { key: "Corte", color: "hsl(38 92% 50%)" },
+      { key: "Produção", color: "hsl(217 71% 55%)" },
+      { key: "Acabamento", color: "hsl(262 60% 55%)" },
+      { key: "Entregue", color: "hsl(142 71% 35%)" },
+    ];
+    const counts: Record<string, number> = { Corte: 0, "Produção": 0, Acabamento: 0, Entregue: 0 };
+    ordens.forEach((o) => {
+      const e = getEtapa(o.id).label;
+      counts[e] = (counts[e] || 0) + 1;
+    });
     const total = ordens.length || 1;
-    return Object.entries(counts).map(([k, v]) => ({
-      name: STATUS_LABELS[k] || k,
-      value: Math.round((v / total) * 100),
-      fill: STATUS_COLORS[k] || "hsl(220 14% 50%)",
-    }));
-  }, [ordens]);
+    return etapas
+      .map((e) => ({
+        name: e.key,
+        value: Math.round((counts[e.key] / total) * 100),
+        fill: e.color,
+      }))
+      .filter((e) => e.value > 0);
+  }, [ordens, expedidasSet, recebidasSet, entreguesSet]);
 
   const producaoMensal = useMemo(() => {
     const buckets: Record<string, number> = {};
