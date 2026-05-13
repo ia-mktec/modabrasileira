@@ -243,20 +243,31 @@ const Dashboard = () => {
                     <th className="text-left py-2 font-medium">Tecido</th>
                     <th className="text-right py-2 font-medium">Qtd</th>
                     <th className="text-left py-2 font-medium">Data</th>
-                    <th className="text-left py-2 font-medium">Status</th>
+                    <th className="text-left py-2 font-medium">Etapa</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {ultimasOrdens.map((oc) => (
+                  {ultimasOrdens.map((oc) => {
+                    const etapa = getEtapa(oc.id);
+                    return (
                     <tr key={oc.id} className="border-b last:border-0">
                       <td className="py-2.5 font-mono text-xs">{oc.numero}</td>
                       <td className="py-2.5">{oc.modelo_ref || "—"}</td>
                       <td className="py-2.5">{oc.tecido_nome || "—"}</td>
                       <td className="py-2.5 text-right">{(oc.quantidade_pecas || 0).toLocaleString("pt-BR")}</td>
                       <td className="py-2.5">{oc.data_corte ? new Date(oc.data_corte).toLocaleDateString("pt-BR") : "—"}</td>
-                      <td className="py-2.5"><StatusBadge status={oc.status} /></td>
+                      <td className="py-2.5">
+                        <span
+                          className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium"
+                          style={{ backgroundColor: `${etapa.color}1f`, color: etapa.color }}
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: etapa.color }} />
+                          {etapa.label}
+                        </span>
+                      </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
