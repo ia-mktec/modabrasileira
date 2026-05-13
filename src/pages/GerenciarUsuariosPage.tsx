@@ -221,6 +221,11 @@ export default function GerenciarUsuariosPage() {
                         </Button>
                       </div>
                     </TableCell>
+                    <TableCell className="text-right">
+                      <Button size="sm" variant="outline" onClick={() => openReset(u)} className="gap-1">
+                        <KeyRound className="w-3.5 h-3.5" /> Redefinir
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
