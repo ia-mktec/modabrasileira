@@ -77,7 +77,7 @@ export default function FluxoCaixaPage() {
           data: r.data_recebimento || "",
           descricao: `Pagamento facção ${r.oficina_nome || "—"}${r.total_sem_defeitos ? ` (${r.total_sem_defeitos} pçs)` : ""}`,
           categoria: "Serviços de Facção",
-          tipo: "saida",
+          tipo: "saida" as const,
           valor: Number(r.total_pagar || 0),
           status: (r.status || "").toLowerCase() === "pago" ? "pago" : "pendente",
         }))
