@@ -79,6 +79,34 @@ export default function GerenciarUsuariosPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [savingCell, setSavingCell] = useState<string | null>(null);
+
+  const updatePermission = async (route: string, role: AppRole, value: Permission | "none") => {
+    if (role === "dev") return;
+    const cellKey = `${route}__${role}`;
+    setSavingCell(cellKey);
+    try {
+      if (value === "none") {
+        const { error } = await supabase
+          .from("route_permissions")
+          .delete()
+          .eq("route", route)
+          .eq("role", role);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("route_permissions")
+          .upsert({ route, role, permission: value }, { onConflict: "route,role" });
+        if (error) throw error;
+      }
+      await loadRoutePermissionsFromDB();
+      toast({ title: "Permissão atualizada" });
+    } catch (e: any) {
+      toast({ title: "Erro", description: e.message ?? "Falha ao salvar permissão", variant: "destructive" });
+    } finally {
+      setSavingCell(null);
+    }
+  };
 
   const openReset = (u: UserWithRoles) => {
     setResetTarget(u);
