@@ -122,6 +122,8 @@ const ModelosPage = () => {
   const [consumoMetros, setConsumoMetros] = useState("");
   const [consumoGramas, setConsumoGramas] = useState("");
   const [gradacao, setGradacao] = useState<GradacaoRow[]>(Array.from({ length: 6 }, emptyGradacao));
+  const emptyGradeTamanhos = () => ({ pp: "", p: "", m: "", g: "", gg: "", g1: "", g2: "", g3: "" });
+  const [gradeTamanhos, setGradeTamanhos] = useState<Record<string, string>>(emptyGradeTamanhos());
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -172,6 +174,12 @@ const ModelosPage = () => {
     setForroQtde(m.forro_tecido2_quantidade ? String(m.forro_tecido2_quantidade) : "");
     setModelImage(m.imagem_url || null);
     setObservacoes(m.observacoes || "");
+    try {
+      const parsed = m.tamanhos_grade ? JSON.parse(m.tamanhos_grade) : null;
+      setGradeTamanhos(parsed && typeof parsed === "object" ? { ...emptyGradeTamanhos(), ...parsed } : emptyGradeTamanhos());
+    } catch {
+      setGradeTamanhos(emptyGradeTamanhos());
+    }
     setModelagemUrl(m.arquivo_modelagem_url || null);
     setModelagemFile(null);
     setCurrentModeloId(m.id);
@@ -223,6 +231,7 @@ const ModelosPage = () => {
     setServicos(defaultServicos.map((s) => ({ ...s })));
     setConsumoMetros("");setConsumoGramas("");
     setGradacao(Array.from({ length: 6 }, emptyGradacao));
+    setGradeTamanhos(emptyGradeTamanhos());
     setObservacoes("");
     setModelagemFile(null);
     setModelagemUrl(null);
@@ -383,6 +392,7 @@ const ModelosPage = () => {
     status: statusKanban === "concluido" ? "ativo" : statusKanban === "pendente" ? "desenvolvimento" : "ativo",
     imagem_url: modelImage || null,
     observacoes: observacoes || null,
+    tamanhos_grade: JSON.stringify(gradeTamanhos),
   });
 
   const buildChildren = () => ({
@@ -903,6 +913,31 @@ const ModelosPage = () => {
                 </div>
               </>
           }
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Grade de Tamanhos */}
+      <Card>
+        <div className="bg-[hsl(199,89%,30%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
+          <h3 className="text-sm font-bold tracking-wide text-center">GRADE DE TAMANHOS</h3>
+        </div>
+        <CardContent className="p-3">
+          <p className="text-xs text-muted-foreground mb-2">Informativo para a tela de Corte. Informe a quantidade de peças por tamanho.</p>
+          <div className="grid grid-cols-8 gap-2">
+            {(["pp","p","m","g","gg","g1","g2","g3"] as const).map((size) => (
+              <div key={size} className="space-y-1">
+                <Label className="text-xs text-center block uppercase">{size}</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={gradeTamanhos[size]}
+                  onChange={(e) => setGradeTamanhos((prev) => ({ ...prev, [size]: e.target.value }))}
+                  className={`h-8 text-xs text-center ${yellowInput}`}
+                  placeholder="0"
+                />
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
