@@ -50,7 +50,7 @@ type ColKey = "modelos_pedido" | "corte" | "producao" | "recebimento" | "acabame
 const kanbanColumns: { key: ColKey; label: string; color: string }[] = [
   { key: "modelos_pedido", label: "Modelos - Pedido", color: "hsl(38 92% 50%)" },
   { key: "corte", label: "Corte", color: "hsl(217 71% 45%)" },
-  { key: "producao", label: "Produção", color: "hsl(38 92% 50%)" },
+  { key: "producao", label: "Expedição", color: "hsl(38 92% 50%)" },
   { key: "recebimento", label: "Recebimento", color: "hsl(199 89% 48%)" },
   { key: "acabamento", label: "Acabamento", color: "hsl(142 71% 35%)" },
 ];
