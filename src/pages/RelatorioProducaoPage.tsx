@@ -360,6 +360,7 @@ const RelatorioProducaoPage = () => {
       modelos_pedido: [],
       corte: [],
       producao: [],
+      oficina_costura: [],
       recebimento: [],
       acabamento: [],
     };
