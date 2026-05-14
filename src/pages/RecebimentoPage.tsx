@@ -127,6 +127,12 @@ const RecebimentoPage = () => {
       setOficina("");
       setDataEnvio(oc.data_corte || "");
     }
+    // Qtd Total Recebida vem do recebimento já cadastrado (entrada oficina)
+    const recExistente = (recebimentos || []).find((r: any) => linkedExp && r.expedicao_id === linkedExp.id);
+    const totalRec = recExistente
+      ? (recExistente.total_sem_defeitos || 0) + (recExistente.segunda_qualidade || 0)
+      : 0;
+    setQtdTotalRecebida(totalRec > 0 ? String(totalRec) : "");
     setReferencia(oc.modelo_ref || "");
     setOrdemCorte(oc.numero);
     setNumeroPedido(oc.numero_pedido || "");
