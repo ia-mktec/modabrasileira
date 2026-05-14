@@ -397,7 +397,7 @@ const TecidosPage = () => {
 
   // ─── CADASTRO VIEW ───
   if (viewMode === "cadastro") {
-    return <CadastroTecidoView onBack={() => setViewMode("ficha")} salvarTecido={salvarTecido} />;
+    return <CadastroTecidoView onBack={() => setViewMode("ficha")} />;
   }
 
   // ─── FICHA VIEW ───
@@ -670,16 +670,25 @@ export default TecidosPage;
 
 interface CadastroTecidoViewProps {
   onBack: () => void;
-  salvarTecido: (data: any) => Promise<any>;
 }
 
-function CadastroTecidoView({ onBack, salvarTecido }: CadastroTecidoViewProps) {
+function CadastroTecidoView({ onBack }: CadastroTecidoViewProps) {
+  const { tecidos, salvarTecido, deletarTecido, loading } = useTecidos();
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [nome, setNome] = useState("");
   const [composicao, setComposicao] = useState("");
   const [saving, setSaving] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const yellowInput =
     "bg-[hsl(48,100%,88%)] text-[hsl(220,15%,15%)] border-[hsl(48,80%,60%)] focus:ring-[hsl(48,80%,50%)] placeholder:text-[hsl(48,30%,50%)]";
+
+  const limpar = () => {
+    setEditingId(null);
+    setNome("");
+    setComposicao("");
+  };
 
   const handleSalvar = async () => {
     if (!nome.trim()) {
@@ -687,19 +696,47 @@ function CadastroTecidoView({ onBack, salvarTecido }: CadastroTecidoViewProps) {
       return;
     }
     setSaving(true);
-    const result = await salvarTecido({
-      nome: nome.trim(),
-      composicao: composicao.trim() || undefined,
-      estoque_kg: 0,
-      preco_kg: 0,
-    });
+    const result = await salvarTecido(
+      {
+        nome: nome.trim(),
+        composicao: composicao.trim() || undefined,
+      },
+      editingId || undefined,
+    );
     setSaving(false);
     if (result) {
-      toast({ title: "Tecido cadastrado", description: "O tecido foi salvo com sucesso." });
-      setNome("");
-      setComposicao("");
+      toast({
+        title: editingId ? "Tecido atualizado" : "Tecido cadastrado",
+        description: "As alterações foram salvas com sucesso.",
+      });
+      limpar();
     }
   };
+
+  const handleEdit = (t: any) => {
+    setEditingId(t.id);
+    setNome(t.nome || "");
+    setComposicao(t.composicao || "");
+  };
+
+  const handleDelete = async () => {
+    if (!confirmDeleteId) return;
+    const ok = await deletarTecido(confirmDeleteId);
+    if (ok) {
+      toast({ title: "Tecido excluído" });
+      if (editingId === confirmDeleteId) limpar();
+    }
+    setConfirmDeleteId(null);
+  };
+
+  const filtered = tecidos.filter((t: any) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      !term ||
+      (t.nome || "").toLowerCase().includes(term) ||
+      (t.composicao || "").toLowerCase().includes(term)
+    );
+  });
 
   return (
     <div className="p-4 md:p-6 space-y-4">
@@ -717,8 +754,18 @@ function CadastroTecidoView({ onBack, salvarTecido }: CadastroTecidoViewProps) {
         </h1>
       </div>
 
-      <Card className="max-w-2xl mx-auto">
+      <Card className="max-w-3xl mx-auto">
         <CardContent className="p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold">
+              {editingId ? "Editar Tecido" : "Novo Tecido"}
+            </h3>
+            {editingId && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[hsl(48,100%,88%)] text-[hsl(220,15%,15%)] border border-[hsl(48,80%,60%)] font-mono">
+                Editando
+              </span>
+            )}
+          </div>
           <div className="space-y-1">
             <Label className="text-xs font-semibold">Nome do Tecido *</Label>
             <Input
@@ -738,8 +785,8 @@ function CadastroTecidoView({ onBack, salvarTecido }: CadastroTecidoViewProps) {
             />
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={() => { setNome(""); setComposicao(""); }}>
-              Limpar
+            <Button variant="outline" onClick={limpar}>
+              {editingId ? "Cancelar" : "Limpar"}
             </Button>
             <Button
               onClick={handleSalvar}
@@ -747,11 +794,82 @@ function CadastroTecidoView({ onBack, salvarTecido }: CadastroTecidoViewProps) {
               className="bg-[hsl(142,50%,35%)] hover:bg-[hsl(142,50%,30%)] text-[hsl(0,0%,100%)]"
             >
               <Plus className="w-4 h-4" />
-              {saving ? "Salvando..." : "Cadastrar Tecido"}
+              {saving ? "Salvando..." : editingId ? "Atualizar Tecido" : "Cadastrar Tecido"}
             </Button>
           </div>
         </CardContent>
       </Card>
+
+      <Card className="max-w-5xl mx-auto">
+        <div className="bg-[hsl(199,89%,30%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
+          <h3 className="text-sm font-bold tracking-wide text-center">TECIDOS CADASTRADOS</h3>
+        </div>
+        <CardContent className="p-4 space-y-3">
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nome ou composição..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 h-9 text-xs"
+            />
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b bg-muted/50">
+                  <th className="text-left py-2 px-3 font-semibold">Nome</th>
+                  <th className="text-left py-2 px-3 font-semibold">Composição</th>
+                  <th className="text-left py-2 px-3 font-semibold">Cliente</th>
+                  <th className="text-center py-2 px-3 font-semibold w-28">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading && (
+                  <tr><td colSpan={4} className="py-6 text-center text-muted-foreground">Carregando...</td></tr>
+                )}
+                {!loading && filtered.map((t: any) => (
+                  <tr key={t.id} className={`border-b last:border-0 hover:bg-muted/30 transition-colors ${editingId === t.id ? "bg-[hsl(48,100%,94%)]" : ""}`}>
+                    <td className="py-2 px-3 font-medium">{t.nome}</td>
+                    <td className="py-2 px-3 text-muted-foreground">{t.composicao || "—"}</td>
+                    <td className="py-2 px-3 text-muted-foreground">{t.clientes?.razao_social || "—"}</td>
+                    <td className="py-2 px-3">
+                      <div className="flex items-center justify-center gap-1">
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(t)} title="Editar">
+                          <Pencil className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setConfirmDeleteId(t.id)} title="Excluir">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {!loading && filtered.length === 0 && (
+                  <tr><td colSpan={4} className="py-6 text-center text-muted-foreground">Nenhum tecido encontrado.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <AlertDialog open={!!confirmDeleteId} onOpenChange={(open) => !open && setConfirmDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir tecido</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
