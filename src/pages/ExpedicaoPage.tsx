@@ -793,6 +793,7 @@ const ExpedicaoPage = () => {
 
           {/* Dados da Expedição + Imagem lado a lado */}
           <div className="grid grid-cols-1 md:grid-cols-[1fr_400px] gap-4">
+            <div className="space-y-4">
             <Card>
               <div className="bg-[hsl(38,92%,50%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
                 <h3 className="text-sm font-bold tracking-wide text-center">DADOS DA EXPEDIÇÃO</h3>
