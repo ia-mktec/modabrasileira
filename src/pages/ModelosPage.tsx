@@ -592,46 +592,34 @@ const ModelosPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Image column */}
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* FOTO FRENTE */}
-            <Card className="flex items-center justify-center min-h-[280px] overflow-hidden">
-              <input
-                ref={imageInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleImageSelect}
-                className="hidden"
-              />
-              {modelImage ? (
-                <div className="relative w-full h-full min-h-[280px]">
-                  <img src={modelImage} alt="Modelo" className="w-full h-full object-contain p-2" />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="absolute bottom-2 right-2 text-xs print:hidden"
-                    onClick={() => imageInputRef.current?.click()}
-                  >
-                    Trocar Imagem
-                  </Button>
-                </div>
-              ) : (
-                <div className="text-center text-muted-foreground space-y-2">
-                  <Shirt className="w-16 h-16 mx-auto opacity-30" />
-                  <p className="text-sm">Imagem do Modelo</p>
-                  <Button variant="outline" size="sm" className="text-xs" onClick={() => imageInputRef.current?.click()}>Upload Imagem</Button>
-                </div>
-              )}
-            </Card>
-            {/* FOTO COSTAS (simulação) */}
-            <Card className="flex items-center justify-center min-h-[280px] overflow-hidden">
-              <div className="text-center text-muted-foreground space-y-2 p-4">
-                <Shirt className="w-16 h-16 mx-auto opacity-30 rotate-180" />
-                <p className="text-sm">Imagem das Costas</p>
-                <Button variant="outline" size="sm" className="text-xs" disabled>Upload Imagem</Button>
-                <p className="text-[10px] italic opacity-60">(simulação — não salva ainda)</p>
+          <Card className="flex items-center justify-center min-h-[280px] overflow-hidden">
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageSelect}
+              className="hidden"
+            />
+            {modelImage ? (
+              <div className="relative w-full h-full min-h-[280px]">
+                <img src={modelImage} alt="Modelo" className="w-full h-full object-contain p-2" />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="absolute bottom-2 right-2 text-xs print:hidden"
+                  onClick={() => imageInputRef.current?.click()}
+                >
+                  Trocar Imagem
+                </Button>
               </div>
-            </Card>
-          </div>
+            ) : (
+              <div className="text-center text-muted-foreground space-y-2">
+                <Shirt className="w-16 h-16 mx-auto opacity-30" />
+                <p className="text-sm">Imagem do Modelo</p>
+                <Button variant="outline" size="sm" className="text-xs" onClick={() => imageInputRef.current?.click()}>Upload Imagem</Button>
+              </div>
+            )}
+          </Card>
           {/* Arquivo Modelagem Aprovada */}
           <Card>
             <CardContent className="p-4">
