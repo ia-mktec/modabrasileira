@@ -31,6 +31,7 @@ const Dashboard = () => {
   const [aviamentosCount, setAviamentosCount] = useState(0);
   const [ordensAbertas, setOrdensAbertas] = useState(0);
   const [expedidasSet, setExpedidasSet] = useState<Set<string>>(new Set());
+  const [oficinaSet, setOficinaSet] = useState<Set<string>>(new Set());
   const [recebidasSet, setRecebidasSet] = useState<Set<string>>(new Set());
   const [entreguesSet, setEntreguesSet] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
