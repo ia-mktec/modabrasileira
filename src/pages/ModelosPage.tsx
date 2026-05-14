@@ -392,6 +392,7 @@ const ModelosPage = () => {
     status: statusKanban === "concluido" ? "ativo" : statusKanban === "pendente" ? "desenvolvimento" : "ativo",
     imagem_url: modelImage || null,
     observacoes: observacoes || null,
+    tamanhos_grade: JSON.stringify(gradeTamanhos),
   });
 
   const buildChildren = () => ({
