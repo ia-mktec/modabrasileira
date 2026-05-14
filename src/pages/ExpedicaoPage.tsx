@@ -876,46 +876,6 @@ const ExpedicaoPage = () => {
             </Card>
           </div>
 
-          {/* Dados da Entrada Oficina (editáveis - persiste em recebimento) */}
-          <Card>
-            <div className="bg-[hsl(199,89%,30%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
-              <h3 className="text-sm font-bold tracking-wide text-center">DADOS DA ENTRADA OFICINA</h3>
-            </div>
-            <CardContent className="p-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 items-end">
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Data de Entrada da Oficina</Label>
-                  <Input
-                    type="date"
-                    value={entradaOficinaData}
-                    onChange={(e) => setEntradaOficinaData(e.target.value)}
-                    className={yellowInput}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Qtd Total Recebida</Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={entradaOficinaQtd != null ? String(entradaOficinaQtd) : ""}
-                    onChange={(e) => setEntradaOficinaQtd(e.target.value === "" ? null : Number(e.target.value))}
-                    className={yellowInput}
-                    placeholder="0"
-                  />
-                </div>
-                <div>
-                  <Button
-                    type="button"
-                    onClick={handleSalvarEntradaOficina}
-                    disabled={savingEntrada || !currentOrdemCorteId}
-                    className="bg-[hsl(142,50%,35%)] hover:bg-[hsl(142,50%,30%)] text-[hsl(0,0%,100%)]"
-                  >
-                    {savingEntrada ? "Salvando..." : "Salvar Entrada"}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Grade de Tamanhos (consulta only) */}
           <Card>
