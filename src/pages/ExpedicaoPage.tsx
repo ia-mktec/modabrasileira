@@ -43,6 +43,7 @@ const ExpedicaoPage = () => {
   const { expedicoes: expedicoesDb, salvarExpedicao } = useExpedicao();
   const { fornecedores: fornecedoresDb } = useFornecedores();
   const { modelos: modelosDb, loading: loadingModelos, carregarModeloCompleto } = useModelos();
+  const { clientes: clientesDb } = useClientes();
   const [currentOrdemCorteId, setCurrentOrdemCorteId] = useState<string | null>(null);
   // Dados da ordem (consulta - read only)
   const [numero, setNumero] = useState("");
