@@ -169,15 +169,18 @@ const CortePage = () => {
     if (!modeloRef.trim()) {
       setModeloNome("");
       setRefImage(null);
+      setGradeTamanhosPedido(emptyGradePedido());
       return;
     }
     const found = findModeloByReferencia(modelosDb, modeloRef);
     if (found) {
       setModeloNome(getModeloNome(found));
       setRefImage(found.imagem_url || null);
+      setGradeTamanhosPedido(parseGradePedido((found as any).tamanhos_grade));
     } else {
       setModeloNome("");
       setRefImage(null);
+      setGradeTamanhosPedido(emptyGradePedido());
     }
   }, [modeloRef, modelosDb]);
 
