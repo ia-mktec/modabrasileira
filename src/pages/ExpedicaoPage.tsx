@@ -68,9 +68,11 @@ const ExpedicaoPage = () => {
   // Imagem da referência
   const [refImage, setRefImage] = useState<string | null>(null);
 
-  // Dados da Entrada Oficina (read-only, vindos do recebimento)
+  // Dados da Entrada Oficina (editáveis - persistidos em recebimento)
   const [entradaOficinaData, setEntradaOficinaData] = useState("");
   const [entradaOficinaQtd, setEntradaOficinaQtd] = useState<number | null>(null);
+  const [recebimentoIdEdit, setRecebimentoIdEdit] = useState<string | null>(null);
+  const [savingEntrada, setSavingEntrada] = useState(false);
 
   // Grade (consulta only)
   const [gradeRows, setGradeRows] = useState<GradeExpRow[]>([]);
@@ -229,16 +231,18 @@ const ExpedicaoPage = () => {
     setGradacaoRows([]);
     setEntradaOficinaData("");
     setEntradaOficinaQtd(null);
+    setRecebimentoIdEdit(null);
 
     // Load recebimento (Dados da Entrada Oficina)
     const { data: recs } = await supabase
       .from("recebimento")
-      .select("data_recebimento,total_sem_defeitos,segunda_qualidade,defeitos")
+      .select("id,data_recebimento,total_sem_defeitos,segunda_qualidade,defeitos")
       .eq("ordem_corte_id", oc.id)
       .order("data_recebimento", { ascending: false, nullsFirst: false })
       .limit(1);
     if (recs && recs.length > 0) {
       const r: any = recs[0];
+      setRecebimentoIdEdit(r.id || null);
       setEntradaOficinaData(r.data_recebimento || "");
       const total = (r.total_sem_defeitos || 0) + (r.segunda_qualidade || 0);
       setEntradaOficinaQtd(total > 0 ? total : (r.total_sem_defeitos || 0));
@@ -450,6 +454,62 @@ const ExpedicaoPage = () => {
       // Recarrega a ordem para atualizar saldos e limpar formulário
       const refreshed = ordensCorteDb.find((o: any) => o.id === currentOrdemCorteId);
       if (refreshed) loadOrdem(refreshed);
+    }
+  };
+
+  const handleSalvarEntradaOficina = async () => {
+    if (!currentOrdemCorteId) {
+      toast({ title: "Nenhuma ordem carregada", description: "Busque uma ordem primeiro.", variant: "destructive" });
+      return;
+    }
+    if (!entradaOficinaData) {
+      toast({ title: "Campo obrigatório", description: "Informe a Data de Entrada da Oficina.", variant: "destructive" });
+      return;
+    }
+    setSavingEntrada(true);
+    try {
+      const qtd = entradaOficinaQtd != null ? Number(entradaOficinaQtd) : 0;
+      if (recebimentoIdEdit) {
+        const { error } = await supabase
+          .from("recebimento")
+          .update({ data_recebimento: entradaOficinaData, total_sem_defeitos: qtd })
+          .eq("id", recebimentoIdEdit);
+        if (error) throw error;
+      } else {
+        // Precisa de uma expedição vinculada
+        const { data: exps } = await supabase
+          .from("expedicao")
+          .select("id,oficina_nome,data_saida")
+          .eq("ordem_corte_id", currentOrdemCorteId)
+          .order("data_saida", { ascending: false, nullsFirst: false })
+          .limit(1);
+        const expId = exps?.[0]?.id;
+        if (!expId) {
+          toast({ title: "Sem expedição", description: "Registre uma saída de expedição antes de informar a entrada na oficina.", variant: "destructive" });
+          setSavingEntrada(false);
+          return;
+        }
+        const { data: inserted, error } = await supabase
+          .from("recebimento")
+          .insert({
+            ordem_corte_id: currentOrdemCorteId,
+            expedicao_id: expId,
+            oficina_nome: exps?.[0]?.oficina_nome || null,
+            data_envio: exps?.[0]?.data_saida || null,
+            data_recebimento: entradaOficinaData,
+            total_sem_defeitos: qtd,
+            status: "pendente",
+          })
+          .select("id")
+          .single();
+        if (error) throw error;
+        setRecebimentoIdEdit(inserted?.id || null);
+      }
+      toast({ title: "Entrada da oficina salva", description: "Dados atualizados com sucesso." });
+    } catch (e: any) {
+      toast({ title: "Erro ao salvar", description: e?.message || "Tente novamente.", variant: "destructive" });
+    } finally {
+      setSavingEntrada(false);
     }
   };
 
@@ -815,30 +875,42 @@ const ExpedicaoPage = () => {
             </Card>
           </div>
 
-          {/* Dados da Entrada Oficina (consulta - vindos do recebimento) */}
+          {/* Dados da Entrada Oficina (editáveis - persiste em recebimento) */}
           <Card>
             <div className="bg-[hsl(199,89%,30%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
               <h3 className="text-sm font-bold tracking-wide text-center">DADOS DA ENTRADA OFICINA</h3>
             </div>
             <CardContent className="p-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 items-end">
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Data de Entrada da Oficina</Label>
                   <Input
-                    value={entradaOficinaData ? new Date(entradaOficinaData + "T00:00:00").toLocaleDateString("pt-BR") : ""}
-                    readOnly
-                    className={readOnlyInput}
-                    placeholder="—"
+                    type="date"
+                    value={entradaOficinaData}
+                    onChange={(e) => setEntradaOficinaData(e.target.value)}
+                    className={yellowInput}
                   />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Qtd Total Recebida</Label>
                   <Input
+                    type="number"
+                    min="0"
                     value={entradaOficinaQtd != null ? String(entradaOficinaQtd) : ""}
-                    readOnly
-                    className={readOnlyInput}
-                    placeholder="—"
+                    onChange={(e) => setEntradaOficinaQtd(e.target.value === "" ? null : Number(e.target.value))}
+                    className={yellowInput}
+                    placeholder="0"
                   />
+                </div>
+                <div>
+                  <Button
+                    type="button"
+                    onClick={handleSalvarEntradaOficina}
+                    disabled={savingEntrada || !currentOrdemCorteId}
+                    className="bg-[hsl(142,50%,35%)] hover:bg-[hsl(142,50%,30%)] text-[hsl(0,0%,100%)]"
+                  >
+                    {savingEntrada ? "Salvando..." : "Salvar Entrada"}
+                  </Button>
                 </div>
               </div>
             </CardContent>
