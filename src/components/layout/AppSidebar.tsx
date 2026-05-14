@@ -41,7 +41,7 @@ const navItems = [
   { to: "/corte", icon: Scissors, label: "Corte" },
   { to: "/expedicao", icon: TruckIcon, label: "Expedição" },
   { to: "/recebimento", icon: PackageCheck, label: "Recebimento" },
-  { to: "/entrega-cliente", icon: HandCoins, label: "Entrega Cliente" },
+  { to: "/entrega-cliente", icon: HandCoins, label: "Acabamento" },
   { to: "/relatorio-clientes", icon: BarChart3, label: "Relatório Clientes" },
   { to: "/relatorio-producao", icon: Factory, label: "Fluxo de Produção" },
   { to: "/cash-flow", icon: DollarSign, label: "Cash Flow" },
