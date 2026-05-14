@@ -324,6 +324,22 @@ const ModelosPage = () => {
     setAviamentos((prev) => prev.map((a, i) => i === idx ? { ...a, partesQtde: value } : a));
   };
 
+  const updateAviamentoTipo = (idx: number, value: string) => {
+    setAviamentos((prev) => prev.map((a, i) => i === idx ? { ...a, tipo: value, selectedItem: null } : a));
+  };
+
+  const addAviamentoExtra = () => {
+    setAviamentos((prev) => [...prev, { tipo: "", selectedItem: null, partesQtde: "", isCustom: true }]);
+  };
+
+  const removeAviamentoExtra = (idx: number) => {
+    setAviamentos((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const tiposAviamentoDisponiveis = Array.from(
+    new Set((dbAviamentos || []).map((a: any) => a.tipo).filter(Boolean))
+  ).sort((a: string, b: string) => a.localeCompare(b, "pt-BR"));
+
   // ── Serviços handlers ──
   const updateServicoCusto = (idx: number, value: string) => {
     setServicos((prev) => prev.map((s, i) => i === idx ? { ...s, custoPorPeca: value } : s));
