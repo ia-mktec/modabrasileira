@@ -290,15 +290,21 @@ const RelatorioProducaoPage = () => {
         map[np] = "acabamento";
         return;
       }
+      // RECEBIMENTO com Data de Entrada Oficina e Qtd Total Recebida preenchidos -> Recebimento
+      if (recs.some((x) => !!x.data_recebimento && (((x.total_sem_defeitos || 0) + (x.segunda_qualidade || 0)) > 0))) {
+        map[np] = "recebimento";
+        return;
+      }
       if (recs.some((x) => isAndamento(x.status))) {
         map[np] = "recebimento";
         return;
       }
-      // EXPEDICAO concluído -> Recebimento
+      // EXPEDICAO concluído -> Oficina de Costura
       if (exps.some((x) => isConcluido(x.status))) {
-        map[np] = "recebimento";
+        map[np] = "oficina_costura";
         return;
       }
+      // EXPEDICAO em andamento ou pendente -> Expedição
       if (exps.some((x) => isAndamento(x.status))) {
         map[np] = "producao";
         return;
