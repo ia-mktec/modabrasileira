@@ -178,10 +178,23 @@ const ModelosPage = () => {
     // Carrega filhos
     const { aviamentos: avs, servicos: svs, gradacao: grs } = await carregarModeloCompleto(m.id);
     if (avs.length) {
-      setAviamentos(defaultAviamentos.map((d, i) => {
+      const baseRows: AviamentoRow[] = defaultAviamentos.map((d, i) => {
         const r: any = avs[i];
         return r ? { tipo: d.tipo, selectedItem: r.descricao ? { descricao: r.descricao, tamanho: r.unidade } : null, partesQtde: r.quantidade ? String(r.quantidade) : "" } : { ...d };
-      }));
+      });
+      const extras: AviamentoRow[] = avs.slice(defaultAviamentos.length).map((r: any) => {
+        const desc: string = r.descricao || "";
+        const sep = desc.includes(" — ") ? " — " : (desc.includes(" - ") ? " - " : null);
+        const tipo = sep ? desc.split(sep)[0] : desc;
+        const itemDesc = sep ? desc.split(sep).slice(1).join(sep) : "";
+        return {
+          tipo: tipo || "",
+          selectedItem: itemDesc ? { descricao: itemDesc, tamanho: r.unidade } : null,
+          partesQtde: r.quantidade ? String(r.quantidade) : "",
+          isCustom: true,
+        };
+      });
+      setAviamentos([...baseRows, ...extras]);
     } else {
       setAviamentos(defaultAviamentos.map((a) => ({ ...a })));
     }
