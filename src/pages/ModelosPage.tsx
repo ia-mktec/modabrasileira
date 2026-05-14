@@ -231,6 +231,7 @@ const ModelosPage = () => {
     setServicos(defaultServicos.map((s) => ({ ...s })));
     setConsumoMetros("");setConsumoGramas("");
     setGradacao(Array.from({ length: 6 }, emptyGradacao));
+    setGradeTamanhos(emptyGradeTamanhos());
     setObservacoes("");
     setModelagemFile(null);
     setModelagemUrl(null);
