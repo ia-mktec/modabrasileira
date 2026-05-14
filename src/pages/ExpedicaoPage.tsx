@@ -195,7 +195,21 @@ const ExpedicaoPage = () => {
     setDataCorte(oc.data_corte || "");
     setCortador(oc.cortador || "");
     setStatusOrdem(oc.status || "");
-    setCliente("");
+    // Resolve cliente: prefer ordens_corte.cliente_id → clientes; fallback to modelo_pedidos.cliente by numero_pedido
+    let nomeCliente = "";
+    if (oc.cliente_id) {
+      const c = (clientesDb || []).find((x: any) => x.id === oc.cliente_id);
+      if (c) nomeCliente = c.razao_social || "";
+    }
+    if (!nomeCliente && oc.numero_pedido) {
+      const { data: pedido } = await supabase
+        .from("modelo_pedidos")
+        .select("cliente")
+        .eq("numero_pedido", oc.numero_pedido)
+        .maybeSingle();
+      if (pedido?.cliente) nomeCliente = pedido.cliente;
+    }
+    setCliente(nomeCliente);
     setRefImage(foundModelo?.imagem_url || null);
     setSearchOpen(false);
     setIsLoaded(true);
