@@ -58,7 +58,7 @@ const findModeloByReferencia = (modelos: any[], referencia: string | null | unde
 const CortePage = () => {
   const navigate = useNavigate();
   const { ordens: ordensCorteDb, loading: loadingOrdens, salvarOrdem, deletarOrdem, loadOrdemDetalhada } = useOrdensCorte();
-  const { modelos: modelosDb, loading: loadingModelos } = useModelos();
+  const { modelos: modelosDb, loading: loadingModelos, carregarModeloCompleto } = useModelos();
   const { tecidos: tecidosDb, loading: loadingTecidos, refetch: refetchTecidos } = useTecidos();
   const { clientes: clientesDb, loading: loadingClientes } = useClientes();
   const { aviamentos: aviamentosDb, loading: loadingAviamentos } = useAviamentos();
@@ -245,12 +245,19 @@ const CortePage = () => {
     } else {
       setGradeRows([createEmptyGradeRow()]);
     }
-    // Load aviamentos
+    // Load aviamentos: prefer aviamentos da própria OC; fallback aos aviamentos do modelo
     if (oc.aviamentos_ordem && oc.aviamentos_ordem.length > 0) {
       setAviamentos(oc.aviamentos_ordem.map((a: any) => ({
         id: a.id || crypto.randomUUID(),
         descricao: a.descricao || "",
         quantidade: String(a.quantidade || ""),
+      })));
+    } else if (foundModelo?.id) {
+      const { aviamentos: avsModelo } = await carregarModeloCompleto(foundModelo.id);
+      setAviamentos((avsModelo || []).map((a: any) => ({
+        id: crypto.randomUUID(),
+        descricao: a.descricao || "",
+        quantidade: a.quantidade ? String(a.quantidade) : "",
       })));
     } else {
       setAviamentos([]);
