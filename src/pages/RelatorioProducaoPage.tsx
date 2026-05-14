@@ -45,12 +45,13 @@ interface EntregaRow {
   updated_at: string;
 }
 
-type ColKey = "modelos_pedido" | "corte" | "producao" | "recebimento" | "acabamento";
+type ColKey = "modelos_pedido" | "corte" | "producao" | "oficina_costura" | "recebimento" | "acabamento";
 
 const kanbanColumns: { key: ColKey; label: string; color: string }[] = [
   { key: "modelos_pedido", label: "Modelos - Pedido", color: "hsl(38 92% 50%)" },
   { key: "corte", label: "Corte", color: "hsl(217 71% 45%)" },
   { key: "producao", label: "Expedição", color: "hsl(38 92% 50%)" },
+  { key: "oficina_costura", label: "Oficina de Costura", color: "hsl(280 65% 50%)" },
   { key: "recebimento", label: "Recebimento", color: "hsl(199 89% 48%)" },
   { key: "acabamento", label: "Acabamento", color: "hsl(142 71% 35%)" },
 ];
@@ -59,6 +60,7 @@ const colBadgeStyles: Record<ColKey, string> = {
   modelos_pedido: "bg-[hsl(38_92%_50%/0.15)] text-[hsl(38,92%,50%)] border-[hsl(38_92%_50%/0.3)]",
   corte: "bg-[hsl(217_71%_45%/0.15)] text-[hsl(217,71%,45%)] border-[hsl(217_71%_45%/0.3)]",
   producao: "bg-[hsl(38_92%_50%/0.15)] text-[hsl(38,92%,50%)] border-[hsl(38_92%_50%/0.3)]",
+  oficina_costura: "bg-[hsl(280_65%_50%/0.15)] text-[hsl(280,65%,50%)] border-[hsl(280_65%_50%/0.3)]",
   recebimento: "bg-[hsl(199_89%_48%/0.15)] text-[hsl(199,89%,48%)] border-[hsl(199_89%_48%/0.3)]",
   acabamento: "bg-[hsl(142_71%_35%/0.15)] text-[hsl(142,71%,35%)] border-[hsl(142_71%_35%/0.3)]",
 };
