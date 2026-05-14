@@ -9,7 +9,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { useOrdensCorte, useRecebimento, useModelos, useExpedicao } from "@/hooks/useSupabaseData";
+import { useOrdensCorte, useRecebimento, useModelos, useExpedicao, useClientes } from "@/hooks/useSupabaseData";
+import { supabase } from "@/integrations/supabase/client";
 import { Search, Printer, PackageCheck, ImageOff, Eraser, Save } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { differenceInDays, parseISO } from "date-fns";
