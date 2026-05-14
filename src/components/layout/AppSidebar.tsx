@@ -64,7 +64,7 @@ function SidebarContent({ collapsed, setCollapsed, onNavigate }: { collapsed: bo
         {!collapsed && (
           <div className="overflow-hidden">
             <h1 className="text-sm font-bold text-[hsl(var(--sidebar-primary-foreground))] tracking-wide">
-              MKTEC Flow
+              Moda Brasileira
             </h1>
             <p className="text-[10px] text-[hsl(var(--sidebar-foreground))] opacity-60">
               {user?.email}
