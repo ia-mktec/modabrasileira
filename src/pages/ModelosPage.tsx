@@ -917,6 +917,31 @@ const ModelosPage = () => {
         </CardContent>
       </Card>
 
+      {/* Grade de Tamanhos */}
+      <Card>
+        <div className="bg-[hsl(199,89%,30%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
+          <h3 className="text-sm font-bold tracking-wide text-center">GRADE DE TAMANHOS</h3>
+        </div>
+        <CardContent className="p-3">
+          <p className="text-xs text-muted-foreground mb-2">Informativo para a tela de Corte. Informe a quantidade de peças por tamanho.</p>
+          <div className="grid grid-cols-8 gap-2">
+            {(["pp","p","m","g","gg","g1","g2","g3"] as const).map((size) => (
+              <div key={size} className="space-y-1">
+                <Label className="text-xs text-center block uppercase">{size}</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={gradeTamanhos[size]}
+                  onChange={(e) => setGradeTamanhos((prev) => ({ ...prev, [size]: e.target.value }))}
+                  className={`h-8 text-xs text-center ${yellowInput}`}
+                  placeholder="0"
+                />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Gradação */}
       <Card>
         <div className="bg-[hsl(199,89%,30%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
