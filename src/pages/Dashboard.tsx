@@ -59,7 +59,7 @@ const Dashboard = () => {
         supabase.from("tecidos").select("estoque_kg"),
         fetchAll<any>("grade_expedicao", "pp_exp,p_exp,m_exp,g_exp,gg_exp,g1_exp,g2_exp,g3_exp"),
         supabase.from("aviamentos").select("id", { count: "exact", head: true }),
-        fetchAll<any>("expedicao", "ordem_corte_id"),
+        fetchAll<any>("expedicao", "ordem_corte_id,status"),
         fetchAll<any>("recebimento", "ordem_corte_id"),
         fetchAll<any>("entrega_cliente", "ordem_corte_id"),
       ]);
@@ -70,9 +70,16 @@ const Dashboard = () => {
       setAviamentosCount(av.count || 0);
 
       const expedidas = new Set<string>((expIds || []).map((e: any) => e.ordem_corte_id).filter(Boolean));
+      const oficina = new Set<string>(
+        (expIds || [])
+          .filter((e: any) => e.status === "concluido")
+          .map((e: any) => e.ordem_corte_id)
+          .filter(Boolean)
+      );
       const recebidas = new Set<string>((recIds || []).map((r: any) => r.ordem_corte_id).filter(Boolean));
       const entregues = new Set<string>((entIds || []).map((e: any) => e.ordem_corte_id).filter(Boolean));
       setExpedidasSet(expedidas);
+      setOficinaSet(oficina);
       setRecebidasSet(recebidas);
       setEntreguesSet(entregues);
       setOrdensAbertas([...expedidas].filter((id) => !recebidas.has(id)).length);
@@ -84,7 +91,8 @@ const Dashboard = () => {
   const getEtapa = (ocId: string): { label: string; color: string } => {
     if (entreguesSet.has(ocId)) return { label: "Entregue", color: "hsl(142 71% 35%)" };
     if (recebidasSet.has(ocId)) return { label: "Acabamento", color: "hsl(262 60% 55%)" };
-    if (expedidasSet.has(ocId)) return { label: "Produção", color: "hsl(217 71% 55%)" };
+    if (oficinaSet.has(ocId)) return { label: "Oficina de Costura", color: "hsl(280 65% 50%)" };
+    if (expedidasSet.has(ocId)) return { label: "Expedição", color: "hsl(217 71% 55%)" };
     return { label: "Corte", color: "hsl(38 92% 50%)" };
   };
 
@@ -104,11 +112,12 @@ const Dashboard = () => {
   const statusProducao = useMemo(() => {
     const etapas = [
       { key: "Corte", color: "hsl(38 92% 50%)" },
-      { key: "Produção", color: "hsl(217 71% 55%)" },
+      { key: "Expedição", color: "hsl(217 71% 55%)" },
+      { key: "Oficina de Costura", color: "hsl(280 65% 50%)" },
       { key: "Acabamento", color: "hsl(262 60% 55%)" },
       { key: "Entregue", color: "hsl(142 71% 35%)" },
     ];
-    const counts: Record<string, number> = { Corte: 0, "Produção": 0, Acabamento: 0, Entregue: 0 };
+    const counts: Record<string, number> = { Corte: 0, "Expedição": 0, "Oficina de Costura": 0, Acabamento: 0, Entregue: 0 };
     ordens.forEach((o) => {
       const e = getEtapa(o.id).label;
       counts[e] = (counts[e] || 0) + 1;
@@ -121,7 +130,7 @@ const Dashboard = () => {
         fill: e.color,
       }))
       .filter((e) => e.value > 0);
-  }, [ordens, expedidasSet, recebidasSet, entreguesSet]);
+  }, [ordens, expedidasSet, oficinaSet, recebidasSet, entreguesSet]);
 
   const producaoMensal = useMemo(() => {
     // Janela fixa: últimos 6 meses incluindo o atual, em ordem crescente
