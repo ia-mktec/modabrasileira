@@ -212,7 +212,7 @@ const RelatorioProducaoPage = () => {
       fetchAll<PedidoRow>("modelo_pedidos", "*"),
       fetchAll<OrdemCorteRow & { id: string }>("ordens_corte", "id,numero,numero_pedido,status,updated_at"),
       fetchAll<ExpedicaoRow>("expedicao", "ordem_corte_id,status,updated_at"),
-      fetchAll<RecebimentoRow>("recebimento", "ordem_corte_id,status,updated_at"),
+      fetchAll<RecebimentoRow>("recebimento", "ordem_corte_id,status,updated_at,data_recebimento,total_sem_defeitos,segunda_qualidade"),
       fetchAll<EntregaRow>("entrega_cliente", "ordem_corte_id,status,updated_at"),
       supabase.from("modelos").select("referencia,imagem_url"),
     ]).then(([p, o, e, r, en, m]) => {
