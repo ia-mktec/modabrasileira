@@ -129,7 +129,20 @@ const RecebimentoPage = () => {
     setReferencia(oc.modelo_ref || "");
     setOrdemCorte(oc.numero);
     setNumeroPedido(oc.numero_pedido || "");
-    setCliente("");
+    let nomeCliente = "";
+    if (oc.cliente_id) {
+      const c = (clientesDb || []).find((x: any) => x.id === oc.cliente_id);
+      if (c) nomeCliente = c.razao_social || "";
+    }
+    if (!nomeCliente && oc.numero_pedido) {
+      const { data: pedido } = await supabase
+        .from("modelo_pedidos")
+        .select("cliente")
+        .eq("numero_pedido", oc.numero_pedido)
+        .maybeSingle();
+      if (pedido?.cliente) nomeCliente = pedido.cliente;
+    }
+    setCliente(nomeCliente);
     const foundModelo = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
     setModelo(foundModelo?.descricao || oc.modelo_ref || "");
     setRefImage(foundModelo?.imagem_url || null);
