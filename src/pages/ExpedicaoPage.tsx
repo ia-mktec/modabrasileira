@@ -225,6 +225,22 @@ const ExpedicaoPage = () => {
     setGradeRows([]);
     setAviamentosExp([]);
     setGradacaoRows([]);
+    setEntradaOficinaData("");
+    setEntradaOficinaQtd(null);
+
+    // Load recebimento (Dados da Entrada Oficina)
+    const { data: recs } = await supabase
+      .from("recebimento")
+      .select("data_recebimento,total_sem_defeitos,segunda_qualidade,defeitos")
+      .eq("ordem_corte_id", oc.id)
+      .order("data_recebimento", { ascending: false, nullsFirst: false })
+      .limit(1);
+    if (recs && recs.length > 0) {
+      const r: any = recs[0];
+      setEntradaOficinaData(r.data_recebimento || "");
+      const total = (r.total_sem_defeitos || 0) + (r.segunda_qualidade || 0);
+      setEntradaOficinaQtd(total > 0 ? total : (r.total_sem_defeitos || 0));
+    }
 
     // Fetch full ordem detail (grade_corte + aviamentos_ordem) and modelo children in parallel
     const [detalhe, modeloCompleto] = await Promise.all([
