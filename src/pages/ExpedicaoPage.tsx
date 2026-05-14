@@ -68,9 +68,11 @@ const ExpedicaoPage = () => {
   // Imagem da referência
   const [refImage, setRefImage] = useState<string | null>(null);
 
-  // Dados da Entrada Oficina (read-only, vindos do recebimento)
+  // Dados da Entrada Oficina (editáveis - persistidos em recebimento)
   const [entradaOficinaData, setEntradaOficinaData] = useState("");
   const [entradaOficinaQtd, setEntradaOficinaQtd] = useState<number | null>(null);
+  const [recebimentoIdEdit, setRecebimentoIdEdit] = useState<string | null>(null);
+  const [savingEntrada, setSavingEntrada] = useState(false);
 
   // Grade (consulta only)
   const [gradeRows, setGradeRows] = useState<GradeExpRow[]>([]);
