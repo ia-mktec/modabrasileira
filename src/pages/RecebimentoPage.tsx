@@ -42,6 +42,7 @@ const RecebimentoPage = () => {
   const [modelo, setModelo] = useState("");
   const [oficina, setOficina] = useState("");
   const [dataEnvio, setDataEnvio] = useState("");
+  const [qtdTotalRecebida, setQtdTotalRecebida] = useState("");
 
   // Editáveis (amarelo)
   const [dataRecebimento, setDataRecebimento] = useState("");
