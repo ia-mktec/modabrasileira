@@ -127,12 +127,13 @@
 @media print {
   @page {
     size: A4;
-    margin: 8mm;
+    margin: 6mm;
   }
 
-  body {
+  html, body {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    width: 100% !important;
   }
 
   /* Hide sidebar */
@@ -145,54 +146,71 @@
     display: none !important;
   }
 
-  /* Make content full width */
+  /* Make content full width and constrain to single page width */
   main {
     width: 100% !important;
+    max-width: 100% !important;
     overflow: visible !important;
   }
 
-  /* Compact spacing for single page */
-  .p-4, .md\\:p-6 {
+  /* Force the printable container to fit page width */
+  .max-w-\[1200px\] {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  /* Compact spacing */
+  .p-4, .md\\:p-6, .p-6 {
     padding: 4px !important;
   }
 
   .space-y-4 > * + * {
-    margin-top: 8px !important;
+    margin-top: 6px !important;
   }
 
-  .gap-4 {
-    gap: 8px !important;
+  .gap-4, .gap-3 {
+    gap: 6px !important;
   }
 
-  .min-h-\[280px\], .min-h-\[400px\] {
-    min-height: 150px !important;
-  }
-
-  /* Reduce card padding */
-  .p-6, .p-4 {
-    padding: 6px !important;
+  /* Reduce min-heights so cards don't waste vertical space */
+  .min-h-\[280px\], .min-h-\[400px\], .min-h-\[180px\] {
+    min-height: 0 !important;
   }
 
   /* Smaller text */
   .text-xl, .text-2xl {
-    font-size: 16px !important;
+    font-size: 14px !important;
   }
 
   .text-sm {
-    font-size: 11px !important;
-  }
-
-  .text-xs {
     font-size: 10px !important;
   }
 
-  /* Ensure tables don't break */
-  table {
+  .text-xs {
+    font-size: 9px !important;
+  }
+
+  /* Constrain model photo so it stays harmonious in print */
+  img {
+    max-width: 100% !important;
+    max-height: 220px !important;
+    object-fit: contain !important;
+  }
+
+  /* Cards/tables avoid awkward breaks */
+  table, .card, [class*="rounded-lg"] {
     page-break-inside: avoid;
+    break-inside: avoid;
   }
 
   /* Hide upload buttons in print */
   input[type="file"] {
     display: none !important;
+  }
+
+  /* Limit overall printable area to two A4 pages worth of height */
+  .print-limit-2pages {
+    max-height: 560mm;
+    overflow: hidden !important;
   }
 }
