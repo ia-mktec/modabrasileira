@@ -102,6 +102,23 @@ const CortePage = () => {
 
   // Imagem da referência
   const [refImage, setRefImage] = useState<string | null>(null);
+  const emptyGradePedido = () => ({ PP: 0, P: 0, M: 0, G: 0, GG: 0, G1: 0, G2: 0, G3: 0 } as Record<string, number>);
+  const [gradeTamanhosPedido, setGradeTamanhosPedido] = useState<Record<string, number>>(emptyGradePedido());
+  const parseGradePedido = (raw: any): Record<string, number> => {
+    try {
+      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+      if (!parsed || typeof parsed !== "object") return emptyGradePedido();
+      const out = emptyGradePedido();
+      TAMANHOS.forEach((t) => {
+        const k = t.toLowerCase();
+        const v = parsed[k] ?? parsed[t];
+        out[t] = parseInt(v) || 0;
+      });
+      return out;
+    } catch {
+      return emptyGradePedido();
+    }
+  };
 
   // Cortador / Enfestador options (carregados de ordens_corte + permite novos)
   const [cortadorOptions, setCortadorOptions] = useState<string[]>([]);
