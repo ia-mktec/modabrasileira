@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from
@@ -32,6 +33,7 @@ interface AviamentoRow {
   tipo: string;
   selectedItem: any | null;
   partesQtde: string;
+  isCustom?: boolean;
 }
 
 interface ServicoRow {
@@ -177,10 +179,23 @@ const ModelosPage = () => {
     // Carrega filhos
     const { aviamentos: avs, servicos: svs, gradacao: grs } = await carregarModeloCompleto(m.id);
     if (avs.length) {
-      setAviamentos(defaultAviamentos.map((d, i) => {
+      const baseRows: AviamentoRow[] = defaultAviamentos.map((d, i) => {
         const r: any = avs[i];
         return r ? { tipo: d.tipo, selectedItem: r.descricao ? { descricao: r.descricao, tamanho: r.unidade } : null, partesQtde: r.quantidade ? String(r.quantidade) : "" } : { ...d };
-      }));
+      });
+      const extras: AviamentoRow[] = avs.slice(defaultAviamentos.length).map((r: any) => {
+        const desc: string = r.descricao || "";
+        const sep = desc.includes(" — ") ? " — " : (desc.includes(" - ") ? " - " : null);
+        const tipo = sep ? desc.split(sep)[0] : desc;
+        const itemDesc = sep ? desc.split(sep).slice(1).join(sep) : "";
+        return {
+          tipo: tipo || "",
+          selectedItem: itemDesc ? { descricao: itemDesc, tamanho: r.unidade } : null,
+          partesQtde: r.quantidade ? String(r.quantidade) : "",
+          isCustom: true,
+        };
+      });
+      setAviamentos([...baseRows, ...extras]);
     } else {
       setAviamentos(defaultAviamentos.map((a) => ({ ...a })));
     }
@@ -309,6 +324,22 @@ const ModelosPage = () => {
   const updateAviamentoQtde = (idx: number, value: string) => {
     setAviamentos((prev) => prev.map((a, i) => i === idx ? { ...a, partesQtde: value } : a));
   };
+
+  const updateAviamentoTipo = (idx: number, value: string) => {
+    setAviamentos((prev) => prev.map((a, i) => i === idx ? { ...a, tipo: value, selectedItem: null } : a));
+  };
+
+  const addAviamentoExtra = () => {
+    setAviamentos((prev) => [...prev, { tipo: "", selectedItem: null, partesQtde: "", isCustom: true }]);
+  };
+
+  const removeAviamentoExtra = (idx: number) => {
+    setAviamentos((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const tiposAviamentoDisponiveis = Array.from(
+    new Set((dbAviamentos || []).map((a: any) => a.tipo).filter(Boolean))
+  ).sort((a: string, b: string) => a.localeCompare(b, "pt-BR"));
 
   // ── Serviços handlers ──
   const updateServicoCusto = (idx: number, value: string) => {
@@ -668,6 +699,7 @@ const ModelosPage = () => {
                     <th className="text-left py-2 px-3 font-semibold">ITEM SELECIONADO</th>
                     <th className="text-center py-2 px-3 font-semibold w-20">BUSCAR</th>
                     <th className="text-center py-2 px-3 font-semibold w-24">PARTES/QTDE</th>
+                    <th className="text-center py-2 px-3 font-semibold w-12"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -677,14 +709,30 @@ const ModelosPage = () => {
                   ((it.descricao || "").toLowerCase().includes(aviamentoSearchTerm.toLowerCase()) ||
                   (it.tamanho || "").toLowerCase().includes(aviamentoSearchTerm.toLowerCase()))
                   );
+                  const tipoVazio = !av.tipo;
 
                   return (
                     <tr key={idx} className="border-b last:border-0">
-                      <td className="py-1.5 px-3 font-medium text-xs">{av.tipo}</td>
+                      <td className="py-1.5 px-3 font-medium text-xs">
+                        {av.isCustom ? (
+                          <Select value={av.tipo || undefined} onValueChange={(v) => updateAviamentoTipo(idx, v)}>
+                            <SelectTrigger className={`h-7 text-xs ${yellowInput}`}>
+                              <SelectValue placeholder="Selecione o tipo" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {tiposAviamentoDisponiveis.map((t) => (
+                                <SelectItem key={t} value={t}>{t}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          av.tipo
+                        )}
+                      </td>
                       <td className="py-1.5 px-3 text-xs">
                         {av.selectedItem ? (
                           <span className="truncate block max-w-[180px]">
-                            {av.selectedItem.descricao} - {av.selectedItem.tamanho}
+                            {av.selectedItem.descricao}{av.selectedItem.tamanho ? ` - ${av.selectedItem.tamanho}` : ""}
                           </span>
                         ) : (
                           <span className="text-muted-foreground italic">Nenhum</span>
@@ -693,7 +741,7 @@ const ModelosPage = () => {
                       <td className="py-1.5 px-3 text-center">
                         <Sheet open={aviamentoSearchOpen === idx} onOpenChange={(open) => { setAviamentoSearchOpen(open ? idx : null); setAviamentoSearchTerm(""); }}>
                           <SheetTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-7 w-7 p-0">
+                            <Button variant="outline" size="sm" className="h-7 w-7 p-0" disabled={tipoVazio}>
                               <Search className="w-3 h-3" />
                             </Button>
                           </SheetTrigger>
@@ -735,9 +783,23 @@ const ModelosPage = () => {
                           placeholder="0"
                         />
                       </td>
+                      <td className="py-1.5 px-2 text-center">
+                        {av.isCustom && (
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive" onClick={() => removeAviamentoExtra(idx)}>
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        )}
+                      </td>
                     </tr>
                   );
                 })}
+                  <tr>
+                    <td colSpan={5} className="py-2 px-3">
+                      <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={addAviamentoExtra}>
+                        <Plus className="w-3 h-3" /> Adicionar Aviamento
+                      </Button>
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </CardContent>
