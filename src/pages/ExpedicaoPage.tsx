@@ -457,6 +457,62 @@ const ExpedicaoPage = () => {
     }
   };
 
+  const handleSalvarEntradaOficina = async () => {
+    if (!currentOrdemCorteId) {
+      toast({ title: "Nenhuma ordem carregada", description: "Busque uma ordem primeiro.", variant: "destructive" });
+      return;
+    }
+    if (!entradaOficinaData) {
+      toast({ title: "Campo obrigatório", description: "Informe a Data de Entrada da Oficina.", variant: "destructive" });
+      return;
+    }
+    setSavingEntrada(true);
+    try {
+      const qtd = entradaOficinaQtd != null ? Number(entradaOficinaQtd) : 0;
+      if (recebimentoIdEdit) {
+        const { error } = await supabase
+          .from("recebimento")
+          .update({ data_recebimento: entradaOficinaData, total_sem_defeitos: qtd })
+          .eq("id", recebimentoIdEdit);
+        if (error) throw error;
+      } else {
+        // Precisa de uma expedição vinculada
+        const { data: exps } = await supabase
+          .from("expedicao")
+          .select("id,oficina_nome,data_saida")
+          .eq("ordem_corte_id", currentOrdemCorteId)
+          .order("data_saida", { ascending: false, nullsFirst: false })
+          .limit(1);
+        const expId = exps?.[0]?.id;
+        if (!expId) {
+          toast({ title: "Sem expedição", description: "Registre uma saída de expedição antes de informar a entrada na oficina.", variant: "destructive" });
+          setSavingEntrada(false);
+          return;
+        }
+        const { data: inserted, error } = await supabase
+          .from("recebimento")
+          .insert({
+            ordem_corte_id: currentOrdemCorteId,
+            expedicao_id: expId,
+            oficina_nome: exps?.[0]?.oficina_nome || null,
+            data_envio: exps?.[0]?.data_saida || null,
+            data_recebimento: entradaOficinaData,
+            total_sem_defeitos: qtd,
+            status: "pendente",
+          })
+          .select("id")
+          .single();
+        if (error) throw error;
+        setRecebimentoIdEdit(inserted?.id || null);
+      }
+      toast({ title: "Entrada da oficina salva", description: "Dados atualizados com sucesso." });
+    } catch (e: any) {
+      toast({ title: "Erro ao salvar", description: e?.message || "Tente novamente.", variant: "destructive" });
+    } finally {
+      setSavingEntrada(false);
+    }
+  };
+
   const handlePrint = useCallback(() => {window.print();}, []);
 
   const yellowInput =
