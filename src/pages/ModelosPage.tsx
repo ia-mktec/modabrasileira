@@ -174,6 +174,12 @@ const ModelosPage = () => {
     setForroQtde(m.forro_tecido2_quantidade ? String(m.forro_tecido2_quantidade) : "");
     setModelImage(m.imagem_url || null);
     setObservacoes(m.observacoes || "");
+    try {
+      const parsed = m.tamanhos_grade ? JSON.parse(m.tamanhos_grade) : null;
+      setGradeTamanhos(parsed && typeof parsed === "object" ? { ...emptyGradeTamanhos(), ...parsed } : emptyGradeTamanhos());
+    } catch {
+      setGradeTamanhos(emptyGradeTamanhos());
+    }
     setModelagemUrl(m.arquivo_modelagem_url || null);
     setModelagemFile(null);
     setCurrentModeloId(m.id);
