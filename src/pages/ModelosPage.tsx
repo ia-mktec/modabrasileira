@@ -924,7 +924,7 @@ const ModelosPage = () => {
         </div>
         <CardContent className="p-3">
           <p className="text-xs text-muted-foreground mb-2">Informativo para a tela de Corte. Informe a quantidade de peças por tamanho.</p>
-          <div className="grid grid-cols-8 gap-2">
+          <div className="grid grid-cols-9 gap-2">
             {(["pp","p","m","g","gg","g1","g2","g3"] as const).map((size) => (
               <div key={size} className="space-y-1">
                 <Label className="text-xs text-center block uppercase">{size}</Label>
@@ -938,6 +938,15 @@ const ModelosPage = () => {
                 />
               </div>
             ))}
+            <div className="space-y-1">
+              <Label className="text-xs text-center block uppercase font-bold">Total</Label>
+              <Input
+                readOnly
+                tabIndex={-1}
+                value={(["pp","p","m","g","gg","g1","g2","g3"] as const).reduce((acc, s) => acc + (parseInt(gradeTamanhos[s]) || 0), 0)}
+                className="h-8 text-xs text-center bg-muted/50 border-muted font-bold"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
