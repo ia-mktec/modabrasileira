@@ -217,7 +217,7 @@ const RecebimentoPage = () => {
   const handleLimpar = () => {
     setReferencia(""); setOrdemCorte(""); setCliente(""); setModelo("");
     setOficina(""); setDataEnvio(""); setDataRecebimento("");
-    setObservacoes(""); setStatusKanban("");
+    setObservacoes(""); setStatusKanban(""); setQtdTotalRecebida("");
     setGradeRows([]); setRefImage(null); setIsLoaded(false);
   };
 
