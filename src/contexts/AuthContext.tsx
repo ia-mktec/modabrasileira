@@ -42,6 +42,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setRoles(r);
       return r;
     }
+    // JWT expirado / sessão inválida → desloga para forçar novo login
+    const msg = (error?.message || "").toLowerCase();
+    if (msg.includes("jwt") || msg.includes("expired") || error?.code === "PGRST301") {
+      await supabase.auth.signOut();
+      setRoles([]);
+      if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
+        window.location.replace("/login");
+      }
+      return [];
+    }
     setRoles([]);
     return [];
   }, []);
