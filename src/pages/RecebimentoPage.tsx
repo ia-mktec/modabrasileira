@@ -366,6 +366,10 @@ const RecebimentoPage = () => {
                   <Label className="text-xs font-semibold">Data de Envio</Label>
                   <Input value={dataEnvio} readOnly className={readOnlyInput} placeholder="—" />
                 </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Qtd Total Recebida</Label>
+                  <Input value={qtdTotalRecebida} readOnly className={readOnlyInput} placeholder="—" />
+                </div>
               </div>
             </CardContent>
           </Card>
