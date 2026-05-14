@@ -32,6 +32,7 @@ interface AviamentoRow {
   tipo: string;
   selectedItem: any | null;
   partesQtde: string;
+  isCustom?: boolean;
 }
 
 interface ServicoRow {
