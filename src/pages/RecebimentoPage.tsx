@@ -31,6 +31,7 @@ const RecebimentoPage = () => {
   const { expedicoes } = useExpedicao();
   const { salvarRecebimento, recebimentos } = useRecebimento();
   const { modelos: modelosDb, loading: loadingModelos } = useModelos();
+  const { clientes: clientesDb } = useClientes();
   const [currentOrdemCorteId, setCurrentOrdemCorteId] = useState<string | null>(null);
   const [currentExpedicaoId, setCurrentExpedicaoId] = useState<string | null>(null);
   // Consulta (read-only) - dados da ordem
