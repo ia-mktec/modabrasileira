@@ -102,6 +102,23 @@ const CortePage = () => {
 
   // Imagem da referência
   const [refImage, setRefImage] = useState<string | null>(null);
+  const emptyGradePedido = () => ({ PP: 0, P: 0, M: 0, G: 0, GG: 0, G1: 0, G2: 0, G3: 0 } as Record<string, number>);
+  const [gradeTamanhosPedido, setGradeTamanhosPedido] = useState<Record<string, number>>(emptyGradePedido());
+  const parseGradePedido = (raw: any): Record<string, number> => {
+    try {
+      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+      if (!parsed || typeof parsed !== "object") return emptyGradePedido();
+      const out = emptyGradePedido();
+      TAMANHOS.forEach((t) => {
+        const k = t.toLowerCase();
+        const v = parsed[k] ?? parsed[t];
+        out[t] = parseInt(v) || 0;
+      });
+      return out;
+    } catch {
+      return emptyGradePedido();
+    }
+  };
 
   // Cortador / Enfestador options (carregados de ordens_corte + permite novos)
   const [cortadorOptions, setCortadorOptions] = useState<string[]>([]);
@@ -152,15 +169,18 @@ const CortePage = () => {
     if (!modeloRef.trim()) {
       setModeloNome("");
       setRefImage(null);
+      setGradeTamanhosPedido(emptyGradePedido());
       return;
     }
     const found = findModeloByReferencia(modelosDb, modeloRef);
     if (found) {
       setModeloNome(getModeloNome(found));
       setRefImage(found.imagem_url || null);
+      setGradeTamanhosPedido(parseGradePedido((found as any).tamanhos_grade));
     } else {
       setModeloNome("");
       setRefImage(null);
+      setGradeTamanhosPedido(emptyGradePedido());
     }
   }, [modeloRef, modelosDb]);
 
@@ -952,10 +972,42 @@ const CortePage = () => {
             </Card>
           </div>
 
-          {/* Grade de Tamanhos com Cor */}
+          {/* Grade de Tamanhos Pedido (informativa, vinda do modelo) */}
+          <Card>
+            <div className="bg-[hsl(199,89%,30%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
+              <h3 className="text-sm font-bold tracking-wide text-center">GRADE DE TAMANHOS PEDIDO</h3>
+            </div>
+            <CardContent className="p-3">
+              <p className="text-xs text-muted-foreground mb-2">Informativo — cadastrado em Modelos.</p>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr>
+                      {TAMANHOS.map((t) => (
+                        <th key={t} className="border border-border px-2 py-1.5 text-xs font-bold text-center bg-muted min-w-[55px]">{t}</th>
+                      ))}
+                      <th className="border border-border px-2 py-1.5 text-xs font-bold text-center bg-muted min-w-[65px]">TOTAL</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      {TAMANHOS.map((t) => (
+                        <td key={t} className="border border-border px-2 py-1.5 text-xs text-center bg-muted/30">{gradeTamanhosPedido[t] || 0}</td>
+                      ))}
+                      <td className="border border-border px-2 py-1.5 text-xs text-center font-bold bg-muted/50">
+                        {TAMANHOS.reduce((s, t) => s + (gradeTamanhosPedido[t] || 0), 0)}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Grade de Tamanhos Cortada */}
           <Card>
             <div className="bg-[hsl(142,50%,30%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg flex items-center justify-between">
-              <h3 className="text-sm font-bold tracking-wide text-center flex-1">GRADE DE TAMANHOS</h3>
+              <h3 className="text-sm font-bold tracking-wide text-center flex-1">GRADE DE TAMANHOS CORTADA</h3>
               <Button size="sm" variant="ghost" className="h-6 px-2 text-[hsl(0,0%,100%)] hover:bg-[hsl(142,50%,40%)]" onClick={addGradeRow}>
                 <Plus className="w-3 h-3 mr-1" /> Cor
               </Button>
