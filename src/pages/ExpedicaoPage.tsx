@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
-import { useOrdensCorte, useExpedicao, useFornecedores, useModelos } from "@/hooks/useSupabaseData";
+import { useOrdensCorte, useExpedicao, useFornecedores, useModelos, useClientes } from "@/hooks/useSupabaseData";
 import { Search, Truck, Printer, PackageCheck, ImageOff, Send, CheckCircle, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,6 +43,7 @@ const ExpedicaoPage = () => {
   const { expedicoes: expedicoesDb, salvarExpedicao } = useExpedicao();
   const { fornecedores: fornecedoresDb } = useFornecedores();
   const { modelos: modelosDb, loading: loadingModelos, carregarModeloCompleto } = useModelos();
+  const { clientes: clientesDb } = useClientes();
   const [currentOrdemCorteId, setCurrentOrdemCorteId] = useState<string | null>(null);
   // Dados da ordem (consulta - read only)
   const [numero, setNumero] = useState("");
@@ -194,7 +195,21 @@ const ExpedicaoPage = () => {
     setDataCorte(oc.data_corte || "");
     setCortador(oc.cortador || "");
     setStatusOrdem(oc.status || "");
-    setCliente("");
+    // Resolve cliente: prefer ordens_corte.cliente_id → clientes; fallback to modelo_pedidos.cliente by numero_pedido
+    let nomeCliente = "";
+    if (oc.cliente_id) {
+      const c = (clientesDb || []).find((x: any) => x.id === oc.cliente_id);
+      if (c) nomeCliente = c.razao_social || "";
+    }
+    if (!nomeCliente && oc.numero_pedido) {
+      const { data: pedido } = await supabase
+        .from("modelo_pedidos")
+        .select("cliente")
+        .eq("numero_pedido", oc.numero_pedido)
+        .maybeSingle();
+      if (pedido?.cliente) nomeCliente = pedido.cliente;
+    }
+    setCliente(nomeCliente);
     setRefImage(foundModelo?.imagem_url || null);
     setSearchOpen(false);
     setIsLoaded(true);
