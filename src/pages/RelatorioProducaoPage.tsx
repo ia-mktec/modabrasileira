@@ -427,7 +427,7 @@ const RelatorioProducaoPage = () => {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4">
         {kanbanColumns.map((col) => (
           <div key={col.key} className="flex flex-col">
             <div className="flex items-center gap-2 mb-3">
