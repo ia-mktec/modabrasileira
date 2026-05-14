@@ -38,6 +38,9 @@ interface RecebimentoRow {
   ordem_corte_id: string;
   status: string;
   updated_at: string;
+  data_recebimento: string | null;
+  total_sem_defeitos: number | null;
+  segunda_qualidade: number | null;
 }
 interface EntregaRow {
   ordem_corte_id: string;
