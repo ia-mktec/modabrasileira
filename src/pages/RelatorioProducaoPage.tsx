@@ -38,6 +38,9 @@ interface RecebimentoRow {
   ordem_corte_id: string;
   status: string;
   updated_at: string;
+  data_recebimento: string | null;
+  total_sem_defeitos: number | null;
+  segunda_qualidade: number | null;
 }
 interface EntregaRow {
   ordem_corte_id: string;
@@ -45,12 +48,13 @@ interface EntregaRow {
   updated_at: string;
 }
 
-type ColKey = "modelos_pedido" | "corte" | "producao" | "recebimento" | "acabamento";
+type ColKey = "modelos_pedido" | "corte" | "producao" | "oficina_costura" | "recebimento" | "acabamento";
 
 const kanbanColumns: { key: ColKey; label: string; color: string }[] = [
   { key: "modelos_pedido", label: "Modelos - Pedido", color: "hsl(38 92% 50%)" },
   { key: "corte", label: "Corte", color: "hsl(217 71% 45%)" },
   { key: "producao", label: "Expedição", color: "hsl(38 92% 50%)" },
+  { key: "oficina_costura", label: "Oficina de Costura", color: "hsl(280 65% 50%)" },
   { key: "recebimento", label: "Recebimento", color: "hsl(199 89% 48%)" },
   { key: "acabamento", label: "Acabamento", color: "hsl(142 71% 35%)" },
 ];
@@ -59,6 +63,7 @@ const colBadgeStyles: Record<ColKey, string> = {
   modelos_pedido: "bg-[hsl(38_92%_50%/0.15)] text-[hsl(38,92%,50%)] border-[hsl(38_92%_50%/0.3)]",
   corte: "bg-[hsl(217_71%_45%/0.15)] text-[hsl(217,71%,45%)] border-[hsl(217_71%_45%/0.3)]",
   producao: "bg-[hsl(38_92%_50%/0.15)] text-[hsl(38,92%,50%)] border-[hsl(38_92%_50%/0.3)]",
+  oficina_costura: "bg-[hsl(280_65%_50%/0.15)] text-[hsl(280,65%,50%)] border-[hsl(280_65%_50%/0.3)]",
   recebimento: "bg-[hsl(199_89%_48%/0.15)] text-[hsl(199,89%,48%)] border-[hsl(199_89%_48%/0.3)]",
   acabamento: "bg-[hsl(142_71%_35%/0.15)] text-[hsl(142,71%,35%)] border-[hsl(142_71%_35%/0.3)]",
 };
@@ -207,7 +212,7 @@ const RelatorioProducaoPage = () => {
       fetchAll<PedidoRow>("modelo_pedidos", "*"),
       fetchAll<OrdemCorteRow & { id: string }>("ordens_corte", "id,numero,numero_pedido,status,updated_at"),
       fetchAll<ExpedicaoRow>("expedicao", "ordem_corte_id,status,updated_at"),
-      fetchAll<RecebimentoRow>("recebimento", "ordem_corte_id,status,updated_at"),
+      fetchAll<RecebimentoRow>("recebimento", "ordem_corte_id,status,updated_at,data_recebimento,total_sem_defeitos,segunda_qualidade"),
       fetchAll<EntregaRow>("entrega_cliente", "ordem_corte_id,status,updated_at"),
       supabase.from("modelos").select("referencia,imagem_url"),
     ]).then(([p, o, e, r, en, m]) => {
@@ -285,15 +290,21 @@ const RelatorioProducaoPage = () => {
         map[np] = "acabamento";
         return;
       }
+      // RECEBIMENTO com Data de Entrada Oficina e Qtd Total Recebida preenchidos -> Recebimento
+      if (recs.some((x) => !!x.data_recebimento && (((x.total_sem_defeitos || 0) + (x.segunda_qualidade || 0)) > 0))) {
+        map[np] = "recebimento";
+        return;
+      }
       if (recs.some((x) => isAndamento(x.status))) {
         map[np] = "recebimento";
         return;
       }
-      // EXPEDICAO concluído -> Recebimento
+      // EXPEDICAO concluído -> Oficina de Costura
       if (exps.some((x) => isConcluido(x.status))) {
-        map[np] = "recebimento";
+        map[np] = "oficina_costura";
         return;
       }
+      // EXPEDICAO em andamento ou pendente -> Expedição
       if (exps.some((x) => isAndamento(x.status))) {
         map[np] = "producao";
         return;
@@ -349,6 +360,7 @@ const RelatorioProducaoPage = () => {
       modelos_pedido: [],
       corte: [],
       producao: [],
+      oficina_costura: [],
       recebimento: [],
       acabamento: [],
     };
@@ -415,7 +427,7 @@ const RelatorioProducaoPage = () => {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4">
         {kanbanColumns.map((col) => (
           <div key={col.key} className="flex flex-col">
             <div className="flex items-center gap-2 mb-3">
