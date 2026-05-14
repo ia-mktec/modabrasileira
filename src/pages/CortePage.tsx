@@ -245,12 +245,19 @@ const CortePage = () => {
     } else {
       setGradeRows([createEmptyGradeRow()]);
     }
-    // Load aviamentos
+    // Load aviamentos: prefer aviamentos da própria OC; fallback aos aviamentos do modelo
     if (oc.aviamentos_ordem && oc.aviamentos_ordem.length > 0) {
       setAviamentos(oc.aviamentos_ordem.map((a: any) => ({
         id: a.id || crypto.randomUUID(),
         descricao: a.descricao || "",
         quantidade: String(a.quantidade || ""),
+      })));
+    } else if (foundModelo?.id) {
+      const { aviamentos: avsModelo } = await carregarModeloCompleto(foundModelo.id);
+      setAviamentos((avsModelo || []).map((a: any) => ({
+        id: crypto.randomUUID(),
+        descricao: a.descricao || "",
+        quantidade: a.quantidade ? String(a.quantidade) : "",
       })));
     } else {
       setAviamentos([]);
