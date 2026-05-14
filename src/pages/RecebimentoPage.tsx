@@ -143,7 +143,9 @@ const RecebimentoPage = () => {
       if (pedido?.cliente) nomeCliente = pedido.cliente;
     }
     setCliente(nomeCliente);
-    const foundModelo = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
+    const refTrim = (oc.modelo_ref || "").trim().toLowerCase();
+    const candidatos = modelosDb.filter((m: any) => (m.referencia || "").trim().toLowerCase() === refTrim);
+    const foundModelo = candidatos.find((m: any) => !!m.imagem_url) || candidatos[0];
     setModelo(foundModelo?.descricao || oc.modelo_ref || "");
     setRefImage(foundModelo?.imagem_url || null);
     setGradeRows([]);
