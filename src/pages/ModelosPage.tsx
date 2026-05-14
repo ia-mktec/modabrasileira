@@ -122,6 +122,8 @@ const ModelosPage = () => {
   const [consumoMetros, setConsumoMetros] = useState("");
   const [consumoGramas, setConsumoGramas] = useState("");
   const [gradacao, setGradacao] = useState<GradacaoRow[]>(Array.from({ length: 6 }, emptyGradacao));
+  const emptyGradeTamanhos = () => ({ pp: "", p: "", m: "", g: "", gg: "", g1: "", g2: "", g3: "" });
+  const [gradeTamanhos, setGradeTamanhos] = useState<Record<string, string>>(emptyGradeTamanhos());
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
