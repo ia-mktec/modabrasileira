@@ -397,7 +397,7 @@ const TecidosPage = () => {
 
   // ─── CADASTRO VIEW ───
   if (viewMode === "cadastro") {
-    return <CadastroTecidoView onBack={() => setViewMode("ficha")} salvarTecido={salvarTecido} />;
+    return <CadastroTecidoView onBack={() => setViewMode("ficha")} />;
   }
 
   // ─── FICHA VIEW ───
