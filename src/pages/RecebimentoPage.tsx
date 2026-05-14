@@ -42,6 +42,7 @@ const RecebimentoPage = () => {
   const [modelo, setModelo] = useState("");
   const [oficina, setOficina] = useState("");
   const [dataEnvio, setDataEnvio] = useState("");
+  const [qtdTotalRecebida, setQtdTotalRecebida] = useState("");
 
   // Editáveis (amarelo)
   const [dataRecebimento, setDataRecebimento] = useState("");
@@ -126,6 +127,12 @@ const RecebimentoPage = () => {
       setOficina("");
       setDataEnvio(oc.data_corte || "");
     }
+    // Qtd Total Recebida vem do recebimento já cadastrado (entrada oficina)
+    const recExistente = (recebimentos || []).find((r: any) => linkedExp && r.expedicao_id === linkedExp.id);
+    const totalRec = recExistente
+      ? (recExistente.total_sem_defeitos || 0) + (recExistente.segunda_qualidade || 0)
+      : 0;
+    setQtdTotalRecebida(totalRec > 0 ? String(totalRec) : "");
     setReferencia(oc.modelo_ref || "");
     setOrdemCorte(oc.numero);
     setNumeroPedido(oc.numero_pedido || "");
@@ -210,7 +217,7 @@ const RecebimentoPage = () => {
   const handleLimpar = () => {
     setReferencia(""); setOrdemCorte(""); setCliente(""); setModelo("");
     setOficina(""); setDataEnvio(""); setDataRecebimento("");
-    setObservacoes(""); setStatusKanban("");
+    setObservacoes(""); setStatusKanban(""); setQtdTotalRecebida("");
     setGradeRows([]); setRefImage(null); setIsLoaded(false);
   };
 
@@ -358,6 +365,10 @@ const RecebimentoPage = () => {
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Data de Envio</Label>
                   <Input value={dataEnvio} readOnly className={readOnlyInput} placeholder="—" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Qtd Total Recebida</Label>
+                  <Input value={qtdTotalRecebida} readOnly className={readOnlyInput} placeholder="—" />
                 </div>
               </div>
             </CardContent>
