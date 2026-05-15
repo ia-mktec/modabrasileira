@@ -510,16 +510,23 @@ const ModelosPage = () => {
       return;
     }
     const dataBase = dataPedido || new Date().toISOString().slice(0, 10);
-    const { error } = await supabase.from("modelo_pedidos").upsert({
-      numero_pedido: numeroPedido,
-      cliente: cliente || null,
-      modelo_ref: referencia,
-      data_pedido: dataBase,
-      tecido: tecido || null,
-      consumo_tecido: parseFloat(consumoMetros) || 0,
-      status_kanban: statusKanban || "pendente",
-      piloto_entregue: pilotoEntregue === "sim",
-    } as any, { onConflict: "numero_pedido" });
+    const dismissSaving = showSaving();
+    let error: any;
+    try {
+      const res = await supabase.from("modelo_pedidos").upsert({
+        numero_pedido: numeroPedido,
+        cliente: cliente || null,
+        modelo_ref: referencia,
+        data_pedido: dataBase,
+        tecido: tecido || null,
+        consumo_tecido: parseFloat(consumoMetros) || 0,
+        status_kanban: statusKanban || "pendente",
+        piloto_entregue: pilotoEntregue === "sim",
+      } as any, { onConflict: "numero_pedido" });
+      error = res.error;
+    } finally {
+      dismissSaving();
+    }
 
     if (error) {
       toast({ title: "Erro ao registrar pedido", description: error.message, variant: "destructive" });
