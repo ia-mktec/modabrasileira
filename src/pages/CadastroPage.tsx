@@ -345,11 +345,16 @@ const CadastroPage = () => {
         <TabsContent value="modelos" className="space-y-4 mt-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">Tipos de modelo disponíveis para a tela de Modelos</p>
-            <Button size="sm" onClick={() => {
+            <Button size="sm" onClick={async () => {
               const nome = prompt("Nome do novo modelo:");
-              if (nome?.trim()) {
-                setModelos(prev => [...prev, { id: `m-${Date.now()}`, nome: nome.trim() }]);
+              if (!nome?.trim()) return;
+              const { data, error } = await supabase.from("tipos_modelo").insert({ nome: nome.trim() }).select("id,nome").single();
+              if (error) {
+                toast({ title: "Erro ao salvar modelo", description: error.message, variant: "destructive" });
+                return;
               }
+              setModelos(prev => [...prev, data].sort((a, b) => a.nome.localeCompare(b.nome)));
+              toast({ title: "Modelo salvo com sucesso" });
             }}>
               <Plus className="w-4 h-4 mr-1" /> Novo Cadastro
             </Button>
