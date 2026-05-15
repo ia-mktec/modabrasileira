@@ -376,11 +376,16 @@ const CadastroPage = () => {
                         <td className="py-3 px-4 font-mono text-xs text-muted-foreground">{idx + 1}</td>
                         <td className="py-3 px-4 font-medium">{m.nome}</td>
                         <td className="py-3 px-4 text-center">
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={async () => {
                             const novoNome = prompt("Editar nome:", m.nome);
-                            if (novoNome?.trim()) {
-                              setModelos(prev => prev.map(item => item.id === m.id ? { ...item, nome: novoNome.trim() } : item));
+                            if (!novoNome?.trim()) return;
+                            const { error } = await supabase.from("tipos_modelo").update({ nome: novoNome.trim() }).eq("id", m.id);
+                            if (error) {
+                              toast({ title: "Erro ao atualizar", description: error.message, variant: "destructive" });
+                              return;
                             }
+                            setModelos(prev => prev.map(item => item.id === m.id ? { ...item, nome: novoNome.trim() } : item));
+                            toast({ title: "Modelo atualizado" });
                           }}>
                             <Pencil className="w-4 h-4" />
                           </Button>
