@@ -159,7 +159,10 @@ const RecebimentoPage = () => {
     setGradeRows([]);
     setSearchOpen(false);
     setIsLoaded(true);
-    setDataRecebimento("");
+    // Preenche com a data de hoje (local) para evitar erro de validação
+    const hoje = new Date();
+    const hojeISO = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}-${String(hoje.getDate()).padStart(2, "0")}`;
+    setDataRecebimento(hojeISO);
     setObservacoes("");
     setStatusKanban("");
 
