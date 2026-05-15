@@ -517,6 +517,7 @@ const ExpedicaoPage = () => {
     } catch (e: any) {
       toast({ title: "Erro ao salvar", description: e?.message || "Tente novamente.", variant: "destructive" });
     } finally {
+      dismissSaving();
       setSavingEntrada(false);
     }
   };
