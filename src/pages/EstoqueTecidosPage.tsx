@@ -223,7 +223,7 @@ const EstoqueTecidosPage = () => {
                       </div>
                     </td>
                     <td className="py-2 px-3 text-center">{r.unidade}</td>
-                    <td className="py-2 px-3 text-center font-mono">{r.ultimaData ? new Date(r.ultimaData).toLocaleDateString("pt-BR") : "—"}</td>
+                    <td className="py-2 px-3 text-center font-mono">{formatDateBR(r.ultimaData)}</td>
                     <td className="py-2 px-3 text-right font-mono">{r.rolos}</td>
                     <td className="py-2 px-3 text-right font-mono">{r.entrada.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}</td>
                     <td className="py-2 px-3 text-right font-mono text-[hsl(38,92%,50%)]">{r.alocado.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}</td>

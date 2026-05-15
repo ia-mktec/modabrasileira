@@ -206,7 +206,7 @@ export default function FichaPedidoPage() {
             />
             <Field
               label="Data do Pedido"
-              value={pedido.data_pedido ? new Date(pedido.data_pedido).toLocaleDateString("pt-BR") : null}
+              value={pedido.data_pedido ? formatDateBR(pedido.data_pedido) : null}
             />
             <Field label="Status" value={statusLabel[pedido.status_kanban] || pedido.status_kanban} />
           </div>

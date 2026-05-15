@@ -614,7 +614,7 @@ const CortePage = () => {
                     const clienteN = clientesDb.find((c: any) => c.id === oc.cliente_id)?.razao_social || "—";
                     return (
                       <tr key={oc.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                        <td className="py-2 px-3 font-mono">{oc.data_corte ? new Date(oc.data_corte).toLocaleDateString("pt-BR") : "—"}</td>
+                        <td className="py-2 px-3 font-mono">{formatDateBR(oc.data_corte)}</td>
                         <td className="py-2 px-3 font-mono font-semibold text-primary">{oc.numero}</td>
                         <td className="py-2 px-3 font-mono">{oc.numero_pedido || "—"}</td>
                         <td className="py-2 px-3">{clienteN}</td>

@@ -296,7 +296,7 @@ export default function PedidosPage() {
                         {p.numero_pedido}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {new Date(p.data_pedido).toLocaleDateString("pt-BR")}
+                        {formatDateBR(p.data_pedido)}
                       </TableCell>
                       <TableCell className="font-mono text-xs">{p.modelo_ref}</TableCell>
                       <TableCell className="text-sm">{p.cliente || "—"}</TableCell>

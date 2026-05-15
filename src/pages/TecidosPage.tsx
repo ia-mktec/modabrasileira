@@ -346,7 +346,7 @@ const TecidosPage = () => {
                     const isDisp = (r.status || "").toLowerCase().startsWith("dispon");
                     return (
                       <tr key={r.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                        <td className="py-2 px-4 font-mono">{r.data_entrada ? new Date(r.data_entrada).toLocaleDateString("pt-BR") : "—"}</td>
+                        <td className="py-2 px-4 font-mono">{formatDateBR(r.data_entrada)}</td>
                         <td className="py-2 px-4">{r.cliente_nome || "—"}</td>
                         <td className="py-2 px-4 font-medium">{r.nome_tecido}</td>
                         <td className="py-2 px-4 text-muted-foreground">{r.composicao || "—"}</td>

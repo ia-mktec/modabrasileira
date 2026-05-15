@@ -137,7 +137,7 @@ function PedidoCard({
             title="Ver linha do tempo"
           >
             <CalendarDays className="w-3 h-3" />
-            {new Date(pedido.data_pedido).toLocaleDateString("pt-BR")}
+            {formatDateBR(pedido.data_pedido)}
           </button>
         </div>
       </CardContent>
