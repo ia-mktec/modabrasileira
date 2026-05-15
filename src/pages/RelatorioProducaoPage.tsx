@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CalendarDays, Clock, Package, TrendingUp, Activity, Shirt } from "lucide-react";
 import { PedidoTimeline } from "@/components/shared/PedidoTimeline";
-import { cn } from "@/lib/utils";
+import { cn, formatDateBR } from "@/lib/utils";
 
 interface PedidoRow {
   numero_pedido: string;
