@@ -427,7 +427,13 @@ const CortePage = () => {
       .filter(a => a.descricao && parseInt(a.quantidade) > 0)
       .map(a => ({ descricao: a.descricao, quantidade: parseInt(a.quantidade) || 0 }));
 
-    const result = await salvarOrdem(ordemData, gradeData, aviamentosData, currentOrdemId || undefined);
+    const dismissSaving = showSaving();
+    let result;
+    try {
+      result = await salvarOrdem(ordemData, gradeData, aviamentosData, currentOrdemId || undefined);
+    } finally {
+      dismissSaving();
+    }
     if (result) {
       setCurrentOrdemId(result);
       toast({
