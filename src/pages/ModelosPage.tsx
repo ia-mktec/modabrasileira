@@ -458,7 +458,13 @@ const ModelosPage = () => {
   const handleSaveOverwriteConfirm = async () => {
     setSaveOverwriteDialogOpen(false);
     const existingModel = modelos.find((m: any) => m.referencia === referencia);
-    const result = await salvarModelo(buildModeloPayload(), existingModel?.id || currentModeloId || undefined, buildChildren());
+    const dismissSaving = showSaving();
+    let result;
+    try {
+      result = await salvarModelo(buildModeloPayload(), existingModel?.id || currentModeloId || undefined, buildChildren());
+    } finally {
+      dismissSaving();
+    }
     if (result) {
       toast({ title: "Modelo atualizado", description: `Referência ${referencia} foi sobrescrita com sucesso.` });
     }
