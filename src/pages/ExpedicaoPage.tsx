@@ -440,15 +440,21 @@ const ExpedicaoPage = () => {
       return;
     }
 
-    const result = await salvarExpedicao({
-      ordem_corte_id: currentOrdemCorteId,
-      data_saida: dataSaida || null,
-      oficina_nome: oficina || null,
-      
-      preco_peca: parseFloat(preco) || 0,
-      observacoes: observacoes || null,
-      status: statusKanban || "pendente",
-    }, gradeData);
+    const dismissSaving = showSaving();
+    let result;
+    try {
+      result = await salvarExpedicao({
+        ordem_corte_id: currentOrdemCorteId,
+        data_saida: dataSaida || null,
+        oficina_nome: oficina || null,
+        
+        preco_peca: parseFloat(preco) || 0,
+        observacoes: observacoes || null,
+        status: statusKanban || "pendente",
+      }, gradeData);
+    } finally {
+      dismissSaving();
+    }
 
     if (result) {
       toast({ title: "Saída parcial registrada", description: `Oficina ${oficina} — ${totalEnviarGeral} peça(s).` });
