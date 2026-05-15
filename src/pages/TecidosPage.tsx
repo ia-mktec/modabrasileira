@@ -702,6 +702,7 @@ function CadastroTecidoView({ onBack }: CadastroTecidoViewProps) {
       return;
     }
     setSaving(true);
+    const dismissSaving = showSaving();
     const result = await salvarTecido(
       {
         nome: nome.trim(),
@@ -709,6 +710,7 @@ function CadastroTecidoView({ onBack }: CadastroTecidoViewProps) {
       },
       editingId || undefined,
     );
+    dismissSaving();
     setSaving(false);
     if (result) {
       toast({
