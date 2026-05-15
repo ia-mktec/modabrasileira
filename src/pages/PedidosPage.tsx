@@ -45,6 +45,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { showSaving } from "@/lib/saving-toast";
 
 
 interface PedidoRow {
@@ -194,6 +195,7 @@ export default function PedidosPage() {
   const handleSaveEdit = async () => {
     if (!editingPedido) return;
     setSaving(true);
+    const dismissSaving = showSaving();
 
     const { error } = await supabase
       .from("modelo_pedidos")
@@ -209,6 +211,7 @@ export default function PedidosPage() {
       })
       .eq("numero_pedido", editingPedido.numero_pedido);
 
+    dismissSaving();
     setSaving(false);
     if (error) {
       toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });

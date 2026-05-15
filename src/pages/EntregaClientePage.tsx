@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { useOrdensCorte, useEntregaCliente, useModelos } from "@/hooks/useSupabaseData";
 import { Search, Printer, PackageCheck, ImageOff, Send, CalendarIcon } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { showSaving } from "@/lib/saving-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -197,16 +198,22 @@ const EntregaClientePage = () => {
       return;
     }
 
-    const result = await salvarEntrega({
-      ordem_corte_id: currentOrdemCorteId,
-      data_entrega: dataEntrega ? format(dataEntrega, "yyyy-MM-dd") : null,
-      qtd_entregue: qtdEntregueAuto,
-      segunda_qualidade: segundaQualidadeAuto,
-      oficina_nome: oficina || null,
-      tempo_producao: tempoProducao || null,
-      observacoes: observacoes || null,
-      status: statusKanban || "pendente",
-    });
+    const dismissSaving = showSaving();
+    let result;
+    try {
+      result = await salvarEntrega({
+        ordem_corte_id: currentOrdemCorteId,
+        data_entrega: dataEntrega ? format(dataEntrega, "yyyy-MM-dd") : null,
+        qtd_entregue: qtdEntregueAuto,
+        segunda_qualidade: segundaQualidadeAuto,
+        oficina_nome: oficina || null,
+        tempo_producao: tempoProducao || null,
+        observacoes: observacoes || null,
+        status: statusKanban || "pendente",
+      });
+    } finally {
+      dismissSaving();
+    }
 
     if (result) {
       toast({ title: "Entrega registrada", description: `Entrega da ordem ${ordemCorte} registrada com sucesso.` });

@@ -14,6 +14,7 @@ import {
 import { useAviamentos, useFornecedores } from "@/hooks/useSupabaseData";
 import { Plus, Trash2, Search, Pencil, Package, Save } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { showSaving } from "@/lib/saving-toast";
 
 const CATEGORIAS = ["Elásticos", "Zíper", "Regulador", "Botão", "Outros Aviamentos"];
 
@@ -80,10 +81,15 @@ const AviamentosPage = () => {
       preco_un: precoUnMt ? parseFloat(precoUnMt) : null,
       fornecedor_id: fornecedorId && fornecedorId !== "nenhum" ? fornecedorId : null,
     };
-    const result = await salvarAviamento(data, editingId || undefined);
-    if (result) {
-      toast({ title: editingId ? "Aviamento atualizado" : "Aviamento registrado", description: `"${descricao}" salvo com sucesso.` });
-      limparFicha();
+    const dismissSaving = showSaving();
+    try {
+      const result = await salvarAviamento(data, editingId || undefined);
+      if (result) {
+        toast({ title: editingId ? "Aviamento atualizado" : "Aviamento registrado", description: `"${descricao}" salvo com sucesso.` });
+        limparFicha();
+      }
+    } finally {
+      dismissSaving();
     }
   };
 

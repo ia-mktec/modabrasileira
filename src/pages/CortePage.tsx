@@ -15,6 +15,7 @@ import {
 import { useOrdensCorte, useModelos, useTecidos, useClientes, useAviamentos } from "@/hooks/useSupabaseData";
 import { Plus, Save, Trash2, Printer, Search, ImageOff, Scissors, AlertTriangle, CheckCircle, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { showSaving } from "@/lib/saving-toast";
 import { useNavigate } from "react-router-dom";
 import { CreatableCombobox } from "@/components/shared/CreatableCombobox";
 
@@ -426,7 +427,13 @@ const CortePage = () => {
       .filter(a => a.descricao && parseInt(a.quantidade) > 0)
       .map(a => ({ descricao: a.descricao, quantidade: parseInt(a.quantidade) || 0 }));
 
-    const result = await salvarOrdem(ordemData, gradeData, aviamentosData, currentOrdemId || undefined);
+    const dismissSaving = showSaving();
+    let result;
+    try {
+      result = await salvarOrdem(ordemData, gradeData, aviamentosData, currentOrdemId || undefined);
+    } finally {
+      dismissSaving();
+    }
     if (result) {
       setCurrentOrdemId(result);
       toast({

@@ -11,6 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "
 import { useFornecedores, useClientes } from "@/hooks/useSupabaseData";
 import { Plus, Search, Pencil, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { showSaving } from "@/lib/saving-toast";
 import {
   Select,
   SelectContent,
@@ -136,7 +137,12 @@ const CadastroPage = () => {
   const handleSaveFornecedor = async () => {
     if (!editingFornecedor) return;
     const { id, created_at, updated_at, ...data } = editingFornecedor;
-    await salvarFornecedor(data, id);
+    const dismissSaving = showSaving();
+    try {
+      await salvarFornecedor(data, id);
+    } finally {
+      dismissSaving();
+    }
     setEditFornecedorOpen(false);
     setEditingFornecedor(null);
     toast({ title: "Fornecedor salvo com sucesso" });
@@ -145,7 +151,12 @@ const CadastroPage = () => {
   const handleSaveCliente = async () => {
     if (!editingCliente) return;
     const { id, created_at, updated_at, ...data } = editingCliente;
-    await salvarCliente(data, id);
+    const dismissSaving = showSaving();
+    try {
+      await salvarCliente(data, id);
+    } finally {
+      dismissSaving();
+    }
     setEditClienteOpen(false);
     setEditingCliente(null);
     toast({ title: "Cliente salvo com sucesso" });

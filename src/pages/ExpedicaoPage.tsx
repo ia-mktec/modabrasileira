@@ -12,6 +12,7 @@ import { useOrdensCorte, useExpedicao, useFornecedores, useModelos, useClientes 
 import { Search, Truck, Printer, PackageCheck, ImageOff, Send, CheckCircle, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { showSaving } from "@/lib/saving-toast";
 
 const TAMANHOS = ["PP", "P", "M", "G", "GG", "G1", "G2", "G3"];
 const TAM_KEYS: Record<string, string> = { PP: "pp", P: "p", M: "m", G: "g", GG: "gg", G1: "g1", G2: "g2", G3: "g3" };
@@ -439,15 +440,21 @@ const ExpedicaoPage = () => {
       return;
     }
 
-    const result = await salvarExpedicao({
-      ordem_corte_id: currentOrdemCorteId,
-      data_saida: dataSaida || null,
-      oficina_nome: oficina || null,
-      
-      preco_peca: parseFloat(preco) || 0,
-      observacoes: observacoes || null,
-      status: statusKanban || "pendente",
-    }, gradeData);
+    const dismissSaving = showSaving();
+    let result;
+    try {
+      result = await salvarExpedicao({
+        ordem_corte_id: currentOrdemCorteId,
+        data_saida: dataSaida || null,
+        oficina_nome: oficina || null,
+        
+        preco_peca: parseFloat(preco) || 0,
+        observacoes: observacoes || null,
+        status: statusKanban || "pendente",
+      }, gradeData);
+    } finally {
+      dismissSaving();
+    }
 
     if (result) {
       toast({ title: "Saída parcial registrada", description: `Oficina ${oficina} — ${totalEnviarGeral} peça(s).` });
@@ -467,6 +474,7 @@ const ExpedicaoPage = () => {
       return;
     }
     setSavingEntrada(true);
+    const dismissSaving = showSaving();
     try {
       const qtd = entradaOficinaQtd != null ? Number(entradaOficinaQtd) : 0;
       if (recebimentoIdEdit) {
@@ -509,6 +517,7 @@ const ExpedicaoPage = () => {
     } catch (e: any) {
       toast({ title: "Erro ao salvar", description: e?.message || "Tente novamente.", variant: "destructive" });
     } finally {
+      dismissSaving();
       setSavingEntrada(false);
     }
   };

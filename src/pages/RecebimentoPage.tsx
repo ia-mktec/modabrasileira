@@ -13,6 +13,7 @@ import { useOrdensCorte, useRecebimento, useModelos, useExpedicao, useClientes }
 import { supabase } from "@/integrations/supabase/client";
 import { Search, Printer, PackageCheck, ImageOff, Eraser, Save } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { showSaving } from "@/lib/saving-toast";
 import { differenceInDays, parseISO } from "date-fns";
 
 const TAMANHOS = ["PP", "P", "M", "G", "GG", "G1", "G2", "G3"];
@@ -196,18 +197,24 @@ const RecebimentoPage = () => {
       return;
     }
 
-    const result = await salvarRecebimento({
-      expedicao_id: currentExpedicaoId,
-      ordem_corte_id: currentOrdemCorteId,
-      oficina_nome: oficina || null,
-      data_envio: dataEnvio || null,
-      data_recebimento: dataRecebimento || null,
-      total_sem_defeitos: qtdRecebida - defeitos,
-      defeitos: defeitos,
-      total_pagar: 0,
-      observacoes: observacoes || null,
-      status: statusKanban || "pendente",
-    });
+    const dismissSaving = showSaving();
+    let result;
+    try {
+      result = await salvarRecebimento({
+        expedicao_id: currentExpedicaoId,
+        ordem_corte_id: currentOrdemCorteId,
+        oficina_nome: oficina || null,
+        data_envio: dataEnvio || null,
+        data_recebimento: dataRecebimento || null,
+        total_sem_defeitos: qtdRecebida - defeitos,
+        defeitos: defeitos,
+        total_pagar: 0,
+        observacoes: observacoes || null,
+        status: statusKanban || "pendente",
+      });
+    } finally {
+      dismissSaving();
+    }
 
     if (result) {
       toast({ title: "Recebimento salvo", description: `Recebimento da ordem ${ordemCorte} salvo com sucesso.` });

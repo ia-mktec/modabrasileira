@@ -27,6 +27,7 @@ const cadastroModelosList = [
 ];
 import { Plus, Save, Trash2, Printer, Search, Shirt, Upload, ClipboardCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { showSaving } from "@/lib/saving-toast";
 
 // ── Types ──
 interface AviamentoRow {
@@ -435,7 +436,13 @@ const ModelosPage = () => {
         setSaveDialogOpen(true);
         return;
       }
-      const result = await salvarModelo(buildModeloPayload(), currentModeloId || undefined, buildChildren());
+      const dismissSaving = showSaving();
+      let result;
+      try {
+        result = await salvarModelo(buildModeloPayload(), currentModeloId || undefined, buildChildren());
+      } finally {
+        dismissSaving();
+      }
       if (result) {
         setCurrentModeloId(result);
         toast({ title: "Modelo salvo", description: `Referência ${referencia} salva com sucesso.` });
@@ -451,7 +458,13 @@ const ModelosPage = () => {
   const handleSaveOverwriteConfirm = async () => {
     setSaveOverwriteDialogOpen(false);
     const existingModel = modelos.find((m: any) => m.referencia === referencia);
-    const result = await salvarModelo(buildModeloPayload(), existingModel?.id || currentModeloId || undefined, buildChildren());
+    const dismissSaving = showSaving();
+    let result;
+    try {
+      result = await salvarModelo(buildModeloPayload(), existingModel?.id || currentModeloId || undefined, buildChildren());
+    } finally {
+      dismissSaving();
+    }
     if (result) {
       toast({ title: "Modelo atualizado", description: `Referência ${referencia} foi sobrescrita com sucesso.` });
     }
@@ -497,16 +510,23 @@ const ModelosPage = () => {
       return;
     }
     const dataBase = dataPedido || new Date().toISOString().slice(0, 10);
-    const { error } = await supabase.from("modelo_pedidos").upsert({
-      numero_pedido: numeroPedido,
-      cliente: cliente || null,
-      modelo_ref: referencia,
-      data_pedido: dataBase,
-      tecido: tecido || null,
-      consumo_tecido: parseFloat(consumoMetros) || 0,
-      status_kanban: statusKanban || "pendente",
-      piloto_entregue: pilotoEntregue === "sim",
-    } as any, { onConflict: "numero_pedido" });
+    const dismissSaving = showSaving();
+    let error: any;
+    try {
+      const res = await supabase.from("modelo_pedidos").upsert({
+        numero_pedido: numeroPedido,
+        cliente: cliente || null,
+        modelo_ref: referencia,
+        data_pedido: dataBase,
+        tecido: tecido || null,
+        consumo_tecido: parseFloat(consumoMetros) || 0,
+        status_kanban: statusKanban || "pendente",
+        piloto_entregue: pilotoEntregue === "sim",
+      } as any, { onConflict: "numero_pedido" });
+      error = res.error;
+    } finally {
+      dismissSaving();
+    }
 
     if (error) {
       toast({ title: "Erro ao registrar pedido", description: error.message, variant: "destructive" });
