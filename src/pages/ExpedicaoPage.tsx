@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { formatDateBR } from "@/lib/utils";
 import { PageLoading } from "@/components/shared/PageLoading";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -625,7 +626,7 @@ const ExpedicaoPage = () => {
                     const isConcluido = (r.status || "").toLowerCase() === "concluido";
                     return (
                       <tr key={r.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                        <td className="py-2 px-4 font-mono">{r.data_saida ? new Date(r.data_saida).toLocaleDateString("pt-BR") : "—"}</td>
+                        <td className="py-2 px-4 font-mono">{formatDateBR(r.data_saida)}</td>
                         <td className="py-2 px-4 font-mono font-medium">{oc?.numero || "—"}</td>
                         <td className="py-2 px-4 font-mono text-muted-foreground">{oc?.numero_pedido || "—"}</td>
                         <td className="py-2 px-4">{oc?.modelo_ref || "—"}</td>

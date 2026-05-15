@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CalendarDays, Clock, Package, TrendingUp, Activity, Shirt } from "lucide-react";
 import { PedidoTimeline } from "@/components/shared/PedidoTimeline";
-import { cn } from "@/lib/utils";
+import { cn, formatDateBR } from "@/lib/utils";
 
 interface PedidoRow {
   numero_pedido: string;
@@ -137,7 +137,7 @@ function PedidoCard({
             title="Ver linha do tempo"
           >
             <CalendarDays className="w-3 h-3" />
-            {new Date(pedido.data_pedido).toLocaleDateString("pt-BR")}
+            {formatDateBR(pedido.data_pedido)}
           </button>
         </div>
       </CardContent>

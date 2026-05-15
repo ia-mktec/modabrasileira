@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { formatDateBR } from "@/lib/utils";
 import { PageLoading } from "@/components/shared/PageLoading";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -298,7 +299,7 @@ const Dashboard = () => {
                       <td className="py-2.5">{oc.modelo_ref || "—"}</td>
                       <td className="py-2.5">{oc.tecido_nome || "—"}</td>
                       <td className="py-2.5 text-right">{(oc.quantidade_pecas || 0).toLocaleString("pt-BR")}</td>
-                      <td className="py-2.5">{oc.data_corte ? new Date(oc.data_corte).toLocaleDateString("pt-BR") : "—"}</td>
+                      <td className="py-2.5">{formatDateBR(oc.data_corte)}</td>
                       <td className="py-2.5">
                         <span
                           className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium"
