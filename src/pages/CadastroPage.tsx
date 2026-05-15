@@ -32,12 +32,6 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 
 // Local lookup data (not persisted to DB - simple dropdown options)
-const initialModelos = [
-  { id: "1", nome: "Calça" }, { id: "2", nome: "Shorts" }, { id: "3", nome: "Top" },
-  { id: "4", nome: "Saia" }, { id: "5", nome: "Vestido" }, { id: "6", nome: "Macacão" },
-  { id: "7", nome: "Macaquinho" }, { id: "8", nome: "Blazer" }, { id: "9", nome: "Colete" },
-  { id: "10", nome: "Shorts-Saia" }, { id: "11", nome: "Camisa" }, { id: "12", nome: "Cropped" },
-];
 
 const initialCores = [
   { id: "1", cor: "Abacate", cod: "001", hex: "#7a9a3b" },
