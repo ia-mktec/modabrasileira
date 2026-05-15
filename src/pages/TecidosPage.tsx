@@ -15,6 +15,7 @@ import { useTecidos, useClientes, useEstoqueMovimentacoes } from "@/hooks/useSup
 import { SearchableSelect } from "@/components/shared/SearchableSelect";
 import { useEntityOptions } from "@/hooks/useEntityOptions";
 import { supabase } from "@/integrations/supabase/client";
+import { showSaving } from "@/lib/saving-toast";
 
 // Modelos from Cadastro module
 const cadastroModelos = [
