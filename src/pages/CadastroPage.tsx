@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageLoading } from "@/components/shared/PageLoading";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -32,12 +32,6 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 
 // Local lookup data (not persisted to DB - simple dropdown options)
-const initialModelos = [
-  { id: "1", nome: "Calça" }, { id: "2", nome: "Shorts" }, { id: "3", nome: "Top" },
-  { id: "4", nome: "Saia" }, { id: "5", nome: "Vestido" }, { id: "6", nome: "Macacão" },
-  { id: "7", nome: "Macaquinho" }, { id: "8", nome: "Blazer" }, { id: "9", nome: "Colete" },
-  { id: "10", nome: "Shorts-Saia" }, { id: "11", nome: "Camisa" }, { id: "12", nome: "Cropped" },
-];
 
 const initialCores = [
   { id: "1", cor: "Abacate", cod: "001", hex: "#7a9a3b" },
@@ -109,8 +103,15 @@ const CadastroPage = () => {
 
   const [search, setSearch] = useState("");
   const [searchClientes, setSearchClientes] = useState("");
-  const [modelos, setModelos] = useState(initialModelos);
+  const [modelos, setModelos] = useState<{ id: string; nome: string }[]>([]);
   const [cores, setCores] = useState(initialCores);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from("tipos_modelo").select("id,nome").order("nome");
+      if (data) setModelos(data);
+    })();
+  }, []);
 
   const [editFornecedorOpen, setEditFornecedorOpen] = useState(false);
   const [editingFornecedor, setEditingFornecedor] = useState<any>(null);
@@ -344,11 +345,16 @@ const CadastroPage = () => {
         <TabsContent value="modelos" className="space-y-4 mt-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">Tipos de modelo disponíveis para a tela de Modelos</p>
-            <Button size="sm" onClick={() => {
+            <Button size="sm" onClick={async () => {
               const nome = prompt("Nome do novo modelo:");
-              if (nome?.trim()) {
-                setModelos(prev => [...prev, { id: `m-${Date.now()}`, nome: nome.trim() }]);
+              if (!nome?.trim()) return;
+              const { data, error } = await supabase.from("tipos_modelo").insert({ nome: nome.trim() }).select("id,nome").single();
+              if (error) {
+                toast({ title: "Erro ao salvar modelo", description: error.message, variant: "destructive" });
+                return;
               }
+              setModelos(prev => [...prev, data].sort((a, b) => a.nome.localeCompare(b.nome)));
+              toast({ title: "Modelo salvo com sucesso" });
             }}>
               <Plus className="w-4 h-4 mr-1" /> Novo Cadastro
             </Button>
@@ -370,11 +376,16 @@ const CadastroPage = () => {
                         <td className="py-3 px-4 font-mono text-xs text-muted-foreground">{idx + 1}</td>
                         <td className="py-3 px-4 font-medium">{m.nome}</td>
                         <td className="py-3 px-4 text-center">
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={async () => {
                             const novoNome = prompt("Editar nome:", m.nome);
-                            if (novoNome?.trim()) {
-                              setModelos(prev => prev.map(item => item.id === m.id ? { ...item, nome: novoNome.trim() } : item));
+                            if (!novoNome?.trim()) return;
+                            const { error } = await supabase.from("tipos_modelo").update({ nome: novoNome.trim() }).eq("id", m.id);
+                            if (error) {
+                              toast({ title: "Erro ao atualizar", description: error.message, variant: "destructive" });
+                              return;
                             }
+                            setModelos(prev => prev.map(item => item.id === m.id ? { ...item, nome: novoNome.trim() } : item));
+                            toast({ title: "Modelo atualizado" });
                           }}>
                             <Pencil className="w-4 h-4" />
                           </Button>
