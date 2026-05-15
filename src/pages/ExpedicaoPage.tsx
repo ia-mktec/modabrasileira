@@ -474,6 +474,7 @@ const ExpedicaoPage = () => {
       return;
     }
     setSavingEntrada(true);
+    const dismissSaving = showSaving();
     try {
       const qtd = entradaOficinaQtd != null ? Number(entradaOficinaQtd) : 0;
       if (recebimentoIdEdit) {
