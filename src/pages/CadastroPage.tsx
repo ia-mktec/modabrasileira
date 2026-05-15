@@ -103,8 +103,15 @@ const CadastroPage = () => {
 
   const [search, setSearch] = useState("");
   const [searchClientes, setSearchClientes] = useState("");
-  const [modelos, setModelos] = useState(initialModelos);
+  const [modelos, setModelos] = useState<{ id: string; nome: string }[]>([]);
   const [cores, setCores] = useState(initialCores);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from("tipos_modelo").select("id,nome").order("nome");
+      if (data) setModelos(data);
+    })();
+  }, []);
 
   const [editFornecedorOpen, setEditFornecedorOpen] = useState(false);
   const [editingFornecedor, setEditingFornecedor] = useState<any>(null);
