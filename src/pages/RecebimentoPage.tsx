@@ -13,6 +13,7 @@ import { useOrdensCorte, useRecebimento, useModelos, useExpedicao, useClientes }
 import { supabase } from "@/integrations/supabase/client";
 import { Search, Printer, PackageCheck, ImageOff, Eraser, Save } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { showSaving } from "@/lib/saving-toast";
 import { differenceInDays, parseISO } from "date-fns";
 
 const TAMANHOS = ["PP", "P", "M", "G", "GG", "G1", "G2", "G3"];
