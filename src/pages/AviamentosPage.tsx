@@ -14,6 +14,7 @@ import {
 import { useAviamentos, useFornecedores } from "@/hooks/useSupabaseData";
 import { Plus, Trash2, Search, Pencil, Package, Save } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { showSaving } from "@/lib/saving-toast";
 
 const CATEGORIAS = ["Elásticos", "Zíper", "Regulador", "Botão", "Outros Aviamentos"];
 
