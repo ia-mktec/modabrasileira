@@ -436,7 +436,13 @@ const ModelosPage = () => {
         setSaveDialogOpen(true);
         return;
       }
-      const result = await salvarModelo(buildModeloPayload(), currentModeloId || undefined, buildChildren());
+      const dismissSaving = showSaving();
+      let result;
+      try {
+        result = await salvarModelo(buildModeloPayload(), currentModeloId || undefined, buildChildren());
+      } finally {
+        dismissSaving();
+      }
       if (result) {
         setCurrentModeloId(result);
         toast({ title: "Modelo salvo", description: `Referência ${referencia} salva com sucesso.` });
