@@ -115,9 +115,11 @@ const ModelosPage = () => {
   const [entretela, setEntretela] = useState(false);
   const [entretelaDescricao, setEntreTelaDescricao] = useState("");
   const [entreTelaQtde, setEntreTelaQtde] = useState("");
+  const [entreTelaConsumoPeca, setEntreTelaConsumoPeca] = useState("");
   const [forroTecido2, setForroTecido2] = useState(false);
   const [forroDescricao, setForroDescricao] = useState("");
   const [forroQtde, setForroQtde] = useState("");
+  const [forroConsumoPeca, setForroConsumoPeca] = useState("");
   const [observacoes, setObservacoes] = useState("");
 
   const [aviamentos, setAviamentos] = useState<AviamentoRow[]>(defaultAviamentos.map((a) => ({ ...a })));
@@ -172,9 +174,11 @@ const ModelosPage = () => {
     setEntretela(!!m.entretela);
     setEntreTelaDescricao(m.entretela_descricao || "");
     setEntreTelaQtde(m.entretela_quantidade ? String(m.entretela_quantidade) : "");
+    setEntreTelaConsumoPeca((m as any).entretela_consumo_peca ? String((m as any).entretela_consumo_peca) : "");
     setForroTecido2(!!m.forro_tecido2);
     setForroDescricao(m.forro_tecido2_descricao || "");
     setForroQtde(m.forro_tecido2_quantidade ? String(m.forro_tecido2_quantidade) : "");
+    setForroConsumoPeca((m as any).forro_tecido2_consumo_peca ? String((m as any).forro_tecido2_consumo_peca) : "");
     setModelImage(m.imagem_url || null);
     setObservacoes(m.observacoes || "");
     try {
@@ -228,8 +232,8 @@ const ModelosPage = () => {
   const limparCampos = () => {
     setReferencia("");setNumeroPedido("");setTecido("");setModelo("");setCliente("");setStatusKanban("");
     setPilotoEntregue("");setDataPedido("");
-    setEntretela(false);setEntreTelaDescricao("");setEntreTelaQtde("");
-    setForroTecido2(false);setForroDescricao("");setForroQtde("");
+    setEntretela(false);setEntreTelaDescricao("");setEntreTelaQtde("");setEntreTelaConsumoPeca("");
+    setForroTecido2(false);setForroDescricao("");setForroQtde("");setForroConsumoPeca("");
     setAviamentos(defaultAviamentos.map((a) => ({ ...a })));
     setServicos(defaultServicos.map((s) => ({ ...s })));
     setConsumoMetros("");setConsumoGramas("");
@@ -374,9 +378,11 @@ const ModelosPage = () => {
     entretela,
     entretela_descricao: entretelaDescricao || null,
     entretela_quantidade: parseFloat(entreTelaQtde) || 0,
+    entretela_consumo_peca: parseFloat(entreTelaConsumoPeca) || 0,
     forro_tecido2: forroTecido2,
     forro_tecido2_descricao: forroDescricao || null,
     forro_tecido2_quantidade: parseFloat(forroQtde) || 0,
+    forro_tecido2_consumo_peca: parseFloat(forroConsumoPeca) || 0,
     arquivo_modelagem_url: modelagemUrl || null,
     status: statusKanban === "concluido" ? "ativo" : statusKanban === "pendente" ? "desenvolvimento" : "ativo",
     imagem_url: modelImage || null,
@@ -900,6 +906,10 @@ const ModelosPage = () => {
                   <Label className="text-xs">Quantidade</Label>
                   <Input value={entreTelaQtde} onChange={(e) => setEntreTelaQtde(e.target.value)} className={yellowInput} placeholder="0" />
                 </div>
+                <div className="space-y-1 w-32">
+                  <Label className="text-xs">Consumo p/ peça</Label>
+                  <Input type="number" step="0.01" value={entreTelaConsumoPeca} onChange={(e) => setEntreTelaConsumoPeca(e.target.value)} className={yellowInput} placeholder="0" />
+                </div>
               </>
           }
           </div>
@@ -918,6 +928,10 @@ const ModelosPage = () => {
                 <div className="space-y-1 w-28">
                   <Label className="text-xs">Quantidade</Label>
                   <Input value={forroQtde} onChange={(e) => setForroQtde(e.target.value)} className={yellowInput} placeholder="0" />
+                </div>
+                <div className="space-y-1 w-32">
+                  <Label className="text-xs">Consumo p/ peça</Label>
+                  <Input type="number" step="0.01" value={forroConsumoPeca} onChange={(e) => setForroConsumoPeca(e.target.value)} className={yellowInput} placeholder="0" />
                 </div>
               </>
           }

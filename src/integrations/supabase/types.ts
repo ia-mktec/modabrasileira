@@ -737,9 +737,11 @@ export type Database = {
           created_at: string
           descricao: string
           entretela: boolean | null
+          entretela_consumo_peca: number | null
           entretela_descricao: string | null
           entretela_quantidade: number | null
           forro_tecido2: boolean | null
+          forro_tecido2_consumo_peca: number | null
           forro_tecido2_descricao: string | null
           forro_tecido2_quantidade: number | null
           id: string
@@ -761,9 +763,11 @@ export type Database = {
           created_at?: string
           descricao: string
           entretela?: boolean | null
+          entretela_consumo_peca?: number | null
           entretela_descricao?: string | null
           entretela_quantidade?: number | null
           forro_tecido2?: boolean | null
+          forro_tecido2_consumo_peca?: number | null
           forro_tecido2_descricao?: string | null
           forro_tecido2_quantidade?: number | null
           id?: string
@@ -785,9 +789,11 @@ export type Database = {
           created_at?: string
           descricao?: string
           entretela?: boolean | null
+          entretela_consumo_peca?: number | null
           entretela_descricao?: string | null
           entretela_quantidade?: number | null
           forro_tecido2?: boolean | null
+          forro_tecido2_consumo_peca?: number | null
           forro_tecido2_descricao?: string | null
           forro_tecido2_quantidade?: number | null
           id?: string
