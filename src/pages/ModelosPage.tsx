@@ -97,6 +97,13 @@ const ModelosPage = () => {
   const { clientes, loading: loadingClientes } = useClientes();
   const { aviamentos: dbAviamentos, loading: loadingAviamentos } = useAviamentos();
   const { tecidos: tecidoOptions, cores: corOptions } = useEntityOptions();
+  const [cadastroModelosList, setCadastroModelosList] = useState<{ id: string; nome: string }[]>([]);
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from("tipos_modelo").select("id,nome").order("nome");
+      if (data) setCadastroModelosList(data);
+    })();
+  }, []);
   const [referencia, setReferencia] = useState("");
   const [numeroPedido, setNumeroPedido] = useState("");
   const [tecido, setTecido] = useState("");
