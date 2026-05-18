@@ -243,7 +243,7 @@ const ModelosPage = () => {
     setIsLoadedFromSearch(false);
   };
 
-  // Gera número de pedido sequencial: PED-XXXXX
+  // Gera número de pedido sequencial: PED-XXXXX (apenas calcula e exibe — a persistência ocorre em "Registrar Pedido")
   const handleGerarNumeroPedido = async () => {
     if (!referencia) {
       toast({ title: "Referência obrigatória", description: "Informe a referência antes de gerar o número do pedido.", variant: "destructive" });
@@ -251,46 +251,32 @@ const ModelosPage = () => {
     }
     const dataBase = dataPedido || new Date().toISOString().slice(0, 10);
 
-    // Busca o maior número PED-XXXXX já existente e incrementa
-    const { data: ultimos, error: errBusca } = await supabase
+    // Busca TODOS os PED-* e filtra apenas os estritamente numéricos (PED-#####),
+    // ignorando importados como PED-OC-26577 que quebram a ordenação textual.
+    const { data: existentes, error: errBusca } = await supabase
       .from("modelo_pedidos")
       .select("numero_pedido")
-      .like("numero_pedido", "PED-%")
-      .order("numero_pedido", { ascending: false })
-      .limit(1);
+      .like("numero_pedido", "PED-%");
 
     if (errBusca) {
       toast({ title: "Erro ao gerar pedido", description: errBusca.message, variant: "destructive" });
       return;
     }
 
-    let proximo = 1;
-    const ultimo = ultimos?.[0]?.numero_pedido as string | undefined;
-    if (ultimo) {
-      const n = parseInt(ultimo.replace(/^PED-/, ""), 10);
-      if (!isNaN(n)) proximo = n + 1;
-    }
-    const numero = `PED-${String(proximo).padStart(5, "0")}`;
+    let maior = 0;
+    (existentes || []).forEach((r: any) => {
+      const m = /^PED-(\d+)$/.exec(r.numero_pedido || "");
+      if (m) {
+        const n = parseInt(m[1], 10);
+        if (!isNaN(n) && n > maior) maior = n;
+      }
+    });
+    const numero = `PED-${String(maior + 1).padStart(5, "0")}`;
     setNumeroPedido(numero);
     if (!dataPedido) setDataPedido(dataBase);
-
-    const { error } = await supabase.from("modelo_pedidos").upsert({
-      numero_pedido: numero,
-      cliente: cliente || null,
-      modelo_ref: referencia,
-      data_pedido: dataBase,
-      tecido: tecido || null,
-      consumo_tecido: parseFloat(consumoMetros) || 0,
-      status_kanban: statusKanban || "pendente",
-      piloto_entregue: pilotoEntregue === "sim",
-    } as any, { onConflict: "numero_pedido" });
-
-    if (error) {
-      toast({ title: "Erro ao gerar pedido", description: error.message, variant: "destructive" });
-      return;
-    }
-    toast({ title: "Nº de Pedido gerado", description: numero });
+    toast({ title: "Nº de Pedido gerado", description: `${numero} — clique em "Registrar Pedido" para persistir.` });
   };
+
 
   const allFieldsFilled = () => {
     return referencia && modelo && cliente && pilotoEntregue && dataPedido;
