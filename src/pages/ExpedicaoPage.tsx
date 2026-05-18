@@ -1161,6 +1161,47 @@ const ExpedicaoPage = () => {
             </CardContent>
           </Card>
 
+          {/* Entretela / Forro / Tecido 2 */}
+          {(modeloExtras?.entretela || modeloExtras?.forro_tecido2) && (
+            <Card>
+              <div className="bg-[hsl(199,89%,30%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
+                <h3 className="text-sm font-bold tracking-wide text-center">ENTRETELA / FORRO / TECIDO 2</h3>
+              </div>
+              <CardContent className="p-3">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="px-3 py-1.5 text-left font-semibold w-32">Item</th>
+                        <th className="px-3 py-1.5 text-left font-semibold">Descrição</th>
+                        <th className="px-3 py-1.5 text-center font-semibold w-28">Quantidade</th>
+                        <th className="px-3 py-1.5 text-center font-semibold w-32">Consumo p/ peça</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {modeloExtras?.entretela && (
+                        <tr className="border-b">
+                          <td className="px-3 py-1.5 font-medium">Entretela</td>
+                          <td className="px-3 py-1.5">{modeloExtras.entretela_descricao || "—"}</td>
+                          <td className="px-3 py-1.5 text-center font-mono">{modeloExtras.entretela_quantidade || 0}</td>
+                          <td className="px-3 py-1.5 text-center font-mono">{modeloExtras.entretela_consumo_peca ? Number(modeloExtras.entretela_consumo_peca).toFixed(2) : "—"}</td>
+                        </tr>
+                      )}
+                      {modeloExtras?.forro_tecido2 && (
+                        <tr className="border-b">
+                          <td className="px-3 py-1.5 font-medium">Forro / Tecido 2</td>
+                          <td className="px-3 py-1.5">{modeloExtras.forro_tecido2_descricao || "—"}</td>
+                          <td className="px-3 py-1.5 text-center font-mono">{modeloExtras.forro_tecido2_quantidade || 0}</td>
+                          <td className="px-3 py-1.5 text-center font-mono">{modeloExtras.forro_tecido2_consumo_peca ? Number(modeloExtras.forro_tecido2_consumo_peca).toFixed(2) : "—"}</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Observações */}
           <Card>
             <div className="bg-[hsl(38,92%,50%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
