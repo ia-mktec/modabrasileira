@@ -232,8 +232,8 @@ const ModelosPage = () => {
   const limparCampos = () => {
     setReferencia("");setNumeroPedido("");setTecido("");setModelo("");setCliente("");setStatusKanban("");
     setPilotoEntregue("");setDataPedido("");
-    setEntretela(false);setEntreTelaDescricao("");setEntreTelaQtde("");
-    setForroTecido2(false);setForroDescricao("");setForroQtde("");
+    setEntretela(false);setEntreTelaDescricao("");setEntreTelaQtde("");setEntreTelaConsumoPeca("");
+    setForroTecido2(false);setForroDescricao("");setForroQtde("");setForroConsumoPeca("");
     setAviamentos(defaultAviamentos.map((a) => ({ ...a })));
     setServicos(defaultServicos.map((s) => ({ ...s })));
     setConsumoMetros("");setConsumoGramas("");
