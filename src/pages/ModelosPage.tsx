@@ -115,9 +115,11 @@ const ModelosPage = () => {
   const [entretela, setEntretela] = useState(false);
   const [entretelaDescricao, setEntreTelaDescricao] = useState("");
   const [entreTelaQtde, setEntreTelaQtde] = useState("");
+  const [entreTelaConsumoPeca, setEntreTelaConsumoPeca] = useState("");
   const [forroTecido2, setForroTecido2] = useState(false);
   const [forroDescricao, setForroDescricao] = useState("");
   const [forroQtde, setForroQtde] = useState("");
+  const [forroConsumoPeca, setForroConsumoPeca] = useState("");
   const [observacoes, setObservacoes] = useState("");
 
   const [aviamentos, setAviamentos] = useState<AviamentoRow[]>(defaultAviamentos.map((a) => ({ ...a })));
