@@ -85,6 +85,18 @@ const ExpedicaoPage = () => {
   // Gradação de aviamentos (consulta from Modelos)
   const [gradacaoRows, setGradacaoRows] = useState<GradacaoRow[]>([]);
 
+  // Entretela / Forro (consulta from Modelos)
+  const [modeloExtras, setModeloExtras] = useState<{
+    entretela: boolean;
+    entretela_descricao: string | null;
+    entretela_quantidade: number;
+    entretela_consumo_peca: number;
+    forro_tecido2: boolean;
+    forro_tecido2_descricao: string | null;
+    forro_tecido2_quantidade: number;
+    forro_tecido2_consumo_peca: number;
+  } | null>(null);
+
   // Search
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
