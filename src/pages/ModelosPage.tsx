@@ -815,41 +815,54 @@ const ModelosPage = () => {
                         )}
                       </td>
                       <td className="py-1.5 px-3 text-center">
-                        <Sheet open={aviamentoSearchOpen === idx} onOpenChange={(open) => { setAviamentoSearchOpen(open ? idx : null); setAviamentoSearchTerm(""); }}>
-                          <SheetTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-7 w-7 p-0" disabled={tipoVazio}>
-                              <Search className="w-3 h-3" />
-                            </Button>
-                          </SheetTrigger>
-                          <SheetContent side="right" className="w-80">
-                            <SheetHeader>
-                              <SheetTitle>Buscar {av.tipo}</SheetTitle>
-                            </SheetHeader>
-                            <div className="mt-4 space-y-3">
-                              <Input
-                                placeholder="Buscar por descrição ou tamanho..."
-                                value={aviamentoSearchTerm}
-                                onChange={(e) => setAviamentoSearchTerm(e.target.value)}
-                                className="text-sm"
-                              />
-                              <div className="space-y-1 max-h-[60vh] overflow-y-auto">
-                                {filteredItems.map((item) => (
-                                  <button
-                                    key={item.id}
-                                    onClick={() => selectAviamentoItem(idx, item)}
-                                    className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm"
-                                  >
-                                    <div className="font-medium text-xs">{item.descricao}</div>
-                                    <div className="text-muted-foreground text-xs">{item.tamanho} — R$ {Number(item.preco_un || 0).toFixed(2)}</div>
-                                  </button>
-                                ))}
-                                {filteredItems.length === 0 && (
-                                  <p className="text-sm text-muted-foreground text-center py-4">Nenhum item encontrado</p>
-                                )}
+                        <div className="flex items-center justify-center gap-1">
+                          <Sheet open={aviamentoSearchOpen === idx} onOpenChange={(open) => { setAviamentoSearchOpen(open ? idx : null); setAviamentoSearchTerm(""); }}>
+                            <SheetTrigger asChild>
+                              <Button variant="outline" size="sm" className="h-7 w-7 p-0" disabled={tipoVazio}>
+                                <Search className="w-3 h-3" />
+                              </Button>
+                            </SheetTrigger>
+                            <SheetContent side="right" className="w-80">
+                              <SheetHeader>
+                                <SheetTitle>Buscar {av.tipo}</SheetTitle>
+                              </SheetHeader>
+                              <div className="mt-4 space-y-3">
+                                <Input
+                                  placeholder="Buscar por descrição ou tamanho..."
+                                  value={aviamentoSearchTerm}
+                                  onChange={(e) => setAviamentoSearchTerm(e.target.value)}
+                                  className="text-sm"
+                                />
+                                <div className="space-y-1 max-h-[60vh] overflow-y-auto">
+                                  {filteredItems.map((item) => (
+                                    <button
+                                      key={item.id}
+                                      onClick={() => selectAviamentoItem(idx, item)}
+                                      className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm"
+                                    >
+                                      <div className="font-medium text-xs">{item.descricao}</div>
+                                      <div className="text-muted-foreground text-xs">{item.tamanho} — R$ {Number(item.preco_un || 0).toFixed(2)}</div>
+                                    </button>
+                                  ))}
+                                  {filteredItems.length === 0 && (
+                                    <p className="text-sm text-muted-foreground text-center py-4">Nenhum item encontrado</p>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          </SheetContent>
-                        </Sheet>
+                            </SheetContent>
+                          </Sheet>
+                          {(av.selectedItem || av.partesQtde) && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                              onClick={() => setAviamentos((prev) => prev.map((a, i) => i === idx ? { ...a, selectedItem: null, partesQtde: "" } : a))}
+                              title="Limpar item"
+                            >
+                              <X className="w-3 h-3" />
+                            </Button>
+                          )}
+                        </div>
                       </td>
                       <td className="py-1.5 px-3">
                         <Input
