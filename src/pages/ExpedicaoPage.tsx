@@ -243,6 +243,20 @@ const ExpedicaoPage = () => {
     setGradeRows([]);
     setAviamentosExp([]);
     setGradacaoRows([]);
+    setModeloExtras(
+      foundModelo
+        ? {
+            entretela: !!foundModelo.entretela,
+            entretela_descricao: foundModelo.entretela_descricao || null,
+            entretela_quantidade: Number(foundModelo.entretela_quantidade) || 0,
+            entretela_consumo_peca: Number((foundModelo as any).entretela_consumo_peca) || 0,
+            forro_tecido2: !!foundModelo.forro_tecido2,
+            forro_tecido2_descricao: foundModelo.forro_tecido2_descricao || null,
+            forro_tecido2_quantidade: Number(foundModelo.forro_tecido2_quantidade) || 0,
+            forro_tecido2_consumo_peca: Number((foundModelo as any).forro_tecido2_consumo_peca) || 0,
+          }
+        : null
+    );
     setEntradaOficinaData("");
     setEntradaOficinaQtd(null);
     setRecebimentoIdEdit(null);
