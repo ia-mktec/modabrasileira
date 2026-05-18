@@ -18,13 +18,8 @@ import { useModelos, useClientes, useAviamentos } from "@/hooks/useSupabaseData"
 import { SearchableSelect } from "@/components/shared/SearchableSelect";
 import { useEntityOptions } from "@/hooks/useEntityOptions";
 
-// Modelos from Cadastro module
-const cadastroModelosList = [
-  { id: "1", nome: "Calça" }, { id: "2", nome: "Shorts" }, { id: "3", nome: "Top" },
-  { id: "4", nome: "Saia" }, { id: "5", nome: "Vestido" }, { id: "6", nome: "Macacão" },
-  { id: "7", nome: "Macaquinho" }, { id: "8", nome: "Blazer" }, { id: "9", nome: "Colete" },
-  { id: "10", nome: "Shorts-Saia" }, { id: "11", nome: "Camisa" }, { id: "12", nome: "Cropped" },
-];
+// Tipos de modelo são carregados dinamicamente da tabela `tipos_modelo`
+
 import { Plus, Save, Trash2, Printer, Search, Shirt, Upload, ClipboardCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { showSaving } from "@/lib/saving-toast";
