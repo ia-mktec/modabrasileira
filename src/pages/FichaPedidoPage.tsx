@@ -363,6 +363,12 @@ export default function FichaPedidoPage() {
                 <div className="w-28">
                   <Field label="Quantidade" value={modelo.entretela_quantidade} />
                 </div>
+                <div className="w-32">
+                  <Field
+                    label="Consumo p/ peça"
+                    value={modelo.entretela_consumo_peca ? Number(modelo.entretela_consumo_peca).toFixed(2) : null}
+                  />
+                </div>
               </div>
             )}
             {modelo?.entretela && modelo?.forro_tecido2 && <Separator />}
@@ -374,6 +380,12 @@ export default function FichaPedidoPage() {
                 </div>
                 <div className="w-28">
                   <Field label="Quantidade" value={modelo.forro_tecido2_quantidade} />
+                </div>
+                <div className="w-32">
+                  <Field
+                    label="Consumo p/ peça"
+                    value={modelo.forro_tecido2_consumo_peca ? Number(modelo.forro_tecido2_consumo_peca).toFixed(2) : null}
+                  />
                 </div>
               </div>
             )}
