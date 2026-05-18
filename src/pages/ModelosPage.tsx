@@ -174,9 +174,11 @@ const ModelosPage = () => {
     setEntretela(!!m.entretela);
     setEntreTelaDescricao(m.entretela_descricao || "");
     setEntreTelaQtde(m.entretela_quantidade ? String(m.entretela_quantidade) : "");
+    setEntreTelaConsumoPeca((m as any).entretela_consumo_peca ? String((m as any).entretela_consumo_peca) : "");
     setForroTecido2(!!m.forro_tecido2);
     setForroDescricao(m.forro_tecido2_descricao || "");
     setForroQtde(m.forro_tecido2_quantidade ? String(m.forro_tecido2_quantidade) : "");
+    setForroConsumoPeca((m as any).forro_tecido2_consumo_peca ? String((m as any).forro_tecido2_consumo_peca) : "");
     setModelImage(m.imagem_url || null);
     setObservacoes(m.observacoes || "");
     try {
