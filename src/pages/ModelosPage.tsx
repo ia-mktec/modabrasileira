@@ -906,6 +906,10 @@ const ModelosPage = () => {
                   <Label className="text-xs">Quantidade</Label>
                   <Input value={entreTelaQtde} onChange={(e) => setEntreTelaQtde(e.target.value)} className={yellowInput} placeholder="0" />
                 </div>
+                <div className="space-y-1 w-32">
+                  <Label className="text-xs">Consumo p/ peça</Label>
+                  <Input type="number" step="0.01" value={entreTelaConsumoPeca} onChange={(e) => setEntreTelaConsumoPeca(e.target.value)} className={yellowInput} placeholder="0" />
+                </div>
               </>
           }
           </div>
