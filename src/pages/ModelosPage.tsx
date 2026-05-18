@@ -507,17 +507,35 @@ const ModelosPage = () => {
     const dismissSaving = showSaving();
     let error: any;
     try {
-      const res = await supabase.from("modelo_pedidos").upsert({
-        numero_pedido: numeroPedido,
-        cliente: cliente || null,
-        modelo_ref: referencia,
-        data_pedido: dataBase,
-        tecido: tecido || null,
-        consumo_tecido: parseFloat(consumoMetros) || 0,
-        status_kanban: statusKanban || "pendente",
-        piloto_entregue: pilotoEntregue === "sim",
-      } as any, { onConflict: "numero_pedido" });
-      error = res.error;
+      // Garante que não existe outro pedido com este número (evita sobrescrever)
+      const { data: existente, error: errCheck } = await supabase
+        .from("modelo_pedidos")
+        .select("numero_pedido")
+        .eq("numero_pedido", numeroPedido)
+        .maybeSingle();
+      if (errCheck) {
+        error = errCheck;
+      } else if (existente) {
+        dismissSaving();
+        toast({
+          title: "Número de pedido já existe",
+          description: `${numeroPedido} já está cadastrado. Clique em "Gerar Nº Pedido" novamente para obter um novo número.`,
+          variant: "destructive",
+        });
+        return;
+      } else {
+        const res = await supabase.from("modelo_pedidos").insert({
+          numero_pedido: numeroPedido,
+          cliente: cliente || null,
+          modelo_ref: referencia,
+          data_pedido: dataBase,
+          tecido: tecido || null,
+          consumo_tecido: parseFloat(consumoMetros) || 0,
+          status_kanban: statusKanban || "pendente",
+          piloto_entregue: pilotoEntregue === "sim",
+        } as any);
+        error = res.error;
+      }
     } finally {
       dismissSaving();
     }
@@ -527,7 +545,10 @@ const ModelosPage = () => {
       return;
     }
     toast({ title: "Pedido registrado", description: `Pedido ${numeroPedido} salvo com sucesso.` });
+    // Limpa o número para forçar nova geração no próximo pedido (evita sobrescrita acidental)
+    setNumeroPedido("");
   };
+
 
   const yellowInput = "bg-[hsl(48,100%,88%)] text-[hsl(220,15%,15%)] border-[hsl(48,80%,60%)] focus:ring-[hsl(48,80%,50%)] placeholder:text-[hsl(48,30%,50%)]";
 
