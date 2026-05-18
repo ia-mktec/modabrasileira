@@ -155,11 +155,18 @@ const ModelosPage = () => {
 
   const printRef = useRef<HTMLDivElement>(null);
 
-  const filteredModelos = modelos.filter(
-    (m: any) =>
-    (m.referencia || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (m.descricao || "").toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredModelos = modelos.filter((m: any) => {
+    const t = searchTerm.trim().toLowerCase();
+    if (!t) return true;
+    return (
+      (m.referencia || "").toLowerCase().includes(t) ||
+      (m.descricao || "").toLowerCase().includes(t) ||
+      (m.modelo || "").toLowerCase().includes(t) ||
+      (m.tecido_principal || "").toLowerCase().includes(t) ||
+      (m.colecao || "").toLowerCase().includes(t)
+    );
+  });
+
 
   const loadModelo = async (m: any) => {
     setReferencia(m.referencia || "");
