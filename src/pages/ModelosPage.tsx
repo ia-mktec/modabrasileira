@@ -201,15 +201,30 @@ const ModelosPage = () => {
     // Carrega filhos
     const { aviamentos: avs, servicos: svs, gradacao: grs } = await carregarModeloCompleto(m.id);
     if (avs.length) {
+      const parseDesc = (raw: string, tipoBase?: string) => {
+        const desc: string = raw || "";
+        const sep = desc.includes(" — ") ? " — " : (desc.includes(" - ") ? " - " : null);
+        if (!sep) {
+          // Sem separador: descrição == tipo significa linha vazia (sem item)
+          if (tipoBase && desc.trim() === tipoBase.trim()) return { tipo: tipoBase, itemDesc: "" };
+          return { tipo: tipoBase || desc, itemDesc: "" };
+        }
+        const tipo = desc.split(sep)[0];
+        const itemDesc = desc.split(sep).slice(1).join(sep).trim();
+        return { tipo: tipoBase || tipo, itemDesc };
+      };
       const baseRows: AviamentoRow[] = defaultAviamentos.map((d, i) => {
         const r: any = avs[i];
-        return r ? { tipo: d.tipo, selectedItem: r.descricao ? { descricao: r.descricao, tamanho: r.unidade } : null, partesQtde: r.quantidade ? String(r.quantidade) : "" } : { ...d };
+        if (!r) return { ...d };
+        const { itemDesc } = parseDesc(r.descricao, d.tipo);
+        return {
+          tipo: d.tipo,
+          selectedItem: itemDesc ? { descricao: itemDesc, tamanho: r.unidade } : null,
+          partesQtde: r.quantidade ? String(r.quantidade) : "",
+        };
       });
       const extras: AviamentoRow[] = avs.slice(defaultAviamentos.length).map((r: any) => {
-        const desc: string = r.descricao || "";
-        const sep = desc.includes(" — ") ? " — " : (desc.includes(" - ") ? " - " : null);
-        const tipo = sep ? desc.split(sep)[0] : desc;
-        const itemDesc = sep ? desc.split(sep).slice(1).join(sep) : "";
+        const { tipo, itemDesc } = parseDesc(r.descricao);
         return {
           tipo: tipo || "",
           selectedItem: itemDesc ? { descricao: itemDesc, tamanho: r.unidade } : null,
