@@ -262,26 +262,35 @@ const ModelosPage = () => {
     }
     const dataBase = dataPedido || new Date().toISOString().slice(0, 10);
 
-    // Busca TODOS os PED-* e filtra apenas os estritamente numéricos (PED-#####),
-    // ignorando importados como PED-OC-26577 que quebram a ordenação textual.
-    const { data: existentes, error: errBusca } = await supabase
-      .from("modelo_pedidos")
-      .select("numero_pedido")
-      .like("numero_pedido", "PED-%");
-
-    if (errBusca) {
-      toast({ title: "Erro ao gerar pedido", description: errBusca.message, variant: "destructive" });
-      return;
-    }
-
+    // Busca paginada de TODOS os PED-* (PostgREST limita a 1000 por requisição).
+    // Filtra apenas os estritamente numéricos (PED-#####), ignorando importados
+    // como PED-OC-26577 que quebram a ordenação textual.
     let maior = 0;
-    (existentes || []).forEach((r: any) => {
-      const m = /^PED-(\d+)$/.exec(r.numero_pedido || "");
-      if (m) {
-        const n = parseInt(m[1], 10);
-        if (!isNaN(n) && n > maior) maior = n;
+    const pageSize = 1000;
+    let from = 0;
+    while (true) {
+      const { data: existentes, error: errBusca } = await supabase
+        .from("modelo_pedidos")
+        .select("numero_pedido")
+        .like("numero_pedido", "PED-%")
+        .range(from, from + pageSize - 1);
+
+      if (errBusca) {
+        toast({ title: "Erro ao gerar pedido", description: errBusca.message, variant: "destructive" });
+        return;
       }
-    });
+
+      (existentes || []).forEach((r: any) => {
+        const m = /^PED-(\d+)$/.exec(r.numero_pedido || "");
+        if (m) {
+          const n = parseInt(m[1], 10);
+          if (!isNaN(n) && n > maior) maior = n;
+        }
+      });
+
+      if (!existentes || existentes.length < pageSize) break;
+      from += pageSize;
+    }
     const numero = `PED-${String(maior + 1).padStart(5, "0")}`;
     setNumeroPedido(numero);
     if (!dataPedido) setDataPedido(dataBase);
