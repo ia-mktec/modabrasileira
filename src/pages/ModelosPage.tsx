@@ -816,6 +816,17 @@ const ModelosPage = () => {
                       </td>
                       <td className="py-1.5 px-3 text-center">
                         <div className="flex items-center justify-center gap-1">
+                          {(av.selectedItem || av.partesQtde) && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                              onClick={() => setAviamentos((prev) => prev.map((a, i) => i === idx ? { ...a, selectedItem: null, partesQtde: "" } : a))}
+                              title="Limpar item"
+                            >
+                              <X className="w-3 h-3" />
+                            </Button>
+                          )}
                           <Sheet open={aviamentoSearchOpen === idx} onOpenChange={(open) => { setAviamentoSearchOpen(open ? idx : null); setAviamentoSearchTerm(""); }}>
                             <SheetTrigger asChild>
                               <Button variant="outline" size="sm" className="h-7 w-7 p-0" disabled={tipoVazio}>
@@ -851,17 +862,6 @@ const ModelosPage = () => {
                               </div>
                             </SheetContent>
                           </Sheet>
-                          {(av.selectedItem || av.partesQtde) && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-                              onClick={() => setAviamentos((prev) => prev.map((a, i) => i === idx ? { ...a, selectedItem: null, partesQtde: "" } : a))}
-                              title="Limpar item"
-                            >
-                              <X className="w-3 h-3" />
-                            </Button>
-                          )}
                         </div>
                       </td>
                       <td className="py-1.5 px-3">
