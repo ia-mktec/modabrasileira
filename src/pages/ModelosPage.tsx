@@ -1269,6 +1269,15 @@ const ModelosPage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {savingPedido && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/70 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4 rounded-lg border border-border bg-card px-8 py-6 shadow-lg">
+            <Loader2 className="w-10 h-10 animate-spin text-primary" />
+            <p className="text-sm font-medium text-foreground">Aguarde. Seu pedido está sendo processado.</p>
+          </div>
+        </div>
+      )}
     </div>);
 
 };
