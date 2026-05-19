@@ -523,6 +523,7 @@ const ModelosPage = () => {
 
   // ── Registrar Pedido ──
   const handleRegistrarPedido = async () => {
+    if (savingPedido) return;
     if (!numeroPedido) {
       toast({
         title: "Nº de Pedido obrigatório",
@@ -535,29 +536,26 @@ const ModelosPage = () => {
       toast({ title: "Referência obrigatória", description: "Informe a referência do modelo.", variant: "destructive" });
       return;
     }
+    setSavingPedido(true);
+    const numeroAtual = numeroPedido;
     const dataBase = dataPedido || new Date().toISOString().slice(0, 10);
     const dismissSaving = showSaving();
     let error: any;
+    let duplicado = false;
     try {
       // Garante que não existe outro pedido com este número (evita sobrescrever)
       const { data: existente, error: errCheck } = await supabase
         .from("modelo_pedidos")
         .select("numero_pedido")
-        .eq("numero_pedido", numeroPedido)
+        .eq("numero_pedido", numeroAtual)
         .maybeSingle();
       if (errCheck) {
         error = errCheck;
       } else if (existente) {
-        dismissSaving();
-        toast({
-          title: "Número de pedido já existe",
-          description: `${numeroPedido} já está cadastrado. Clique em "Gerar Nº Pedido" novamente para obter um novo número.`,
-          variant: "destructive",
-        });
-        return;
+        duplicado = true;
       } else {
         const res = await supabase.from("modelo_pedidos").insert({
-          numero_pedido: numeroPedido,
+          numero_pedido: numeroAtual,
           cliente: cliente || null,
           modelo_ref: referencia,
           data_pedido: dataBase,
@@ -570,13 +568,23 @@ const ModelosPage = () => {
       }
     } finally {
       dismissSaving();
+      setSavingPedido(false);
     }
 
+    if (duplicado) {
+      toast({
+        title: "Número de pedido já existe",
+        description: `${numeroAtual} já está cadastrado. Clique em "Gerar Nº Pedido" novamente para obter um novo número.`,
+        variant: "destructive",
+      });
+      setNumeroPedido("");
+      return;
+    }
     if (error) {
       toast({ title: "Erro ao registrar pedido", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Pedido registrado", description: `Pedido ${numeroPedido} salvo com sucesso.` });
+    toast({ title: "Pedido registrado", description: `Pedido ${numeroAtual} salvo com sucesso.` });
     // Limpa o número para forçar nova geração no próximo pedido (evita sobrescrita acidental)
     setNumeroPedido("");
   };
