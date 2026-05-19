@@ -106,6 +106,7 @@ const ModelosPage = () => {
   }, []);
   const [referencia, setReferencia] = useState("");
   const [numeroPedido, setNumeroPedido] = useState("");
+  const [savingPedido, setSavingPedido] = useState(false);
   const [tecido, setTecido] = useState("");
   const [modelo, setModelo] = useState("");
   const [cliente, setCliente] = useState("");
