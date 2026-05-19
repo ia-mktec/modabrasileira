@@ -20,7 +20,7 @@ import { useEntityOptions } from "@/hooks/useEntityOptions";
 
 // Tipos de modelo são carregados dinamicamente da tabela `tipos_modelo`
 
-import { Plus, Save, Trash2, Printer, Search, Shirt, Upload, ClipboardCheck, X } from "lucide-react";
+import { Plus, Save, Trash2, Printer, Search, Shirt, Upload, ClipboardCheck, X, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { showSaving } from "@/lib/saving-toast";
 
