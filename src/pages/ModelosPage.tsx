@@ -600,7 +600,7 @@ const ModelosPage = () => {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Referência</Label>
-              <Input value={referencia} onChange={(e) => setReferencia(e.target.value)} className={yellowInput} placeholder="MK-2024-001" />
+              <Input value={referencia} onChange={(e) => { setReferencia(e.target.value); setNumeroPedido(""); }} className={yellowInput} placeholder="MK-2024-001" />
             </div>
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Modelo</Label>
