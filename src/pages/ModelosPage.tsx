@@ -106,6 +106,7 @@ const ModelosPage = () => {
   }, []);
   const [referencia, setReferencia] = useState("");
   const [numeroPedido, setNumeroPedido] = useState("");
+  const [savingPedido, setSavingPedido] = useState(false);
   const [tecido, setTecido] = useState("");
   const [modelo, setModelo] = useState("");
   const [cliente, setCliente] = useState("");
@@ -522,6 +523,7 @@ const ModelosPage = () => {
 
   // ── Registrar Pedido ──
   const handleRegistrarPedido = async () => {
+    if (savingPedido) return;
     if (!numeroPedido) {
       toast({
         title: "Nº de Pedido obrigatório",
@@ -534,29 +536,26 @@ const ModelosPage = () => {
       toast({ title: "Referência obrigatória", description: "Informe a referência do modelo.", variant: "destructive" });
       return;
     }
+    setSavingPedido(true);
+    const numeroAtual = numeroPedido;
     const dataBase = dataPedido || new Date().toISOString().slice(0, 10);
     const dismissSaving = showSaving();
     let error: any;
+    let duplicado = false;
     try {
       // Garante que não existe outro pedido com este número (evita sobrescrever)
       const { data: existente, error: errCheck } = await supabase
         .from("modelo_pedidos")
         .select("numero_pedido")
-        .eq("numero_pedido", numeroPedido)
+        .eq("numero_pedido", numeroAtual)
         .maybeSingle();
       if (errCheck) {
         error = errCheck;
       } else if (existente) {
-        dismissSaving();
-        toast({
-          title: "Número de pedido já existe",
-          description: `${numeroPedido} já está cadastrado. Clique em "Gerar Nº Pedido" novamente para obter um novo número.`,
-          variant: "destructive",
-        });
-        return;
+        duplicado = true;
       } else {
         const res = await supabase.from("modelo_pedidos").insert({
-          numero_pedido: numeroPedido,
+          numero_pedido: numeroAtual,
           cliente: cliente || null,
           modelo_ref: referencia,
           data_pedido: dataBase,
@@ -569,13 +568,23 @@ const ModelosPage = () => {
       }
     } finally {
       dismissSaving();
+      setSavingPedido(false);
     }
 
+    if (duplicado) {
+      toast({
+        title: "Número de pedido já existe",
+        description: `${numeroAtual} já está cadastrado. Clique em "Gerar Nº Pedido" novamente para obter um novo número.`,
+        variant: "destructive",
+      });
+      setNumeroPedido("");
+      return;
+    }
     if (error) {
       toast({ title: "Erro ao registrar pedido", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Pedido registrado", description: `Pedido ${numeroPedido} salvo com sucesso.` });
+    toast({ title: "Pedido registrado", description: `Pedido ${numeroAtual} salvo com sucesso.` });
     // Limpa o número para forçar nova geração no próximo pedido (evita sobrescrita acidental)
     setNumeroPedido("");
   };
@@ -591,7 +600,7 @@ const ModelosPage = () => {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Referência</Label>
-              <Input value={referencia} onChange={(e) => setReferencia(e.target.value)} className={yellowInput} placeholder="MK-2024-001" />
+              <Input value={referencia} onChange={(e) => { setReferencia(e.target.value); setNumeroPedido(""); }} className={yellowInput} placeholder="MK-2024-001" />
             </div>
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Modelo</Label>
@@ -1193,10 +1202,11 @@ const ModelosPage = () => {
           </Button>
 
           <Button
+            disabled={savingPedido}
             className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]"
             onClick={handleRegistrarPedido}>
             <ClipboardCheck className="w-4 h-4" />
-            <span>Registrar Pedido</span>
+            <span>{savingPedido ? "Registrando..." : "Registrar Pedido"}</span>
           </Button>
         </div>
 
