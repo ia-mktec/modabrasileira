@@ -729,7 +729,11 @@ const ExpedicaoPage = () => {
           .expedicao-ficha h3 { font-size: 11px !important; }
           .expedicao-ficha .p-4, .expedicao-ficha .md\\:p-6, .expedicao-ficha .p-3 { padding: 6px !important; }
           .expedicao-ficha .py-3 { padding-top: 4px !important; padding-bottom: 4px !important; }
-          .expedicao-ficha img { max-height: 160px !important; object-fit: contain !important; }
+          .expedicao-ficha img { max-height: 320px !important; min-height: 260px !important; object-fit: contain !important; width: 100% !important; }
+          .expedicao-ficha .print-hide-row { display: none !important; }
+          .expedicao-ficha .print-saidas-parciais { display: none !important; }
+          .expedicao-ficha .print-enviar-label::after { content: "Quantidade"; }
+          .expedicao-ficha .print-enviar-label > span { display: none !important; }
           .expedicao-ficha table, .expedicao-ficha [class*="rounded-lg"] {
             page-break-inside: avoid; break-inside: avoid;
           }
