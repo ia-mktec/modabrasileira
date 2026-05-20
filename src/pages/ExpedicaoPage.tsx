@@ -793,45 +793,50 @@ const ExpedicaoPage = () => {
               <h3 className="text-sm font-bold tracking-wide text-center">DADOS DA ORDEM</h3>
             </div>
             <CardContent className="p-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Nº Ordem</Label>
-                  <Input value={numero} readOnly className={readOnlyInput} placeholder="—" />
+                  <div className={readOnlyDisplay}><span className="truncate font-mono">{numero || "—"}</span></div>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Nº Pedido</Label>
-                  <Input value={numeroPedido} readOnly className={readOnlyInput} placeholder="—" />
+                  <div className={readOnlyDisplay}><span className="truncate font-mono">{numeroPedido || "—"}</span></div>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Referência</Label>
-                  <Input value={modeloRef} readOnly className={readOnlyInput} placeholder="—" />
+                  <div className={readOnlyDisplay}><span className="truncate">{modeloRef || "—"}</span></div>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Modelo</Label>
-                  <Input value={modeloNome} readOnly className={readOnlyInput} placeholder="—" />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Tecido</Label>
-                  <Input value={tecido} readOnly className={readOnlyInput} placeholder="—" />
+                  <div className={readOnlyDisplay}><span className="truncate">{modeloNome || "—"}</span></div>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Cliente</Label>
-                  <Input value={cliente} readOnly className={readOnlyInput} placeholder="—" />
+                  <div className={readOnlyDisplay}><span className="truncate">{cliente || "—"}</span></div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Tecido</Label>
+                  <div className={readOnlyDisplay}><span className="truncate">{tecido || "—"}</span></div>
+                </div>
+                <div className="space-y-1 col-span-2">
+                  <Label className="text-xs font-semibold">Cor</Label>
+                  <div className={readOnlyDisplay}><span className="truncate">{coresDisplay || "—"}</span></div>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Data do Corte</Label>
-                  <Input value={dataCorte} readOnly className={readOnlyInput} placeholder="—" />
+                  <div className={readOnlyDisplay}><span className="truncate font-mono">{dataCorte ? formatDateBR(dataCorte) : "—"}</span></div>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Cortador</Label>
-                  <Input value={cortador} readOnly className={readOnlyInput} placeholder="—" />
+                  <div className={readOnlyDisplay}><span className="truncate">{cortador || "—"}</span></div>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Qtde Peças</Label>
-                  <Input value={totalProdGeral > 0 ? String(totalProdGeral) : ""} readOnly className={readOnlyInput} placeholder="—" />
+                  <div className={readOnlyDisplay}><span className="font-mono">{totalProdGeral > 0 ? totalProdGeral : "—"}</span></div>
                 </div>
               </div>
             </CardContent>
+
           </Card>
 
           {/* Dados da Expedição + Imagem lado a lado */}
