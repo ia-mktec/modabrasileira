@@ -708,7 +708,34 @@ const ExpedicaoPage = () => {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-4">
+    <div className="p-4 md:p-6 space-y-4 expedicao-ficha">
+      <style>{`
+        @media print {
+          @page { size: A4; margin: 8mm; }
+          .expedicao-ficha { padding: 0 !important; }
+          .expedicao-ficha .space-y-4 > * + * { margin-top: 6px !important; }
+          .expedicao-ficha input, .expedicao-ficha textarea {
+            background: transparent !important;
+            border-color: hsl(220 15% 80%) !important;
+            color: hsl(220 30% 10%) !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            height: auto !important;
+            min-height: 24px !important;
+          }
+          .expedicao-ficha .text-xs, .expedicao-ficha .text-\\[10px\\], .expedicao-ficha .text-\\[11px\\] { font-size: 9px !important; }
+          .expedicao-ficha .text-sm { font-size: 10px !important; }
+          .expedicao-ficha h1 { font-size: 14px !important; }
+          .expedicao-ficha h3 { font-size: 11px !important; }
+          .expedicao-ficha .p-4, .expedicao-ficha .md\\:p-6, .expedicao-ficha .p-3 { padding: 6px !important; }
+          .expedicao-ficha .py-3 { padding-top: 4px !important; padding-bottom: 4px !important; }
+          .expedicao-ficha img { max-height: 160px !important; object-fit: contain !important; }
+          .expedicao-ficha table, .expedicao-ficha [class*="rounded-lg"] {
+            page-break-inside: avoid; break-inside: avoid;
+          }
+          .expedicao-ficha button { display: none !important; }
+        }
+      `}</style>
       {/* Header */}
       <div className="bg-[hsl(217,71%,25%)] text-[hsl(0,0%,100%)] rounded-t-lg px-6 py-3 text-center">
         <h1 className="text-xl md:text-2xl font-bold tracking-wide font-mono">EXPEDIÇÃO — SAÍDA DE OFICINA</h1>
