@@ -729,7 +729,11 @@ const ExpedicaoPage = () => {
           .expedicao-ficha h3 { font-size: 11px !important; }
           .expedicao-ficha .p-4, .expedicao-ficha .md\\:p-6, .expedicao-ficha .p-3 { padding: 6px !important; }
           .expedicao-ficha .py-3 { padding-top: 4px !important; padding-bottom: 4px !important; }
-          .expedicao-ficha img { max-height: 160px !important; object-fit: contain !important; }
+          .expedicao-ficha img { max-height: 320px !important; min-height: 260px !important; object-fit: contain !important; width: 100% !important; }
+          .expedicao-ficha .print-hide-row { display: none !important; }
+          .expedicao-ficha .print-saidas-parciais { display: none !important; }
+          .expedicao-ficha .print-enviar-label::after { content: "Quantidade"; }
+          .expedicao-ficha .print-enviar-label > span { display: none !important; }
           .expedicao-ficha table, .expedicao-ficha [class*="rounded-lg"] {
             page-break-inside: avoid; break-inside: avoid;
           }
@@ -1004,7 +1008,7 @@ const ExpedicaoPage = () => {
                 const prev = (expedicoesDb || []).filter((e: any) => e.ordem_corte_id === currentOrdemCorteId);
                 if (prev.length === 0) return null;
                 return (
-                  <div className="mb-3 p-2 rounded bg-muted/40 border border-border">
+                  <div className="mb-3 p-2 rounded bg-muted/40 border border-border print-saidas-parciais">
                     <div className="text-[11px] font-semibold mb-1">Saídas parciais já registradas ({prev.length})</div>
                     <ul className="text-[11px] space-y-0.5">
                       {prev.map((e: any) => {
@@ -1047,8 +1051,8 @@ const ExpedicaoPage = () => {
                       const totalSaldo = TAMANHOS.reduce((s, t) => s + saldoCell(row, t), 0);
                       const totalEnv = totalEnviarRow(row);
                       return [
-                        <tr key={`${row.id}-prod`}>
-                          <td className="px-2 py-0.5 font-medium align-top" rowSpan={4}>{row.cor}</td>
+                        <tr key={`${row.id}-prod`} className="print-hide-row">
+                          <td className="px-2 py-0.5 font-medium align-top" rowSpan={3}>{row.cor}</td>
                           <td className="px-1 py-0.5 text-[10px] text-muted-foreground text-right pr-2">Produzido</td>
                           {TAMANHOS.map((t) =>
                             <td key={t} className="px-1 py-0.5 text-center">
@@ -1057,14 +1061,14 @@ const ExpedicaoPage = () => {
                           )}
                           <td className="px-2 py-0.5 text-center font-bold bg-muted rounded">{totalProd}</td>
                         </tr>,
-                        <tr key={`${row.id}-env`}>
+                        <tr key={`${row.id}-env`} className="print-hide-row">
                           <td className="px-1 py-0.5 text-[10px] text-muted-foreground text-right pr-2">Já enviado</td>
                           {TAMANHOS.map((t) =>
                             <td key={t} className="px-1 py-0.5 text-center font-mono text-muted-foreground">{row.qtdEnviadaAnterior[t] || 0}</td>
                           )}
                           <td className="px-2 py-0.5 text-center font-mono text-muted-foreground">{totalEnviado}</td>
                         </tr>,
-                        <tr key={`${row.id}-saldo`}>
+                        <tr key={`${row.id}-saldo`} className="print-hide-row">
                           <td className="px-1 py-0.5 text-[10px] text-muted-foreground text-right pr-2">Saldo</td>
                           {TAMANHOS.map((t) =>
                             <td key={t} className="px-1 py-0.5 text-center">
@@ -1074,7 +1078,8 @@ const ExpedicaoPage = () => {
                           <td className="px-2 py-0.5 text-center font-mono font-semibold text-[hsl(199,89%,25%)]">{totalSaldo}</td>
                         </tr>,
                         <tr key={`${row.id}-enviar`} className="border-b-2">
-                          <td className="px-1 py-0.5 text-[10px] font-semibold text-right pr-2">Enviar agora</td>
+                          <td className="px-2 py-0.5 font-medium hidden print:table-cell">{row.cor}</td>
+                          <td className="px-1 py-0.5 text-[10px] font-semibold text-right pr-2">Quantidade</td>
                           {TAMANHOS.map((t) => {
                             const max = saldoCell(row, t);
                             return (
