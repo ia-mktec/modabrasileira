@@ -552,10 +552,17 @@ const ExpedicaoPage = () => {
   const handlePrint = useCallback(() => {window.print();}, []);
 
   const yellowInput =
-  "bg-[hsl(48,100%,88%)] text-[hsl(220,15%,15%)] border-[hsl(48,80%,60%)] focus:ring-[hsl(48,80%,50%)] placeholder:text-[hsl(48,30%,50%)]";
+  "bg-[hsl(48,100%,88%)] text-[hsl(220,15%,15%)] border-[hsl(48,80%,60%)] focus:ring-[hsl(48,80%,50%)] placeholder:text-[hsl(48,30%,50%)] print:bg-transparent print:border-[hsl(220,15%,80%)]";
 
   const readOnlyInput =
-  "bg-muted text-foreground border-border cursor-default";
+  "bg-muted text-foreground border-border cursor-default print:bg-transparent print:border-[hsl(220,15%,80%)]";
+
+  const readOnlyDisplay =
+  "h-9 w-full flex items-center px-3 rounded-md border bg-muted text-foreground border-border text-sm print:bg-transparent print:border-[hsl(220,15%,80%)] print:h-auto print:min-h-[28px] print:py-1";
+
+  // Cores presentes no corte (para exibição na ficha)
+  const coresDisplay = gradeRows.map((r) => r.cor).filter(Boolean).join(", ");
+
 
   if (loadingOrdens || loadingModelos) {
     return <PageLoading message="Carregando expedição..." />;
