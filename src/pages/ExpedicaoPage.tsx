@@ -213,7 +213,7 @@ const ExpedicaoPage = () => {
     const candidatos = modelosDb.filter((m: any) => (m.referencia || "").trim().toLowerCase() === refTrim);
     const foundModelo = candidatos.find((m: any) => !!m.imagem_url) || candidatos[0];
     setModeloNome(foundModelo?.descricao || "");
-    setTecido(oc.tecido_nome || "");
+    setTecido(oc.tecido_nome || foundModelo?.tecido_principal || "");
     setDataCorte(oc.data_corte || "");
     setCortador(oc.cortador || "");
     setStatusOrdem(oc.status || "");
