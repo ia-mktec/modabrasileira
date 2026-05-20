@@ -213,7 +213,7 @@ const ExpedicaoPage = () => {
     const candidatos = modelosDb.filter((m: any) => (m.referencia || "").trim().toLowerCase() === refTrim);
     const foundModelo = candidatos.find((m: any) => !!m.imagem_url) || candidatos[0];
     setModeloNome(foundModelo?.descricao || "");
-    setTecido(oc.tecido_nome || "");
+    setTecido(oc.tecido_nome || foundModelo?.tecido_principal || "");
     setDataCorte(oc.data_corte || "");
     setCortador(oc.cortador || "");
     setStatusOrdem(oc.status || "");
@@ -552,10 +552,17 @@ const ExpedicaoPage = () => {
   const handlePrint = useCallback(() => {window.print();}, []);
 
   const yellowInput =
-  "bg-[hsl(48,100%,88%)] text-[hsl(220,15%,15%)] border-[hsl(48,80%,60%)] focus:ring-[hsl(48,80%,50%)] placeholder:text-[hsl(48,30%,50%)]";
+  "bg-[hsl(48,100%,88%)] text-[hsl(220,15%,15%)] border-[hsl(48,80%,60%)] focus:ring-[hsl(48,80%,50%)] placeholder:text-[hsl(48,30%,50%)] print:bg-transparent print:border-[hsl(220,15%,80%)]";
 
   const readOnlyInput =
-  "bg-muted text-foreground border-border cursor-default";
+  "bg-muted text-foreground border-border cursor-default print:bg-transparent print:border-[hsl(220,15%,80%)]";
+
+  const readOnlyDisplay =
+  "h-9 w-full flex items-center px-3 rounded-md border bg-muted text-foreground border-border text-sm print:bg-transparent print:border-[hsl(220,15%,80%)] print:h-auto print:min-h-[28px] print:py-1";
+
+  // Cores presentes no corte (para exibição na ficha)
+  const coresDisplay = gradeRows.map((r) => r.cor).filter(Boolean).join(", ");
+
 
   if (loadingOrdens || loadingModelos) {
     return <PageLoading message="Carregando expedição..." />;
@@ -701,7 +708,34 @@ const ExpedicaoPage = () => {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-4">
+    <div className="p-4 md:p-6 space-y-4 expedicao-ficha">
+      <style>{`
+        @media print {
+          @page { size: A4; margin: 8mm; }
+          .expedicao-ficha { padding: 0 !important; }
+          .expedicao-ficha .space-y-4 > * + * { margin-top: 6px !important; }
+          .expedicao-ficha input, .expedicao-ficha textarea {
+            background: transparent !important;
+            border-color: hsl(220 15% 80%) !important;
+            color: hsl(220 30% 10%) !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            height: auto !important;
+            min-height: 24px !important;
+          }
+          .expedicao-ficha .text-xs, .expedicao-ficha .text-\\[10px\\], .expedicao-ficha .text-\\[11px\\] { font-size: 9px !important; }
+          .expedicao-ficha .text-sm { font-size: 10px !important; }
+          .expedicao-ficha h1 { font-size: 14px !important; }
+          .expedicao-ficha h3 { font-size: 11px !important; }
+          .expedicao-ficha .p-4, .expedicao-ficha .md\\:p-6, .expedicao-ficha .p-3 { padding: 6px !important; }
+          .expedicao-ficha .py-3 { padding-top: 4px !important; padding-bottom: 4px !important; }
+          .expedicao-ficha img { max-height: 160px !important; object-fit: contain !important; }
+          .expedicao-ficha table, .expedicao-ficha [class*="rounded-lg"] {
+            page-break-inside: avoid; break-inside: avoid;
+          }
+          .expedicao-ficha button { display: none !important; }
+        }
+      `}</style>
       {/* Header */}
       <div className="bg-[hsl(217,71%,25%)] text-[hsl(0,0%,100%)] rounded-t-lg px-6 py-3 text-center">
         <h1 className="text-xl md:text-2xl font-bold tracking-wide font-mono">EXPEDIÇÃO — SAÍDA DE OFICINA</h1>
@@ -786,45 +820,50 @@ const ExpedicaoPage = () => {
               <h3 className="text-sm font-bold tracking-wide text-center">DADOS DA ORDEM</h3>
             </div>
             <CardContent className="p-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Nº Ordem</Label>
-                  <Input value={numero} readOnly className={readOnlyInput} placeholder="—" />
+                  <div className={readOnlyDisplay}><span className="truncate font-mono">{numero || "—"}</span></div>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Nº Pedido</Label>
-                  <Input value={numeroPedido} readOnly className={readOnlyInput} placeholder="—" />
+                  <div className={readOnlyDisplay}><span className="truncate font-mono">{numeroPedido || "—"}</span></div>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Referência</Label>
-                  <Input value={modeloRef} readOnly className={readOnlyInput} placeholder="—" />
+                  <div className={readOnlyDisplay}><span className="truncate">{modeloRef || "—"}</span></div>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Modelo</Label>
-                  <Input value={modeloNome} readOnly className={readOnlyInput} placeholder="—" />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Tecido</Label>
-                  <Input value={tecido} readOnly className={readOnlyInput} placeholder="—" />
+                  <div className={readOnlyDisplay}><span className="truncate">{modeloNome || "—"}</span></div>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Cliente</Label>
-                  <Input value={cliente} readOnly className={readOnlyInput} placeholder="—" />
+                  <div className={readOnlyDisplay}><span className="truncate">{cliente || "—"}</span></div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Tecido</Label>
+                  <div className={readOnlyDisplay}><span className="truncate">{tecido || "—"}</span></div>
+                </div>
+                <div className="space-y-1 col-span-2">
+                  <Label className="text-xs font-semibold">Cor</Label>
+                  <div className={readOnlyDisplay}><span className="truncate">{coresDisplay || "—"}</span></div>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Data do Corte</Label>
-                  <Input value={dataCorte} readOnly className={readOnlyInput} placeholder="—" />
+                  <div className={readOnlyDisplay}><span className="truncate font-mono">{dataCorte ? formatDateBR(dataCorte) : "—"}</span></div>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Cortador</Label>
-                  <Input value={cortador} readOnly className={readOnlyInput} placeholder="—" />
+                  <div className={readOnlyDisplay}><span className="truncate">{cortador || "—"}</span></div>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Qtde Peças</Label>
-                  <Input value={totalProdGeral > 0 ? String(totalProdGeral) : ""} readOnly className={readOnlyInput} placeholder="—" />
+                  <div className={readOnlyDisplay}><span className="font-mono">{totalProdGeral > 0 ? totalProdGeral : "—"}</span></div>
                 </div>
               </div>
             </CardContent>
+
           </Card>
 
           {/* Dados da Expedição + Imagem lado a lado */}
