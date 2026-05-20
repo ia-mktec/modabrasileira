@@ -1008,7 +1008,7 @@ const ExpedicaoPage = () => {
                 const prev = (expedicoesDb || []).filter((e: any) => e.ordem_corte_id === currentOrdemCorteId);
                 if (prev.length === 0) return null;
                 return (
-                  <div className="mb-3 p-2 rounded bg-muted/40 border border-border">
+                  <div className="mb-3 p-2 rounded bg-muted/40 border border-border print-saidas-parciais">
                     <div className="text-[11px] font-semibold mb-1">Saídas parciais já registradas ({prev.length})</div>
                     <ul className="text-[11px] space-y-0.5">
                       {prev.map((e: any) => {
