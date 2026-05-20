@@ -1051,8 +1051,8 @@ const ExpedicaoPage = () => {
                       const totalSaldo = TAMANHOS.reduce((s, t) => s + saldoCell(row, t), 0);
                       const totalEnv = totalEnviarRow(row);
                       return [
-                        <tr key={`${row.id}-prod`}>
-                          <td className="px-2 py-0.5 font-medium align-top" rowSpan={4}>{row.cor}</td>
+                        <tr key={`${row.id}-prod`} className="print-hide-row">
+                          <td className="px-2 py-0.5 font-medium align-top" rowSpan={3}>{row.cor}</td>
                           <td className="px-1 py-0.5 text-[10px] text-muted-foreground text-right pr-2">Produzido</td>
                           {TAMANHOS.map((t) =>
                             <td key={t} className="px-1 py-0.5 text-center">
@@ -1061,14 +1061,14 @@ const ExpedicaoPage = () => {
                           )}
                           <td className="px-2 py-0.5 text-center font-bold bg-muted rounded">{totalProd}</td>
                         </tr>,
-                        <tr key={`${row.id}-env`}>
+                        <tr key={`${row.id}-env`} className="print-hide-row">
                           <td className="px-1 py-0.5 text-[10px] text-muted-foreground text-right pr-2">Já enviado</td>
                           {TAMANHOS.map((t) =>
                             <td key={t} className="px-1 py-0.5 text-center font-mono text-muted-foreground">{row.qtdEnviadaAnterior[t] || 0}</td>
                           )}
                           <td className="px-2 py-0.5 text-center font-mono text-muted-foreground">{totalEnviado}</td>
                         </tr>,
-                        <tr key={`${row.id}-saldo`}>
+                        <tr key={`${row.id}-saldo`} className="print-hide-row">
                           <td className="px-1 py-0.5 text-[10px] text-muted-foreground text-right pr-2">Saldo</td>
                           {TAMANHOS.map((t) =>
                             <td key={t} className="px-1 py-0.5 text-center">
@@ -1078,7 +1078,8 @@ const ExpedicaoPage = () => {
                           <td className="px-2 py-0.5 text-center font-mono font-semibold text-[hsl(199,89%,25%)]">{totalSaldo}</td>
                         </tr>,
                         <tr key={`${row.id}-enviar`} className="border-b-2">
-                          <td className="px-1 py-0.5 text-[10px] font-semibold text-right pr-2">Enviar agora</td>
+                          <td className="px-2 py-0.5 font-medium hidden print:table-cell">{row.cor}</td>
+                          <td className="px-1 py-0.5 text-[10px] font-semibold text-right pr-2">Quantidade</td>
                           {TAMANHOS.map((t) => {
                             const max = saldoCell(row, t);
                             return (
