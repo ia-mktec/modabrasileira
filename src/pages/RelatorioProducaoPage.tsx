@@ -214,7 +214,7 @@ const RelatorioProducaoPage = () => {
       fetchAll<ExpedicaoRow>("expedicao", "ordem_corte_id,status,updated_at"),
       fetchAll<RecebimentoRow>("recebimento", "ordem_corte_id,status,updated_at,data_recebimento,total_sem_defeitos,segunda_qualidade"),
       fetchAll<EntregaRow>("entrega_cliente", "ordem_corte_id,status,updated_at"),
-      supabase.from("modelos").select("referencia,imagem_url"),
+      fetchAll<{ referencia: string; imagem_url: string | null }>("modelos", "referencia,imagem_url"),
     ]).then(([p, o, e, r, en, m]) => {
       // Pedidos mais recentes primeiro
       setPedidos([...p].sort((a, b) => (b.created_at || "").localeCompare(a.created_at || "")));
@@ -223,7 +223,7 @@ const RelatorioProducaoPage = () => {
       setRecebimentos(r);
       setEntregas(en);
       const imgs: Record<string, string> = {};
-      (m.data || []).forEach((x: any) => {
+      (m || []).forEach((x: any) => {
         if (x.referencia && x.imagem_url) imgs[x.referencia] = x.imagem_url;
       });
       setModeloImgs(imgs);
