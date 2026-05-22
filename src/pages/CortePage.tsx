@@ -207,10 +207,18 @@ const CortePage = () => {
     (t.cor || "").toLowerCase().includes(tecidoSearchTerm.toLowerCase()))
   );
 
-  // Cores disponíveis: tecidos do mesmo cliente e mesmo nome de tecido selecionado
-  const coresDisponiveisData = tecidosDb.filter(
-    (t: any) => t.cliente_id === selectedClienteId && t.nome === tecido
-  );
+  // Cores disponíveis: tecidos do mesmo cliente e mesmo nome de tecido selecionado.
+  // O campo `cor` pode conter várias cores separadas por vírgula — explodimos em uma opção por cor.
+  const coresDisponiveisData = tecidosDb
+    .filter((t: any) => t.cliente_id === selectedClienteId && t.nome === tecido)
+    .flatMap((t: any) => {
+      const cores = String(t.cor || "")
+        .split(/[,;/|]+/)
+        .map((c: string) => c.trim())
+        .filter(Boolean);
+      if (cores.length === 0) return [{ ...t, cor: "" }];
+      return cores.map((c: string) => ({ ...t, cor: c }));
+    });
 
   const filteredCores = coresDisponiveisData.filter((t: any) =>
     (t.cor || "").toLowerCase().includes(corSearchTerm.toLowerCase())
