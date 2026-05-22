@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { ChevronsUpDown } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -26,21 +29,7 @@ const cadastroModelos = [
   { id: "10", nome: "Shorts-Saia" }, { id: "11", nome: "Camisa" }, { id: "12", nome: "Cropped" },
 ];
 
-// Cores from Cadastro module
-const cadastroCores = [
-  { cor: "Preto", cod: "001", hex: "#000000" }, { cor: "Branco", cod: "002", hex: "#ffffff" },
-  { cor: "Areia", cod: "003", hex: "#c2b280" }, { cor: "Caqui", cod: "004", hex: "#c3b091" },
-  { cor: "Terra", cod: "005", hex: "#8b4513" }, { cor: "Verde", cod: "006", hex: "#228b22" },
-  { cor: "Marrom", cod: "007", hex: "#654321" }, { cor: "Azul", cod: "008", hex: "#0000cd" },
-  { cor: "Nude", cod: "009", hex: "#f5cba7" }, { cor: "Prata", cod: "023", hex: "#c0c0c0" },
-  { cor: "Camelo", cod: "010", hex: "#c19a6b" }, { cor: "Cinza", cod: "011", hex: "#808080" },
-  { cor: "Mostarda", cod: "012", hex: "#ffdb58" }, { cor: "Verde Claro", cod: "013", hex: "#90ee90" },
-  { cor: "Caramelo", cod: "014", hex: "#af6e4d" }, { cor: "Oliva", cod: "015", hex: "#808000" },
-  { cor: "Off", cod: "016", hex: "#faf0e6" }, { cor: "Roxo", cod: "017", hex: "#800080" },
-  { cor: "Rosa", cod: "018", hex: "#ff69b4" }, { cor: "Marinho", cod: "019", hex: "#001f4d" },
-  { cor: "Turquesa", cod: "020", hex: "#40e0d0" }, { cor: "Chumbo", cod: "021", hex: "#36454f" },
-  { cor: "Cinza Claro", cod: "022", hex: "#d3d3d3" }, { cor: "Capuccino", cod: "025", hex: "#a67b5b" },
-];
+import { cadastroCores } from "@/lib/cadastro-cores";
 
 import { Plus, Trash2, Printer, Search, CheckCircle, ArrowLeft, Pencil, FileText } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -606,21 +595,56 @@ const TecidosPage = () => {
                       <tr key={idx} className="border-b last:border-0">
                         <td className="py-1.5 px-3 text-center font-mono text-muted-foreground">{idx + 1}</td>
                         <td className="py-1.5 px-3">
-                          <Select value={row.cor} onValueChange={(val) => selectCorFromCadastro(idx, val)}>
-                            <SelectTrigger className={`h-7 text-xs ${yellowInput}`}>
-                              <SelectValue placeholder="Selecione a cor" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {cadastroCores.map((cc) => (
-                                <SelectItem key={cc.cod} value={cc.cor} textValue={cc.cor}>
-                                  <span className="inline-flex items-center gap-2">
-                                    <span className="w-3 h-3 rounded-full border border-border shrink-0 inline-block" style={{ backgroundColor: cc.hex }} />
-                                    <span>{cc.cor}</span>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className={`h-7 w-full justify-between text-xs font-normal px-2 ${yellowInput}`}
+                              >
+                                {row.cor ? (
+                                  <span className="inline-flex items-center gap-2 truncate">
+                                    <span
+                                      className="w-3 h-3 rounded-full border border-border shrink-0 inline-block"
+                                      style={{
+                                        backgroundColor:
+                                          cadastroCores.find((c) => c.cor === row.cor)?.hex || "#ffffff",
+                                      }}
+                                    />
+                                    <span className="truncate">{row.cor}</span>
                                   </span>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                                ) : (
+                                  <span className="text-muted-foreground">Selecione a cor</span>
+                                )}
+                                <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-64 p-0" align="start">
+                              <Command>
+                                <CommandInput placeholder="Buscar cor..." className="h-8 text-xs" />
+                                <CommandList>
+                                  <CommandEmpty>Nenhuma cor encontrada.</CommandEmpty>
+                                  <CommandGroup>
+                                    {cadastroCores.map((cc) => (
+                                      <CommandItem
+                                        key={cc.cod}
+                                        value={cc.cor}
+                                        onSelect={() => selectCorFromCadastro(idx, cc.cor)}
+                                        className="text-xs"
+                                      >
+                                        <span
+                                          className="w-3 h-3 rounded-full border border-border shrink-0 inline-block mr-2"
+                                          style={{ backgroundColor: cc.hex }}
+                                        />
+                                        <span>{cc.cor}</span>
+                                        <span className="ml-auto text-[10px] text-muted-foreground font-mono">{cc.cod}</span>
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
                         </td>
                         <td className="py-1.5 px-3 text-center">
                           <div className="flex items-center justify-center">
