@@ -1337,7 +1337,7 @@ const ModelosPage = () => {
             className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]"
             onClick={handleRegistrarPedido}>
             <ClipboardCheck className="w-4 h-4" />
-            <span>{savingPedido ? "Registrando..." : "Registrar Pedido"}</span>
+            <span>{savingPedido ? (editingPedidoNumero ? "Salvando..." : "Registrando...") : (editingPedidoNumero ? "Salvar Alterações" : "Registrar Pedido")}</span>
           </Button>
         </div>
 
