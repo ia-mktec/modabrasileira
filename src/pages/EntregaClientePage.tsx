@@ -10,9 +10,11 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useOrdensCorte, useEntregaCliente, useModelos } from "@/hooks/useSupabaseData";
-import { Search, Printer, PackageCheck, ImageOff, Send, CalendarIcon } from "lucide-react";
+import { Search, Printer, PackageCheck, ImageOff, Send, CalendarIcon, CheckCircle, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { showSaving } from "@/lib/saving-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { formatDateBR } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
