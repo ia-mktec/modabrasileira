@@ -124,6 +124,14 @@ const FichaZiperPage = () => {
         "aviamentos_pedido",
         "numero_pedido, modelo_ref, tipo, descricao_item, cor, partes_qtde, tamanho, id"
       );
+
+      // Aviamentos cadastrados no modelo, usados quando a ordem ainda não está vinculada a um Nº de pedido
+      const modelos = await fetchAll("modelos", "id, referencia");
+      const modeloByReferencia = new Map((modelos || []).map((m: any) => [m.referencia, m.id]));
+      const modeloAviamentos = await fetchAll(
+        "modelo_aviamentos",
+        "modelo_id, descricao, unidade, quantidade, ordem"
+      );
       // Grade de corte por OC -> cores e quantidades
       const grades = await fetchAll(
         "grade_corte",
@@ -148,20 +156,35 @@ const FichaZiperPage = () => {
       const norm = (s: string | null | undefined) =>
         (s || "").toString().trim().toLowerCase();
 
-      const ziperAvis = avis.filter((a: any) => isZiper(a.tipo));
+      const ziperAvis = avis.filter((a: any) => isZiper(a.tipo) || isZiper(a.descricao));
 
       const result: ZiperOrdemData[] = ocs.map((oc: any) => {
-        const zips = aviPedido.filter(
+        let zips = aviPedido.filter(
           (a: any) =>
+            !!oc.numero_pedido &&
             a.numero_pedido === oc.numero_pedido &&
             (a.modelo_ref === oc.modelo_ref || !a.modelo_ref) &&
             (isZiper(a.tipo) || isZiper(a.descricao_item))
         );
+
+        const modeloId = modeloByReferencia.get(oc.modelo_ref);
+        const zipsModelo = modeloAviamentos
+          .filter((a: any) => modeloId && a.modelo_id === modeloId && isZiper(a.descricao))
+          .map((a: any) => ({
+            tipo: "Zíper",
+            descricao_item: a.descricao,
+            tamanho: a.unidade,
+          }));
+
+        if (zips.length === 0) zips = zipsModelo;
+
         const descricaoZiper = Array.from(
           new Set(
             zips
               .map((z: any) => {
-                const partes = [z.tipo, z.descricao_item, z.tamanho ? `${z.tamanho}cm` : null]
+                const tamanho = z.tamanho ? String(z.tamanho).trim() : "";
+                const tamanhoFormatado = tamanho && /cm|mm|m$/i.test(tamanho) ? tamanho : tamanho ? `${tamanho}cm` : null;
+                const partes = [z.tipo, z.descricao_item, tamanhoFormatado]
                   .filter((p: any) => p && String(p).trim());
                 return partes.join(" - ");
               })
