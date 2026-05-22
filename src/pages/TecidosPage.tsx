@@ -595,21 +595,56 @@ const TecidosPage = () => {
                       <tr key={idx} className="border-b last:border-0">
                         <td className="py-1.5 px-3 text-center font-mono text-muted-foreground">{idx + 1}</td>
                         <td className="py-1.5 px-3">
-                          <Select value={row.cor} onValueChange={(val) => selectCorFromCadastro(idx, val)}>
-                            <SelectTrigger className={`h-7 text-xs ${yellowInput}`}>
-                              <SelectValue placeholder="Selecione a cor" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {cadastroCores.map((cc) => (
-                                <SelectItem key={cc.cod} value={cc.cor} textValue={cc.cor}>
-                                  <span className="inline-flex items-center gap-2">
-                                    <span className="w-3 h-3 rounded-full border border-border shrink-0 inline-block" style={{ backgroundColor: cc.hex }} />
-                                    <span>{cc.cor}</span>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className={`h-7 w-full justify-between text-xs font-normal px-2 ${yellowInput}`}
+                              >
+                                {row.cor ? (
+                                  <span className="inline-flex items-center gap-2 truncate">
+                                    <span
+                                      className="w-3 h-3 rounded-full border border-border shrink-0 inline-block"
+                                      style={{
+                                        backgroundColor:
+                                          cadastroCores.find((c) => c.cor === row.cor)?.hex || "#ffffff",
+                                      }}
+                                    />
+                                    <span className="truncate">{row.cor}</span>
                                   </span>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                                ) : (
+                                  <span className="text-muted-foreground">Selecione a cor</span>
+                                )}
+                                <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-64 p-0" align="start">
+                              <Command>
+                                <CommandInput placeholder="Buscar cor..." className="h-8 text-xs" />
+                                <CommandList>
+                                  <CommandEmpty>Nenhuma cor encontrada.</CommandEmpty>
+                                  <CommandGroup>
+                                    {cadastroCores.map((cc) => (
+                                      <CommandItem
+                                        key={cc.cod}
+                                        value={cc.cor}
+                                        onSelect={() => selectCorFromCadastro(idx, cc.cor)}
+                                        className="text-xs"
+                                      >
+                                        <span
+                                          className="w-3 h-3 rounded-full border border-border shrink-0 inline-block mr-2"
+                                          style={{ backgroundColor: cc.hex }}
+                                        />
+                                        <span>{cc.cor}</span>
+                                        <span className="ml-auto text-[10px] text-muted-foreground font-mono">{cc.cod}</span>
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
                         </td>
                         <td className="py-1.5 px-3 text-center">
                           <div className="flex items-center justify-center">
