@@ -158,7 +158,15 @@ const FichaZiperPage = () => {
             (isZiper(a.tipo) || isZiper(a.descricao_item))
         );
         const descricaoZiper = Array.from(
-          new Set(zips.map((z: any) => z.descricao_item).filter(Boolean))
+          new Set(
+            zips
+              .map((z: any) => {
+                const partes = [z.tipo, z.descricao_item, z.tamanho ? `${z.tamanho}cm` : null]
+                  .filter((p: any) => p && String(p).trim());
+                return partes.join(" - ");
+              })
+              .filter(Boolean)
+          )
         ).join(" | ");
 
         const gradesOC = gradesByOC.get(oc.id) || [];
