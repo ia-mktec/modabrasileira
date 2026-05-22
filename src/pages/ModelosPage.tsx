@@ -148,6 +148,9 @@ const ModelosPage = () => {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [modelImage, setModelImage] = useState<string | null>(null);
   const [currentModeloId, setCurrentModeloId] = useState<string | null>(null);
+  const [editingPedidoNumero, setEditingPedidoNumero] = useState<string | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // Dialogs
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
