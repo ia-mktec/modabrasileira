@@ -614,31 +614,80 @@ const ModelosPage = () => {
     const numeroAtual = numeroPedido;
     const dataBase = dataPedido || new Date().toISOString().slice(0, 10);
     const dismissSaving = showSaving();
+    const isEdit = editingPedidoNumero === numeroAtual;
     let error: any;
     let duplicado = false;
+
+    // Monta as linhas de aviamentos_pedido a partir do estado atual
+    const aviamentosRows = aviamentos
+      .filter((a) => a.selectedItem || a.partesQtde)
+      .map((a) => ({
+        numero_pedido: numeroAtual,
+        modelo_ref: referencia,
+        tipo: a.tipo || null,
+        descricao_item: a.selectedItem?.descricao || null,
+        cor: a.selectedItem?.cor || null,
+        tamanho: a.selectedItem?.tamanho || null,
+        partes_qtde: parseFloat(a.partesQtde) || 0,
+      }));
+
     try {
-      // Garante que não existe outro pedido com este número (evita sobrescrever)
-      const { data: existente, error: errCheck } = await supabase
-        .from("modelo_pedidos")
-        .select("numero_pedido")
-        .eq("numero_pedido", numeroAtual)
-        .maybeSingle();
-      if (errCheck) {
-        error = errCheck;
-      } else if (existente) {
-        duplicado = true;
-      } else {
-        const res = await supabase.from("modelo_pedidos").insert({
-          numero_pedido: numeroAtual,
-          cliente: cliente || null,
-          modelo_ref: referencia,
-          data_pedido: dataBase,
-          tecido: tecido || null,
-          consumo_tecido: parseFloat(consumoMetros) || 0,
-          status_kanban: statusKanban || "pendente",
-          piloto_entregue: pilotoEntregue === "sim",
-        } as any);
+      if (isEdit) {
+        // UPDATE do pedido existente
+        const res = await supabase
+          .from("modelo_pedidos")
+          .update({
+            cliente: cliente || null,
+            modelo_ref: referencia,
+            data_pedido: dataBase,
+            tecido: tecido || null,
+            consumo_tecido: parseFloat(consumoMetros) || 0,
+            status_kanban: statusKanban || "pendente",
+            piloto_entregue: pilotoEntregue === "sim",
+            observacoes: observacoes || null,
+            updated_at: new Date().toISOString(),
+          } as any)
+          .eq("numero_pedido", numeroAtual);
         error = res.error;
+
+        // Substitui aviamentos específicos do pedido
+        if (!error) {
+          await supabase.from("aviamentos_pedido" as any).delete().eq("numero_pedido", numeroAtual);
+          if (aviamentosRows.length > 0) {
+            const ins = await supabase.from("aviamentos_pedido" as any).insert(aviamentosRows);
+            if (ins.error) error = ins.error;
+          }
+        }
+      } else {
+        // Garante que não existe outro pedido com este número (evita sobrescrever)
+        const { data: existente, error: errCheck } = await supabase
+          .from("modelo_pedidos")
+          .select("numero_pedido")
+          .eq("numero_pedido", numeroAtual)
+          .maybeSingle();
+        if (errCheck) {
+          error = errCheck;
+        } else if (existente) {
+          duplicado = true;
+        } else {
+          const res = await supabase.from("modelo_pedidos").insert({
+            numero_pedido: numeroAtual,
+            cliente: cliente || null,
+            modelo_ref: referencia,
+            data_pedido: dataBase,
+            tecido: tecido || null,
+            consumo_tecido: parseFloat(consumoMetros) || 0,
+            status_kanban: statusKanban || "pendente",
+            piloto_entregue: pilotoEntregue === "sim",
+            observacoes: observacoes || null,
+          } as any);
+          error = res.error;
+          // Persiste aviamentos específicos do pedido (para edições futuras)
+          if (!error && aviamentosRows.length > 0) {
+            const ins = await supabase.from("aviamentos_pedido" as any).insert(aviamentosRows);
+            if (ins.error) error = ins.error;
+          }
+        }
       }
     } finally {
       dismissSaving();
@@ -655,12 +704,20 @@ const ModelosPage = () => {
       return;
     }
     if (error) {
-      toast({ title: "Erro ao registrar pedido", description: error.message, variant: "destructive" });
+      toast({ title: isEdit ? "Erro ao salvar alterações" : "Erro ao registrar pedido", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Pedido registrado", description: `Pedido ${numeroAtual} salvo com sucesso.` });
-    // Limpa o número para forçar nova geração no próximo pedido (evita sobrescrita acidental)
-    setNumeroPedido("");
+    toast({
+      title: isEdit ? "Pedido atualizado" : "Pedido registrado",
+      description: `Pedido ${numeroAtual} ${isEdit ? "atualizado" : "salvo"} com sucesso.`,
+    });
+    if (isEdit) {
+      setEditingPedidoNumero(null);
+      navigate("/pedidos");
+    } else {
+      // Limpa o número para forçar nova geração no próximo pedido (evita sobrescrita acidental)
+      setNumeroPedido("");
+    }
   };
 
 
