@@ -69,6 +69,86 @@ const EntregaClientePage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
 
+  // View mode (ficha | historico)
+  type ViewMode = "ficha" | "historico";
+  const [viewMode, setViewMode] = useState<ViewMode>("ficha");
+
+  // Histórico — filtros
+  const [filtroOrdem, setFiltroOrdem] = useState("");
+  const [filtroPedido, setFiltroPedido] = useState("");
+  const [filtroOficina, setFiltroOficina] = useState("");
+  const [filtroStatus, setFiltroStatus] = useState("");
+  const [filtroDataDe, setFiltroDataDe] = useState("");
+  const [filtroDataAte, setFiltroDataAte] = useState("");
+
+  interface RegistroEntrega {
+    id: string;
+    data_entrega: string | null;
+    oficina_nome: string | null;
+    status: string | null;
+    qtd_entregue: number | null;
+    segunda_qualidade: number | null;
+    tempo_producao: string | null;
+    observacoes: string | null;
+    created_at: string;
+    ordem_corte_id: string;
+    ordens_corte?: { numero: string; numero_pedido: string | null; modelo_ref: string | null; tecido_nome: string | null } | null;
+  }
+  const [registros, setRegistros] = useState<RegistroEntrega[]>([]);
+  const [loadingRegistros, setLoadingRegistros] = useState(false);
+
+  useEffect(() => {
+    if (viewMode !== "historico") return;
+    let cancelled = false;
+    (async () => {
+      setLoadingRegistros(true);
+      let q = supabase
+        .from("entrega_cliente")
+        .select("id,data_entrega,oficina_nome,status,qtd_entregue,segunda_qualidade,tempo_producao,observacoes,created_at,ordem_corte_id")
+        .order("data_entrega", { ascending: false, nullsFirst: false })
+        .limit(2000);
+      if (filtroOficina) q = q.ilike("oficina_nome", `%${filtroOficina}%`);
+      if (filtroStatus) q = q.eq("status", filtroStatus);
+      if (filtroDataDe) q = q.gte("data_entrega", filtroDataDe);
+      if (filtroDataAte) q = q.lte("data_entrega", filtroDataAte);
+      const { data, error } = await q;
+      if (!cancelled) {
+        let rows: any[] = error ? [] : (data || []);
+        const ocMap: Record<string, any> = {};
+        ordensCorteDb.forEach((o: any) => { ocMap[o.id] = o; });
+        if (rows.length && (filtroOrdem || filtroPedido)) {
+          rows = rows.filter((r) => {
+            const oc = ocMap[r.ordem_corte_id];
+            if (!oc) return false;
+            if (filtroOrdem && !(oc.numero || "").toLowerCase().includes(filtroOrdem.toLowerCase())) return false;
+            if (filtroPedido && !(oc.numero_pedido || "").toLowerCase().includes(filtroPedido.toLowerCase())) return false;
+            return true;
+          });
+        }
+        rows = rows.map((r) => ({ ...r, ordens_corte: ocMap[r.ordem_corte_id] || null }));
+        setRegistros(rows as RegistroEntrega[]);
+        setLoadingRegistros(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [viewMode, filtroOrdem, filtroPedido, filtroOficina, filtroStatus, filtroDataDe, filtroDataAte, ordensCorteDb]);
+
+  const limparFiltros = () => {
+    setFiltroOrdem(""); setFiltroPedido(""); setFiltroOficina("");
+    setFiltroStatus(""); setFiltroDataDe(""); setFiltroDataAte("");
+  };
+
+  const loadRegistroEntrega = (r: RegistroEntrega) => {
+    const oc = ordensCorteDb.find((o: any) => o.id === r.ordem_corte_id);
+    if (!oc) {
+      toast({ title: "Ordem não encontrada", description: "A ordem de corte vinculada não está disponível.", variant: "destructive" });
+      return;
+    }
+    setViewMode("ficha");
+    loadOrdem(oc);
+  };
+
+
   const filteredOrdens = ordensCorteDb.filter(
     (oc: any) =>
     (oc.numero || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
