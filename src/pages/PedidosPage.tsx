@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { formatDateBR } from "@/lib/utils";
 import { PageLoading } from "@/components/shared/PageLoading";
 import { supabase } from "@/integrations/supabase/client";
@@ -188,10 +189,14 @@ export default function PedidosPage() {
     setPedidoToDelete(null);
   };
 
+  const navigate = useNavigate();
+
+  // Abre a tela completa de Modelos no modo edição, com todos os dados do
+  // pedido pré-carregados (incluindo aviamentos, gradação, etc.).
   const handleOpenEdit = (pedido: PedidoRow) => {
-    setEditingPedido({ ...pedido });
-    setEditDialogOpen(true);
+    navigate("/modelos", { state: { editPedido: pedido } });
   };
+
 
   const handleSaveEdit = async () => {
     if (!editingPedido) return;
