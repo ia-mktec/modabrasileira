@@ -26,21 +26,7 @@ const cadastroModelos = [
   { id: "10", nome: "Shorts-Saia" }, { id: "11", nome: "Camisa" }, { id: "12", nome: "Cropped" },
 ];
 
-// Cores from Cadastro module
-const cadastroCores = [
-  { cor: "Preto", cod: "001", hex: "#000000" }, { cor: "Branco", cod: "002", hex: "#ffffff" },
-  { cor: "Areia", cod: "003", hex: "#c2b280" }, { cor: "Caqui", cod: "004", hex: "#c3b091" },
-  { cor: "Terra", cod: "005", hex: "#8b4513" }, { cor: "Verde", cod: "006", hex: "#228b22" },
-  { cor: "Marrom", cod: "007", hex: "#654321" }, { cor: "Azul", cod: "008", hex: "#0000cd" },
-  { cor: "Nude", cod: "009", hex: "#f5cba7" }, { cor: "Prata", cod: "023", hex: "#c0c0c0" },
-  { cor: "Camelo", cod: "010", hex: "#c19a6b" }, { cor: "Cinza", cod: "011", hex: "#808080" },
-  { cor: "Mostarda", cod: "012", hex: "#ffdb58" }, { cor: "Verde Claro", cod: "013", hex: "#90ee90" },
-  { cor: "Caramelo", cod: "014", hex: "#af6e4d" }, { cor: "Oliva", cod: "015", hex: "#808000" },
-  { cor: "Off", cod: "016", hex: "#faf0e6" }, { cor: "Roxo", cod: "017", hex: "#800080" },
-  { cor: "Rosa", cod: "018", hex: "#ff69b4" }, { cor: "Marinho", cod: "019", hex: "#001f4d" },
-  { cor: "Turquesa", cod: "020", hex: "#40e0d0" }, { cor: "Chumbo", cod: "021", hex: "#36454f" },
-  { cor: "Cinza Claro", cod: "022", hex: "#d3d3d3" }, { cor: "Capuccino", cod: "025", hex: "#a67b5b" },
-];
+import { cadastroCores } from "@/lib/cadastro-cores";
 
 import { Plus, Trash2, Printer, Search, CheckCircle, ArrowLeft, Pencil, FileText } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
