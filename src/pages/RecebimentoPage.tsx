@@ -11,10 +11,11 @@ import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useOrdensCorte, useRecebimento, useModelos, useExpedicao, useClientes } from "@/hooks/useSupabaseData";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Printer, PackageCheck, ImageOff, Eraser, Save } from "lucide-react";
+import { Search, Printer, PackageCheck, ImageOff, Eraser, Save, CheckCircle, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { showSaving } from "@/lib/saving-toast";
 import { differenceInDays, parseISO } from "date-fns";
+import { formatDateBR } from "@/lib/utils";
 
 const TAMANHOS = ["PP", "P", "M", "G", "GG", "G1", "G2", "G3"];
 
