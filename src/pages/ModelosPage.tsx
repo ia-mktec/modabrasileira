@@ -274,6 +274,76 @@ const ModelosPage = () => {
     setIsLoadedFromSearch(false);
   };
 
+  // ── Edição de pedido vinda da tela de Pedidos ──
+  // Quando navegamos para cá com state.editPedido, carregamos o modelo
+  // correspondente (para trazer aviamentos, serviços, gradação) e em seguida
+  // sobrescrevemos os campos próprios do pedido + aviamentos específicos.
+  useEffect(() => {
+    const ep: any = (location.state as any)?.editPedido;
+    if (!ep || loadingModelos || modelos.length === 0) return;
+    if (editingPedidoNumero === ep.numero_pedido) return;
+
+    (async () => {
+      const m = modelos.find((mm: any) => mm.referencia === ep.modelo_ref);
+      if (m) {
+        await loadModelo(m);
+      } else {
+        // Modelo não cadastrado — apenas limpa e segue com dados do pedido
+        setReferencia(ep.modelo_ref || "");
+      }
+
+      // Sobrescreve com dados do pedido
+      setNumeroPedido(ep.numero_pedido || "");
+      setCliente(ep.cliente || "");
+      setTecido(ep.tecido || "");
+      setStatusKanban(ep.status_kanban || "pendente");
+      setPilotoEntregue(ep.piloto_entregue ? "sim" : ep.piloto_entregue === false ? "nao" : "");
+      setDataPedido(ep.data_pedido || "");
+      if (ep.consumo_tecido != null) setConsumoMetros(String(ep.consumo_tecido));
+      setObservacoes(ep.observacoes || "");
+
+      // Carrega aviamentos específicos do pedido (override do modelo)
+      const { data: avsPedido } = await supabase
+        .from("aviamentos_pedido" as any)
+        .select("*")
+        .eq("numero_pedido", ep.numero_pedido);
+      if (avsPedido && avsPedido.length > 0) {
+        const tiposBase = defaultAviamentos.map((d) => d.tipo);
+        const baseRows: AviamentoRow[] = defaultAviamentos.map((d) => {
+          const found = (avsPedido as any[]).find((a) => (a.tipo || "") === d.tipo);
+          return found
+            ? {
+                tipo: d.tipo,
+                selectedItem: found.descricao_item
+                  ? { descricao: found.descricao_item, tamanho: found.tamanho, cor: found.cor }
+                  : null,
+                partesQtde: found.partes_qtde != null ? String(found.partes_qtde) : "",
+              }
+            : { ...d };
+        });
+        const extras: AviamentoRow[] = (avsPedido as any[])
+          .filter((a) => !tiposBase.includes(a.tipo || ""))
+          .map((a) => ({
+            tipo: a.tipo || "",
+            selectedItem: a.descricao_item
+              ? { descricao: a.descricao_item, tamanho: a.tamanho, cor: a.cor }
+              : null,
+            partesQtde: a.partes_qtde != null ? String(a.partes_qtde) : "",
+            isCustom: true,
+          }));
+        setAviamentos([...baseRows, ...extras]);
+      }
+
+      setEditingPedidoNumero(ep.numero_pedido);
+      toast({
+        title: "Pedido em edição",
+        description: `${ep.numero_pedido} carregado. Altere os campos e clique em Salvar Alterações.`,
+      });
+    })();
+  }, [location.state, loadingModelos, modelos, editingPedidoNumero]);
+
+
+
   // Gera número de pedido sequencial: PED-XXXXX (apenas calcula e exibe — a persistência ocorre em "Registrar Pedido")
   const handleGerarNumeroPedido = async () => {
     if (!referencia) {
