@@ -17,6 +17,7 @@ import {
 import { useModelos, useClientes, useAviamentos } from "@/hooks/useSupabaseData";
 import { SearchableSelect } from "@/components/shared/SearchableSelect";
 import { useEntityOptions } from "@/hooks/useEntityOptions";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // Tipos de modelo são carregados dinamicamente da tabela `tipos_modelo`
 
