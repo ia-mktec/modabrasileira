@@ -62,6 +62,88 @@ const RecebimentoPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
 
+  // View mode (ficha | historico)
+  type ViewMode = "ficha" | "historico";
+  const [viewMode, setViewMode] = useState<ViewMode>("ficha");
+
+  // Histórico — filtros
+  const [filtroOrdem, setFiltroOrdem] = useState("");
+  const [filtroPedido, setFiltroPedido] = useState("");
+  const [filtroOficina, setFiltroOficina] = useState("");
+  const [filtroStatus, setFiltroStatus] = useState("");
+  const [filtroDataDe, setFiltroDataDe] = useState("");
+  const [filtroDataAte, setFiltroDataAte] = useState("");
+
+  interface RegistroRecebimento {
+    id: string;
+    data_recebimento: string | null;
+    data_envio: string | null;
+    oficina_nome: string | null;
+    status: string | null;
+    total_sem_defeitos: number | null;
+    defeitos: number | null;
+    observacoes: string | null;
+    created_at: string;
+    ordem_corte_id: string;
+    expedicao_id: string | null;
+    ordens_corte?: { numero: string; numero_pedido: string | null; modelo_ref: string | null; tecido_nome: string | null } | null;
+  }
+  const [registros, setRegistros] = useState<RegistroRecebimento[]>([]);
+  const [loadingRegistros, setLoadingRegistros] = useState(false);
+
+  useEffect(() => {
+    if (viewMode !== "historico") return;
+    let cancelled = false;
+    (async () => {
+      setLoadingRegistros(true);
+      let q = supabase
+        .from("recebimento")
+        .select("id,data_recebimento,data_envio,oficina_nome,status,total_sem_defeitos,defeitos,observacoes,created_at,ordem_corte_id,expedicao_id")
+        .order("data_recebimento", { ascending: false, nullsFirst: false })
+        .limit(2000);
+      if (filtroOficina) q = q.ilike("oficina_nome", `%${filtroOficina}%`);
+      if (filtroStatus) q = q.eq("status", filtroStatus);
+      if (filtroDataDe) q = q.gte("data_recebimento", filtroDataDe);
+      if (filtroDataAte) q = q.lte("data_recebimento", filtroDataAte);
+      const { data, error } = await q;
+      if (!cancelled) {
+        let rows: any[] = error ? [] : (data || []);
+        const ocMap: Record<string, any> = {};
+        ordensCorteDb.forEach((o: any) => { ocMap[o.id] = o; });
+        if (rows.length && (filtroOrdem || filtroPedido)) {
+          rows = rows.filter((r) => {
+            const oc = ocMap[r.ordem_corte_id];
+            if (!oc) return false;
+            if (filtroOrdem && !(oc.numero || "").toLowerCase().includes(filtroOrdem.toLowerCase())) return false;
+            if (filtroPedido && !(oc.numero_pedido || "").toLowerCase().includes(filtroPedido.toLowerCase())) return false;
+            return true;
+          });
+        }
+        rows = rows.map((r) => ({ ...r, ordens_corte: ocMap[r.ordem_corte_id] || null }));
+        setRegistros(rows as RegistroRecebimento[]);
+        setLoadingRegistros(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [viewMode, filtroOrdem, filtroPedido, filtroOficina, filtroStatus, filtroDataDe, filtroDataAte, ordensCorteDb]);
+
+  const limparFiltros = () => {
+    setFiltroOrdem(""); setFiltroPedido(""); setFiltroOficina("");
+    setFiltroStatus(""); setFiltroDataDe(""); setFiltroDataAte("");
+  };
+
+  const loadRegistroRecebimento = (r: RegistroRecebimento) => {
+    const oc = ordensCorteDb.find((o: any) => o.id === r.ordem_corte_id);
+    if (!oc) {
+      toast({ title: "Ordem não encontrada", description: "A ordem de corte vinculada não está disponível.", variant: "destructive" });
+      return;
+    }
+    const exp = (expedicoes || []).find((e: any) => e.id === r.expedicao_id);
+    setViewMode("ficha");
+    loadOrdem(oc, exp);
+  };
+
+
   // Build list of envios (one row per expedição), enriched with ordem data
   const recebidosExpIds = useMemo(
     () => new Set((recebimentos || []).map((r: any) => r.expedicao_id).filter(Boolean)),
