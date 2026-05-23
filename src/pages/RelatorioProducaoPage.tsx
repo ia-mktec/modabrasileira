@@ -210,14 +210,35 @@ const RelatorioProducaoPage = () => {
 
     Promise.all([
       fetchAll<PedidoRow>("modelo_pedidos", "*"),
-      fetchAll<OrdemCorteRow & { id: string }>("ordens_corte", "id,numero,numero_pedido,status,updated_at"),
+      fetchAll<OrdemCorteRow & { id: string; modelo_ref: string | null; tecido_nome: string | null; cliente_id: string | null; data_corte: string | null; created_at: string }>("ordens_corte", "id,numero,numero_pedido,status,updated_at,modelo_ref,tecido_nome,cliente_id,data_corte,created_at"),
       fetchAll<ExpedicaoRow>("expedicao", "ordem_corte_id,status,updated_at"),
       fetchAll<RecebimentoRow>("recebimento", "ordem_corte_id,status,updated_at,data_recebimento,total_sem_defeitos,segunda_qualidade"),
       fetchAll<EntregaRow>("entrega_cliente", "ordem_corte_id,status,updated_at"),
       fetchAll<{ referencia: string; imagem_url: string | null }>("modelos", "referencia,imagem_url"),
-    ]).then(([p, o, e, r, en, m]) => {
-      // Pedidos mais recentes primeiro
-      setPedidos([...p].sort((a, b) => (b.created_at || "").localeCompare(a.created_at || "")));
+      fetchAll<{ id: string; razao_social: string }>("clientes", "id,razao_social"),
+    ]).then(([p, o, e, r, en, m, cls]) => {
+      // Sintetiza pedidos para OCs criadas manualmente sem registro em modelo_pedidos
+      const pedidosByNumero = new Set(p.map((x) => x.numero_pedido));
+      const clienteById: Record<string, string> = {};
+      (cls || []).forEach((c: any) => { if (c?.id) clienteById[c.id] = c.razao_social; });
+      const sintetizados: PedidoRow[] = [];
+      o.forEach((oc: any) => {
+        if (!oc.numero_pedido || pedidosByNumero.has(oc.numero_pedido)) return;
+        sintetizados.push({
+          numero_pedido: oc.numero_pedido,
+          modelo_ref: oc.modelo_ref || "",
+          cliente: oc.cliente_id ? (clienteById[oc.cliente_id] || null) : null,
+          tecido: oc.tecido_nome || null,
+          cor: null,
+          status_kanban: "pendente",
+          data_pedido: oc.data_corte || oc.created_at,
+          created_at: oc.created_at,
+          updated_at: oc.updated_at,
+        });
+        pedidosByNumero.add(oc.numero_pedido);
+      });
+      const todos = [...p, ...sintetizados];
+      setPedidos(todos.sort((a, b) => (b.created_at || "").localeCompare(a.created_at || "")));
       setOrdens(o);
       setExpedicoes(e);
       setRecebimentos(r);
