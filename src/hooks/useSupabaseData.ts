@@ -55,9 +55,11 @@ export function useFornecedores() {
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
-    const { data, error } = await supabase.from("fornecedores").select("*").order("razao_social");
+    const { data, error } = await fetchAllRows((from, to) =>
+      supabase.from("fornecedores").select("*").order("razao_social").range(from, to),
+    );
     if (error) { toast({ title: "Erro ao buscar fornecedores", description: error.message, variant: "destructive" }); }
-    else setFornecedores(data || []);
+    else setFornecedores(data);
     setLoading(false);
   }, []);
 
