@@ -65,6 +65,8 @@ const ExpedicaoPage = () => {
   const [oficinaSearchTerm, setOficinaSearchTerm] = useState("");
   const [preco, setPreco] = useState("");
   const [observacoes, setObservacoes] = useState("");
+  const [obsModelo, setObsModelo] = useState("");
+  const [obsCorte, setObsCorte] = useState("");
   const [statusKanban, setStatusKanban] = useState("");
 
   // Imagem da referência
