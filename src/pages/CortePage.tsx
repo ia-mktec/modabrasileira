@@ -79,6 +79,7 @@ const CortePage = () => {
   const [pedidoSearchTerm, setPedidoSearchTerm] = useState("");
   const [pedidos, setPedidos] = useState<any[]>([]);
   const [pedidosVinculados, setPedidosVinculados] = useState<Set<string>>(new Set());
+  const [pedidosVinculadosInfo, setPedidosVinculadosInfo] = useState<Map<string, string>>(new Map());
   const [modeloRef, setModeloRef] = useState("");
   const [modeloNome, setModeloNome] = useState("");
   const [tecido, setTecido] = useState("");
@@ -352,7 +353,7 @@ const CortePage = () => {
       while (true) {
         const { data, error } = await supabase
           .from("ordens_corte")
-          .select("numero_pedido")
+          .select("numero_pedido,numero")
           .not("numero_pedido", "is", null)
           .range(fromO, fromO + step - 1);
         if (error || !data || data.length === 0) break;
@@ -371,10 +372,16 @@ const CortePage = () => {
       setPedidos(unique);
 
       const vinculados = new Set<string>();
+      const vinculadosInfo = new Map<string, string>();
       allOrdens.forEach((o: any) => {
-        if (o.numero_pedido) vinculados.add(String(o.numero_pedido));
+        if (o.numero_pedido) {
+          const pedido = String(o.numero_pedido);
+          vinculados.add(pedido);
+          vinculadosInfo.set(pedido, String(o.numero || ""));
+        }
       });
       setPedidosVinculados(vinculados);
+      setPedidosVinculadosInfo(vinculadosInfo);
     };
     loadPedidos();
   }, []);
@@ -383,15 +390,17 @@ const CortePage = () => {
     // Se estiver editando uma ordem existente, permite o proprio numero_pedido atual
     const estaVinculado = pedidosVinculados.has(String(p.numero_pedido));
     if (estaVinculado && String(p.numero_pedido) === numeroPedido) return true;
-    if (estaVinculado) return false;
     const termoBusca = normalizePedidoBusca(pedidoSearchTerm);
     const pedidoNormalizado = normalizePedidoBusca(p.numero_pedido);
-    return (
+    const correspondeBusca = (
       (p.numero_pedido || "").toLowerCase().includes(pedidoSearchTerm.toLowerCase()) ||
       (!!termoBusca && pedidoNormalizado.includes(termoBusca)) ||
       (p.modelo_ref || "").toLowerCase().includes(pedidoSearchTerm.toLowerCase()) ||
       (p.cliente || "").toLowerCase().includes(pedidoSearchTerm.toLowerCase())
     );
+    if (!correspondeBusca) return false;
+    if (!estaVinculado) return true;
+    return !!pedidoSearchTerm.trim();
   });
   const aplicarPedido = (p: any) => {
     setNumeroPedido(p.numero_pedido);
