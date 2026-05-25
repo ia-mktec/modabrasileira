@@ -756,6 +756,7 @@ const ExpedicaoPage = () => {
           .expedicao-ficha .px-4 { padding-left: 4px !important; padding-right: 4px !important; }
           .expedicao-ficha .dados-ordem-grid { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; gap: 3px !important; }
           .expedicao-ficha .dados-ordem-grid .col-span-2 { grid-column: span 2 / span 2 !important; }
+          .expedicao-ficha .dados-ordem-grid > div > div:last-child { min-height: 16px !important; padding: 1px 4px !important; font-size: 9px !important; line-height: 1.2 !important; }
           .expedicao-ficha .dados-ordem-readonly {
             height: auto !important;
             min-height: 16px !important;
