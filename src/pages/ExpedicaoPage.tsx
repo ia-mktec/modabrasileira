@@ -862,7 +862,7 @@ const ExpedicaoPage = () => {
               <h3 className="text-sm font-bold tracking-wide text-center">DADOS DA ORDEM</h3>
             </div>
             <CardContent className="p-4">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 dados-ordem-grid">
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Nº Ordem</Label>
                   <div className={readOnlyDisplay}><span className="truncate font-mono">{numero || "—"}</span></div>
