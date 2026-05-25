@@ -764,7 +764,8 @@ const ExpedicaoPage = () => {
             font-size: 9px !important;
             line-height: 1.2 !important;
           }
-          .expedicao-ficha img { max-height: 180px !important; min-height: 0 !important; object-fit: contain !important; width: 100% !important; }
+          .expedicao-ficha .grid-cols-1.md\:grid-cols-\[1fr_400px\] { grid-template-columns: 1fr 280px !important; gap: 6px !important; }
+          .expedicao-ficha img { max-height: 320px !important; min-height: 280px !important; object-fit: contain !important; width: 100% !important; }
           .expedicao-ficha .min-h-\[200px\] { min-height: 0 !important; }
           .expedicao-ficha .print-hide-row { display: none !important; }
           .expedicao-ficha .print-saidas-parciais { display: none !important; }
