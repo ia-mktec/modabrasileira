@@ -459,8 +459,20 @@ const RelatorioProducaoPage = () => {
               </SelectContent>
             </Select>
           </div>
-          {filtroCliente !== "__all__" && (
-            <Button variant="ghost" size="sm" onClick={() => setFiltroCliente("__all__")}>
+          <div className="flex flex-col gap-1 min-w-[200px] flex-1 max-w-sm">
+            <label className="text-xs font-semibold text-muted-foreground">Ordem de Corte</label>
+            <div className="relative">
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                value={filtroOC}
+                onChange={(e) => setFiltroOC(e.target.value)}
+                placeholder="Buscar por nº da OC..."
+                className="h-9 pl-8"
+              />
+            </div>
+          </div>
+          {(filtroCliente !== "__all__" || filtroOC) && (
+            <Button variant="ghost" size="sm" onClick={() => { setFiltroCliente("__all__"); setFiltroOC(""); }}>
               Limpar
             </Button>
           )}
