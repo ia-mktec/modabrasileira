@@ -102,9 +102,11 @@ export function useTecidos() {
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
-    const { data, error } = await supabase.from("tecidos").select("*, clientes(razao_social)").order("nome");
+    const { data, error } = await fetchAllRows((from, to) =>
+      supabase.from("tecidos").select("*, clientes(razao_social)").order("nome").range(from, to),
+    );
     if (error) { toast({ title: "Erro ao buscar tecidos", description: error.message, variant: "destructive" }); }
-    else setTecidos(data || []);
+    else setTecidos(data);
     setLoading(false);
   }, []);
 
