@@ -842,13 +842,19 @@ const CortePage = () => {
                         <div className="mt-4 space-y-3">
                           <Input placeholder="Pedido, modelo ou cliente..." value={pedidoSearchTerm} onChange={(e) => setPedidoSearchTerm(e.target.value)} />
                           <div className="space-y-1 max-h-[60vh] overflow-y-auto">
-                            {filteredPedidos.map((p: any, idx: number) => (
+                            {filteredPedidos.map((p: any, idx: number) => {
+                              const pedidoVinculado = pedidosVinculados.has(String(p.numero_pedido));
+                              const ordemVinculada = pedidosVinculadosInfo.get(String(p.numero_pedido));
+                              return (
                               <button key={p.id || `${p.numero_pedido}-${idx}`} onClick={() => aplicarPedido(p)} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
                                 <div className="font-mono text-xs font-semibold text-primary">{p.numero_pedido}</div>
                                 <div className="text-muted-foreground text-xs">{p.modelo_ref} — {p.cliente || "—"}</div>
                                 <div className="text-muted-foreground text-[10px]">{p.tecido || ""} {p.cor ? `• ${p.cor}` : ""}</div>
+                                {pedidoVinculado && (
+                                  <div className="text-[10px] text-muted-foreground">Já vinculado à OC {ordemVinculada || "—"}</div>
+                                )}
                               </button>
-                            ))}
+                            )})}
                             {filteredPedidos.length === 0 && (
                               <p className="text-sm text-muted-foreground text-center py-4">Nenhum pedido encontrado</p>
                             )}
