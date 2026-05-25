@@ -1157,7 +1157,7 @@ const ExpedicaoPage = () => {
           </Card>
 
           {/* Gradação de Aviamentos (consulta from Modelos) */}
-          <Card>
+          <Card className="print-page-break">
             <div className="bg-[hsl(199,89%,30%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
               <h3 className="text-sm font-bold tracking-wide text-center">GRADAÇÃO DE AVIAMENTOS</h3>
             </div>
