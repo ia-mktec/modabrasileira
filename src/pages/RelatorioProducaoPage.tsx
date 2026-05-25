@@ -373,10 +373,27 @@ const RelatorioProducaoPage = () => {
     return Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
   }, [pedidos]);
 
-  const pedidosFiltrados = useMemo(
-    () => (filtroCliente === "__all__" ? pedidos : pedidos.filter((p) => (p.cliente || "") === filtroCliente)),
-    [pedidos, filtroCliente]
-  );
+  const ocsByPedido = useMemo(() => {
+    const m: Record<string, string[]> = {};
+    ordens.forEach((o) => {
+      if (o.numero_pedido && o.numero) {
+        (m[o.numero_pedido] ||= []).push(o.numero);
+      }
+    });
+    return m;
+  }, [ordens]);
+
+  const pedidosFiltrados = useMemo(() => {
+    const ocQuery = filtroOC.trim().toLowerCase();
+    return pedidos.filter((p) => {
+      if (filtroCliente !== "__all__" && (p.cliente || "") !== filtroCliente) return false;
+      if (ocQuery) {
+        const ocs = ocsByPedido[p.numero_pedido] || [];
+        if (!ocs.some((n) => n.toLowerCase().includes(ocQuery))) return false;
+      }
+      return true;
+    });
+  }, [pedidos, filtroCliente, filtroOC, ocsByPedido]);
 
   const grouped = useMemo(() => {
     const g: Record<ColKey, PedidoRow[]> = {
