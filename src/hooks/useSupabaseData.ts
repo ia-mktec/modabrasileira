@@ -478,12 +478,15 @@ export function useRecebimento() {
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("recebimento")
-      .select("*, ordens_corte(numero, modelo_ref, tecido_nome), expedicao(oficina_nome, data_saida)")
-      .order("created_at", { ascending: false });
+    const { data, error } = await fetchAllRows((from, to) =>
+      supabase
+        .from("recebimento")
+        .select("*, ordens_corte(numero, modelo_ref, tecido_nome), expedicao(oficina_nome, data_saida)")
+        .order("created_at", { ascending: false })
+        .range(from, to),
+    );
     if (error) { toast({ title: "Erro ao buscar recebimentos", description: error.message, variant: "destructive" }); }
-    else setRecebimentos(data || []);
+    else setRecebimentos(data);
     setLoading(false);
   }, []);
 
