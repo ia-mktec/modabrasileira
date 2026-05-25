@@ -419,12 +419,15 @@ export function useExpedicao() {
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("expedicao")
-      .select("*, ordens_corte(numero, modelo_ref, tecido_nome, status), grade_expedicao(*)")
-      .order("created_at", { ascending: false });
+    const { data, error } = await fetchAllRows((from, to) =>
+      supabase
+        .from("expedicao")
+        .select("*, ordens_corte(numero, modelo_ref, tecido_nome, status), grade_expedicao(*)")
+        .order("created_at", { ascending: false })
+        .range(from, to),
+    );
     if (error) { toast({ title: "Erro ao buscar expedições", description: error.message, variant: "destructive" }); }
-    else setExpedicoes(data || []);
+    else setExpedicoes(data);
     setLoading(false);
   }, []);
 
