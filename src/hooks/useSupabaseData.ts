@@ -422,7 +422,7 @@ export function useExpedicao() {
     const { data, error } = await fetchAllRows((from, to) =>
       supabase
         .from("expedicao")
-        .select("*, ordens_corte(numero, modelo_ref, tecido_nome, status), grade_expedicao(*)")
+        .select("id, ordem_corte_id, data_saida, oficina_nome, status, grade_expedicao(cor, pp_exp, p_exp, m_exp, g_exp, gg_exp, g1_exp, g2_exp, g3_exp)")
         .order("created_at", { ascending: false })
         .range(from, to),
     );
