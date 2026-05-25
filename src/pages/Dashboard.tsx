@@ -57,7 +57,7 @@ const Dashboard = () => {
     (async () => {
       const [oc, tec, expGrade, av, expIds, recIds, entIds] = await Promise.all([
         fetchAll<any>("ordens_corte", "id,numero,modelo_ref,tecido_nome,quantidade_pecas,data_corte,status", { col: "data_corte", asc: false }),
-        supabase.from("tecidos").select("estoque_kg"),
+        fetchAll<any>("tecidos", "estoque_kg"),
         fetchAll<any>("grade_expedicao", "pp_exp,p_exp,m_exp,g_exp,gg_exp,g1_exp,g2_exp,g3_exp"),
         supabase.from("aviamentos").select("id", { count: "exact", head: true }),
         fetchAll<any>("expedicao", "ordem_corte_id,status"),
@@ -65,7 +65,7 @@ const Dashboard = () => {
         fetchAll<any>("entrega_cliente", "ordem_corte_id"),
       ]);
       setOrdens(oc || []);
-      setTecidoEstoque((tec.data || []).reduce((s, t: any) => s + Number(t.estoque_kg || 0), 0));
+      setTecidoEstoque((tec || []).reduce((s, t: any) => s + Number(t.estoque_kg || 0), 0));
       setPecasExpedidas((expGrade || []).reduce((s, g: any) =>
         s + (g.pp_exp||0)+(g.p_exp||0)+(g.m_exp||0)+(g.g_exp||0)+(g.gg_exp||0)+(g.g1_exp||0)+(g.g2_exp||0)+(g.g3_exp||0), 0));
       setAviamentosCount(av.count || 0);
