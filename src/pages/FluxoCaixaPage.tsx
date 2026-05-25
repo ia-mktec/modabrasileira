@@ -30,6 +30,7 @@ interface Lancamento {
   tipo: "entrada" | "saida";
   valor: number;
   status: "pago" | "pendente";
+  ordemCorte?: string;
 }
 
 const chartConfig = {
