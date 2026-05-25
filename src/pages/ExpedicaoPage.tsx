@@ -764,7 +764,8 @@ const ExpedicaoPage = () => {
             font-size: 9px !important;
             line-height: 1.2 !important;
           }
-          .expedicao-ficha .grid-cols-1.md\:grid-cols-\[1fr_400px\] { grid-template-columns: 1fr 280px !important; gap: 6px !important; }
+          .expedicao-ficha .print-dados-img-grid { display: grid !important; grid-template-columns: 55% 45% !important; gap: 6px !important; align-items: stretch !important; }
+          .expedicao-ficha .print-dados-img-grid > div:first-child .grid { grid-template-columns: repeat(2, minmax(0,1fr)) !important; gap: 3px !important; }
           .expedicao-ficha img { max-height: 320px !important; min-height: 280px !important; object-fit: contain !important; width: 100% !important; }
           .expedicao-ficha .min-h-\[200px\] { min-height: 0 !important; }
           .expedicao-ficha .print-hide-row { display: none !important; }
