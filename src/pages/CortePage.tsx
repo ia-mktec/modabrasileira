@@ -128,13 +128,23 @@ const CortePage = () => {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("ordens_corte")
-        .select("cortador,enfestador")
-        .range(0, 9999);
+      // Pagina para evitar o limite default de 1000 linhas do Supabase
+      const all: any[] = [];
+      const step = 1000;
+      let from = 0;
+      while (true) {
+        const { data, error } = await supabase
+          .from("ordens_corte")
+          .select("cortador,enfestador")
+          .range(from, from + step - 1);
+        if (error || !data || data.length === 0) break;
+        all.push(...data);
+        if (data.length < step) break;
+        from += step;
+      }
       const cs = new Set<string>();
       const es = new Set<string>();
-      (data || []).forEach((r: any) => {
+      all.forEach((r: any) => {
         if (r.cortador) cs.add(String(r.cortador).trim());
         if (r.enfestador) es.add(String(r.enfestador).trim());
       });

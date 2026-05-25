@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { fetchAllRows } from "@/lib/fetch-all-rows";
 
 // ===== CLIENTES =====
 export function useClientes() {
@@ -8,9 +9,11 @@ export function useClientes() {
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
-    const { data, error } = await supabase.from("clientes").select("*").order("razao_social");
+    const { data, error } = await fetchAllRows((from, to) =>
+      supabase.from("clientes").select("*").order("razao_social").range(from, to),
+    );
     if (error) { toast({ title: "Erro ao buscar clientes", description: error.message, variant: "destructive" }); }
-    else setClientes(data || []);
+    else setClientes(data);
     setLoading(false);
   }, []);
 
@@ -52,9 +55,11 @@ export function useFornecedores() {
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
-    const { data, error } = await supabase.from("fornecedores").select("*").order("razao_social");
+    const { data, error } = await fetchAllRows((from, to) =>
+      supabase.from("fornecedores").select("*").order("razao_social").range(from, to),
+    );
     if (error) { toast({ title: "Erro ao buscar fornecedores", description: error.message, variant: "destructive" }); }
-    else setFornecedores(data || []);
+    else setFornecedores(data);
     setLoading(false);
   }, []);
 
@@ -97,9 +102,11 @@ export function useTecidos() {
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
-    const { data, error } = await supabase.from("tecidos").select("*, clientes(razao_social)").order("nome");
+    const { data, error } = await fetchAllRows((from, to) =>
+      supabase.from("tecidos").select("*, clientes(razao_social)").order("nome").range(from, to),
+    );
     if (error) { toast({ title: "Erro ao buscar tecidos", description: error.message, variant: "destructive" }); }
-    else setTecidos(data || []);
+    else setTecidos(data);
     setLoading(false);
   }, []);
 
@@ -243,9 +250,11 @@ export function useAviamentos() {
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
-    const { data, error } = await supabase.from("aviamentos").select("*, fornecedores(razao_social)").order("tipo, descricao");
+    const { data, error } = await fetchAllRows((from, to) =>
+      supabase.from("aviamentos").select("*, fornecedores(razao_social)").order("tipo").order("descricao").range(from, to),
+    );
     if (error) { toast({ title: "Erro ao buscar aviamentos", description: error.message, variant: "destructive" }); }
-    else setAviamentos(data || []);
+    else setAviamentos(data);
     setLoading(false);
   }, []);
 
@@ -410,12 +419,15 @@ export function useExpedicao() {
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("expedicao")
-      .select("*, ordens_corte(numero, modelo_ref, tecido_nome, status), grade_expedicao(*)")
-      .order("created_at", { ascending: false });
+    const { data, error } = await fetchAllRows((from, to) =>
+      supabase
+        .from("expedicao")
+        .select("*, ordens_corte(numero, modelo_ref, tecido_nome, status), grade_expedicao(*)")
+        .order("created_at", { ascending: false })
+        .range(from, to),
+    );
     if (error) { toast({ title: "Erro ao buscar expedições", description: error.message, variant: "destructive" }); }
-    else setExpedicoes(data || []);
+    else setExpedicoes(data);
     setLoading(false);
   }, []);
 
@@ -466,12 +478,15 @@ export function useRecebimento() {
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("recebimento")
-      .select("*, ordens_corte(numero, modelo_ref, tecido_nome), expedicao(oficina_nome, data_saida)")
-      .order("created_at", { ascending: false });
+    const { data, error } = await fetchAllRows((from, to) =>
+      supabase
+        .from("recebimento")
+        .select("*, ordens_corte(numero, modelo_ref, tecido_nome), expedicao(oficina_nome, data_saida)")
+        .order("created_at", { ascending: false })
+        .range(from, to),
+    );
     if (error) { toast({ title: "Erro ao buscar recebimentos", description: error.message, variant: "destructive" }); }
-    else setRecebimentos(data || []);
+    else setRecebimentos(data);
     setLoading(false);
   }, []);
 
@@ -516,12 +531,15 @@ export function useEntregaCliente() {
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("entrega_cliente")
-      .select("*, ordens_corte(numero, modelo_ref, tecido_nome), clientes(razao_social)")
-      .order("created_at", { ascending: false });
+    const { data, error } = await fetchAllRows((from, to) =>
+      supabase
+        .from("entrega_cliente")
+        .select("*, ordens_corte(numero, modelo_ref, tecido_nome), clientes(razao_social)")
+        .order("created_at", { ascending: false })
+        .range(from, to),
+    );
     if (error) { toast({ title: "Erro ao buscar entregas", description: error.message, variant: "destructive" }); }
-    else setEntregas(data || []);
+    else setEntregas(data);
     setLoading(false);
   }, []);
 

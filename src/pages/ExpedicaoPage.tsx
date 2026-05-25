@@ -134,18 +134,29 @@ const ExpedicaoPage = () => {
     let cancelled = false;
     (async () => {
       setLoadingRegistros(true);
-      let q = supabase
-        .from("expedicao")
-        .select("id,data_saida,oficina_nome,status,preco_peca,observacoes,created_at,ordem_corte_id,grade_expedicao(pp_exp,p_exp,m_exp,g_exp,gg_exp,g1_exp,g2_exp,g3_exp)")
-        .order("data_saida", { ascending: false, nullsFirst: false })
-        .limit(2000);
-      if (filtroOficina) q = q.ilike("oficina_nome", `%${filtroOficina}%`);
-      if (filtroStatus) q = q.eq("status", filtroStatus);
-      if (filtroDataDe) q = q.gte("data_saida", filtroDataDe);
-      if (filtroDataAte) q = q.lte("data_saida", filtroDataAte);
-      const { data, error } = await q;
+      const rowsAll: any[] = [];
+      const step = 1000;
+      let from = 0;
+      let lastError: any = null;
+      while (true) {
+        let q = supabase
+          .from("expedicao")
+          .select("id,data_saida,oficina_nome,status,preco_peca,observacoes,created_at,ordem_corte_id,grade_expedicao(pp_exp,p_exp,m_exp,g_exp,gg_exp,g1_exp,g2_exp,g3_exp)")
+          .order("data_saida", { ascending: false, nullsFirst: false })
+          .range(from, from + step - 1);
+        if (filtroOficina) q = q.ilike("oficina_nome", `%${filtroOficina}%`);
+        if (filtroStatus) q = q.eq("status", filtroStatus);
+        if (filtroDataDe) q = q.gte("data_saida", filtroDataDe);
+        if (filtroDataAte) q = q.lte("data_saida", filtroDataAte);
+        const { data, error } = await q;
+        if (error) { lastError = error; break; }
+        const batch = data || [];
+        rowsAll.push(...batch);
+        if (batch.length < step) break;
+        from += step;
+      }
       if (!cancelled) {
-        let rows: any[] = error ? [] : (data || []);
+        let rows: any[] = lastError ? [] : rowsAll;
         if (rows.length && (filtroOrdem || filtroPedido)) {
           const ocMap: Record<string, any> = {};
           ordensCorteDb.forEach((o: any) => { ocMap[o.id] = o; });

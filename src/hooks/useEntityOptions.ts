@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all-rows";
 import type { SearchableOption } from "@/components/shared/SearchableSelect";
 
 export const STATUS_PEDIDO_OPTIONS: SearchableOption[] = [
@@ -40,9 +41,15 @@ export function useEntityOptions(): EntityOptions {
     (async () => {
       setLoading(true);
       const [clientesRes, tecidosRes, pedidosCoresRes] = await Promise.all([
-        supabase.from("clientes").select("razao_social").eq("status", "ativo").order("razao_social"),
-        supabase.from("tecidos").select("nome,cor").order("nome"),
-        supabase.from("modelo_pedidos").select("cor").not("cor", "is", null),
+        fetchAllRows((from, to) =>
+          supabase.from("clientes").select("razao_social").eq("status", "ativo").order("razao_social").range(from, to),
+        ),
+        fetchAllRows((from, to) =>
+          supabase.from("tecidos").select("nome,cor").order("nome").range(from, to),
+        ),
+        fetchAllRows((from, to) =>
+          supabase.from("modelo_pedidos").select("cor").not("cor", "is", null).range(from, to),
+        ),
       ]);
 
       if (!mounted) return;

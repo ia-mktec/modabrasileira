@@ -100,20 +100,31 @@ const TecidosPage = () => {
     let cancelled = false;
     (async () => {
       setLoadingRegistros(true);
-      let q = supabase
-        .from("tecido_entradas")
-        .select("id,cliente_nome,nome_tecido,composicao,data_entrada,cor,qtde_rolos,unidade_medida,metragem_total,status,ordem_corte1,ordem_corte2")
-        .order("data_entrada", { ascending: false, nullsFirst: false })
-        .limit(2000);
-      if (filtroCliente) q = q.ilike("cliente_nome", `%${filtroCliente}%`);
-      if (filtroTecido) q = q.ilike("nome_tecido", `%${filtroTecido}%`);
-      if (filtroCor) q = q.ilike("cor", `%${filtroCor}%`);
-      if (filtroDataDe) q = q.gte("data_entrada", filtroDataDe);
-      if (filtroDataAte) q = q.lte("data_entrada", filtroDataAte);
-      if (filtroOrdem) q = q.or(`ordem_corte1.ilike.%${filtroOrdem}%,ordem_corte2.ilike.%${filtroOrdem}%`);
-      const { data, error } = await q;
+      const all: any[] = [];
+      const step = 1000;
+      let from = 0;
+      let lastError: any = null;
+      while (true) {
+        let q = supabase
+          .from("tecido_entradas")
+          .select("id,cliente_nome,nome_tecido,composicao,data_entrada,cor,qtde_rolos,unidade_medida,metragem_total,status,ordem_corte1,ordem_corte2")
+          .order("data_entrada", { ascending: false, nullsFirst: false })
+          .range(from, from + step - 1);
+        if (filtroCliente) q = q.ilike("cliente_nome", `%${filtroCliente}%`);
+        if (filtroTecido) q = q.ilike("nome_tecido", `%${filtroTecido}%`);
+        if (filtroCor) q = q.ilike("cor", `%${filtroCor}%`);
+        if (filtroDataDe) q = q.gte("data_entrada", filtroDataDe);
+        if (filtroDataAte) q = q.lte("data_entrada", filtroDataAte);
+        if (filtroOrdem) q = q.or(`ordem_corte1.ilike.%${filtroOrdem}%,ordem_corte2.ilike.%${filtroOrdem}%`);
+        const { data, error } = await q;
+        if (error) { lastError = error; break; }
+        const batch = data || [];
+        all.push(...batch);
+        if (batch.length < step) break;
+        from += step;
+      }
       if (!cancelled) {
-        if (!error) setRegistros((data || []) as RegistroEntrada[]);
+        if (!lastError) setRegistros(all as RegistroEntrada[]);
         setLoadingRegistros(false);
       }
     })();
