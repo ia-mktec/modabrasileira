@@ -344,7 +344,8 @@ const ModelosPage = () => {
 
 
 
-  // Gera número de pedido sequencial: PED-XXXXX (apenas calcula e exibe — a persistência ocorre em "Registrar Pedido")
+  // Gera número de pedido sequencial: PED-XXXXX no backend.
+  // Isso evita reinício da sequência por limite/paginação no navegador e por acessos simultâneos.
   const handleGerarNumeroPedido = async () => {
     if (!referencia) {
       toast({ title: "Referência obrigatória", description: "Informe a referência antes de gerar o número do pedido.", variant: "destructive" });
@@ -352,36 +353,16 @@ const ModelosPage = () => {
     }
     const dataBase = dataPedido || new Date().toISOString().slice(0, 10);
 
-    // Busca paginada de TODOS os PED-* (PostgREST limita a 1000 por requisição).
-    // Filtra apenas os estritamente numéricos (PED-#####), ignorando importados
-    // como PED-OC-26577 que quebram a ordenação textual.
-    let maior = 0;
-    const pageSize = 1000;
-    let from = 0;
-    while (true) {
-      const { data: existentes, error: errBusca } = await supabase
-        .from("modelo_pedidos")
-        .select("numero_pedido")
-        .like("numero_pedido", "PED-%")
-        .range(from, from + pageSize - 1);
-
-      if (errBusca) {
-        toast({ title: "Erro ao gerar pedido", description: errBusca.message, variant: "destructive" });
-        return;
-      }
-
-      (existentes || []).forEach((r: any) => {
-        const m = /^PED-(\d+)$/.exec(r.numero_pedido || "");
-        if (m) {
-          const n = parseInt(m[1], 10);
-          if (!isNaN(n) && n > maior) maior = n;
-        }
+    const { data: numero, error: errBusca } = await (supabase as any).rpc("proximo_numero_pedido");
+    if (errBusca || !numero) {
+      toast({
+        title: "Erro ao gerar pedido",
+        description: errBusca?.message || "Não foi possível obter o próximo número do pedido.",
+        variant: "destructive",
       });
-
-      if (!existentes || existentes.length < pageSize) break;
-      from += pageSize;
+      return;
     }
-    const numero = `PED-${String(maior + 1).padStart(5, "0")}`;
+
     setNumeroPedido(numero);
     if (!dataPedido) setDataPedido(dataBase);
     toast({ title: "Nº de Pedido gerado", description: `${numero} — clique em "Registrar Pedido" para persistir.` });
