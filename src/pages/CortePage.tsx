@@ -42,6 +42,13 @@ const normalizeReferencia = (value: string | null | undefined) =>
 const normalizeReferenciaLoose = (value: string | null | undefined) =>
   normalizeReferencia(value).replace(/\s+/g, "");
 
+const normalizePedidoBusca = (value: string | null | undefined) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "")
+    .replace(/^ped-?/, "");
+
 const getModeloNome = (modelo: any) => {
   const nome = String(modelo?.modelo || "").trim();
   const descricao = String(modelo?.descricao || "").trim();
@@ -332,6 +339,7 @@ const CortePage = () => {
           .from("modelo_pedidos")
           .select("*")
           .order("created_at", { ascending: false })
+          .order("numero_pedido", { ascending: false })
           .range(from, from + step - 1);
         if (error || !data || data.length === 0) break;
         allPedidos.push(...data);
@@ -376,8 +384,11 @@ const CortePage = () => {
     const estaVinculado = pedidosVinculados.has(String(p.numero_pedido));
     if (estaVinculado && String(p.numero_pedido) === numeroPedido) return true;
     if (estaVinculado) return false;
+    const termoBusca = normalizePedidoBusca(pedidoSearchTerm);
+    const pedidoNormalizado = normalizePedidoBusca(p.numero_pedido);
     return (
       (p.numero_pedido || "").toLowerCase().includes(pedidoSearchTerm.toLowerCase()) ||
+      (!!termoBusca && pedidoNormalizado.includes(termoBusca)) ||
       (p.modelo_ref || "").toLowerCase().includes(pedidoSearchTerm.toLowerCase()) ||
       (p.cliente || "").toLowerCase().includes(pedidoSearchTerm.toLowerCase())
     );
