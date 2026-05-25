@@ -42,6 +42,13 @@ const normalizeReferencia = (value: string | null | undefined) =>
 const normalizeReferenciaLoose = (value: string | null | undefined) =>
   normalizeReferencia(value).replace(/\s+/g, "");
 
+const normalizePedidoBusca = (value: string | null | undefined) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "")
+    .replace(/^ped-?/, "");
+
 const getModeloNome = (modelo: any) => {
   const nome = String(modelo?.modelo || "").trim();
   const descricao = String(modelo?.descricao || "").trim();
@@ -72,6 +79,7 @@ const CortePage = () => {
   const [pedidoSearchTerm, setPedidoSearchTerm] = useState("");
   const [pedidos, setPedidos] = useState<any[]>([]);
   const [pedidosVinculados, setPedidosVinculados] = useState<Set<string>>(new Set());
+  const [pedidosVinculadosInfo, setPedidosVinculadosInfo] = useState<Map<string, string>>(new Map());
   const [modeloRef, setModeloRef] = useState("");
   const [modeloNome, setModeloNome] = useState("");
   const [tecido, setTecido] = useState("");
@@ -332,6 +340,7 @@ const CortePage = () => {
           .from("modelo_pedidos")
           .select("*")
           .order("created_at", { ascending: false })
+          .order("numero_pedido", { ascending: false })
           .range(from, from + step - 1);
         if (error || !data || data.length === 0) break;
         allPedidos.push(...data);
@@ -344,7 +353,7 @@ const CortePage = () => {
       while (true) {
         const { data, error } = await supabase
           .from("ordens_corte")
-          .select("numero_pedido")
+          .select("numero_pedido,numero")
           .not("numero_pedido", "is", null)
           .range(fromO, fromO + step - 1);
         if (error || !data || data.length === 0) break;
@@ -363,10 +372,16 @@ const CortePage = () => {
       setPedidos(unique);
 
       const vinculados = new Set<string>();
+      const vinculadosInfo = new Map<string, string>();
       allOrdens.forEach((o: any) => {
-        if (o.numero_pedido) vinculados.add(String(o.numero_pedido));
+        if (o.numero_pedido) {
+          const pedido = String(o.numero_pedido);
+          vinculados.add(pedido);
+          vinculadosInfo.set(pedido, String(o.numero || ""));
+        }
       });
       setPedidosVinculados(vinculados);
+      setPedidosVinculadosInfo(vinculadosInfo);
     };
     loadPedidos();
   }, []);
@@ -375,12 +390,17 @@ const CortePage = () => {
     // Se estiver editando uma ordem existente, permite o proprio numero_pedido atual
     const estaVinculado = pedidosVinculados.has(String(p.numero_pedido));
     if (estaVinculado && String(p.numero_pedido) === numeroPedido) return true;
-    if (estaVinculado) return false;
-    return (
+    const termoBusca = normalizePedidoBusca(pedidoSearchTerm);
+    const pedidoNormalizado = normalizePedidoBusca(p.numero_pedido);
+    const correspondeBusca = (
       (p.numero_pedido || "").toLowerCase().includes(pedidoSearchTerm.toLowerCase()) ||
+      (!!termoBusca && pedidoNormalizado.includes(termoBusca)) ||
       (p.modelo_ref || "").toLowerCase().includes(pedidoSearchTerm.toLowerCase()) ||
       (p.cliente || "").toLowerCase().includes(pedidoSearchTerm.toLowerCase())
     );
+    if (!correspondeBusca) return false;
+    if (!estaVinculado) return true;
+    return !!pedidoSearchTerm.trim();
   });
   const aplicarPedido = (p: any) => {
     setNumeroPedido(p.numero_pedido);
@@ -822,13 +842,19 @@ const CortePage = () => {
                         <div className="mt-4 space-y-3">
                           <Input placeholder="Pedido, modelo ou cliente..." value={pedidoSearchTerm} onChange={(e) => setPedidoSearchTerm(e.target.value)} />
                           <div className="space-y-1 max-h-[60vh] overflow-y-auto">
-                            {filteredPedidos.map((p: any, idx: number) => (
+                            {filteredPedidos.map((p: any, idx: number) => {
+                              const pedidoVinculado = pedidosVinculados.has(String(p.numero_pedido));
+                              const ordemVinculada = pedidosVinculadosInfo.get(String(p.numero_pedido));
+                              return (
                               <button key={p.id || `${p.numero_pedido}-${idx}`} onClick={() => aplicarPedido(p)} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
                                 <div className="font-mono text-xs font-semibold text-primary">{p.numero_pedido}</div>
                                 <div className="text-muted-foreground text-xs">{p.modelo_ref} — {p.cliente || "—"}</div>
                                 <div className="text-muted-foreground text-[10px]">{p.tecido || ""} {p.cor ? `• ${p.cor}` : ""}</div>
+                                {pedidoVinculado && (
+                                  <div className="text-[10px] text-muted-foreground">Já vinculado à OC {ordemVinculada || "—"}</div>
+                                )}
                               </button>
-                            ))}
+                            )})}
                             {filteredPedidos.length === 0 && (
                               <p className="text-sm text-muted-foreground text-center py-4">Nenhum pedido encontrado</p>
                             )}
