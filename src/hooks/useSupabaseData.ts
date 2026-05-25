@@ -531,12 +531,15 @@ export function useEntregaCliente() {
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("entrega_cliente")
-      .select("*, ordens_corte(numero, modelo_ref, tecido_nome), clientes(razao_social)")
-      .order("created_at", { ascending: false });
+    const { data, error } = await fetchAllRows((from, to) =>
+      supabase
+        .from("entrega_cliente")
+        .select("*, ordens_corte(numero, modelo_ref, tecido_nome), clientes(razao_social)")
+        .order("created_at", { ascending: false })
+        .range(from, to),
+    );
     if (error) { toast({ title: "Erro ao buscar entregas", description: error.message, variant: "destructive" }); }
-    else setEntregas(data || []);
+    else setEntregas(data);
     setLoading(false);
   }, []);
 
