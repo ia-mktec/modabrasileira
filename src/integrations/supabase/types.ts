@@ -929,6 +929,24 @@ export type Database = {
         }
         Relationships: []
       }
+      pedido_numero_controle: {
+        Row: {
+          id: number
+          ultimo_numero: number
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          ultimo_numero?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          ultimo_numero?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -1211,6 +1229,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      proximo_numero_pedido: { Args: never; Returns: string }
     }
     Enums: {
       app_role:
