@@ -30,7 +30,6 @@ interface Lancamento {
   tipo: "entrada" | "saida";
   valor: number;
   status: "pago" | "pendente";
-  ordemCorte?: string;
 }
 
 const chartConfig = {
@@ -64,37 +63,24 @@ export default function FluxoCaixaPage() {
       while (true) {
         const { data, error } = await supabase
           .from("recebimento")
-          .select("id,data_recebimento,oficina_nome,total_pagar,total_sem_defeitos,status,ordem_corte_id")
+          .select("id,data_recebimento,oficina_nome,total_pagar,total_sem_defeitos,status")
           .range(from, from + size - 1);
         if (error || !data || data.length === 0) break;
         all.push(...data);
         if (data.length < size) break;
         from += size;
       }
-      const ocIds = Array.from(new Set(all.map((r) => r.ordem_corte_id).filter(Boolean)));
-      const ocMap = new Map<string, string>();
-      if (ocIds.length > 0) {
-        const { data: ocs } = await supabase
-          .from("ordens_corte")
-          .select("id,numero")
-          .in("id", ocIds);
-        (ocs || []).forEach((o: any) => ocMap.set(o.id, o.numero));
-      }
       const items: Lancamento[] = all
         .filter((r) => Number(r.total_pagar || 0) > 0)
-        .map((r) => {
-          const ocNum = r.ordem_corte_id ? ocMap.get(r.ordem_corte_id) : undefined;
-          return {
-            id: r.id,
-            data: r.data_recebimento || "",
-            descricao: `Pagamento facção ${r.oficina_nome || "—"}${ocNum ? ` - OC ${ocNum}` : ""}${r.total_sem_defeitos ? ` (${r.total_sem_defeitos} pçs)` : ""}`,
-            categoria: "Serviços de Facção",
-            tipo: "saida" as const,
-            valor: Number(r.total_pagar || 0),
-            status: ((r.status || "").toLowerCase() === "pago" ? "pago" : "pendente") as "pago" | "pendente",
-            ordemCorte: ocNum,
-          };
-        })
+        .map((r) => ({
+          id: r.id,
+          data: r.data_recebimento || "",
+          descricao: `Pagamento facção ${r.oficina_nome || "—"}${r.total_sem_defeitos ? ` (${r.total_sem_defeitos} pçs)` : ""}`,
+          categoria: "Serviços de Facção",
+          tipo: "saida" as const,
+          valor: Number(r.total_pagar || 0),
+          status: ((r.status || "").toLowerCase() === "pago" ? "pago" : "pendente") as "pago" | "pendente",
+        }))
         .filter((l) => l.data)
         .sort((a, b) => b.data.localeCompare(a.data));
       setLancamentos(items);
