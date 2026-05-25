@@ -353,7 +353,9 @@ const ModelosPage = () => {
     }
     const dataBase = dataPedido || new Date().toISOString().slice(0, 10);
 
-    const { data: numero, error: errBusca } = await (supabase as any).rpc("proximo_numero_pedido");
+    const { data: numero, error: errBusca } = await (supabase as unknown as {
+      rpc: (fn: "proximo_numero_pedido") => Promise<{ data: string | null; error: { message: string } | null }>;
+    }).rpc("proximo_numero_pedido");
     if (errBusca || !numero) {
       toast({
         title: "Erro ao gerar pedido",
