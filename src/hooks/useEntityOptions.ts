@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetch-all-rows";
 import type { SearchableOption } from "@/components/shared/SearchableSelect";
 
 export const STATUS_PEDIDO_OPTIONS: SearchableOption[] = [
