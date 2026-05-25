@@ -977,7 +977,7 @@ const ExpedicaoPage = () => {
             </Card>
 
             {/* Dados da Entrada Oficina (editáveis - persiste em recebimento) */}
-            <Card>
+            <Card className="print:hidden">
               <div className="bg-[hsl(199,89%,30%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
                 <h3 className="text-sm font-bold tracking-wide text-center">DADOS DA ENTRADA OFICINA</h3>
               </div>
