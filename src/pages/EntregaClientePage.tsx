@@ -102,18 +102,29 @@ const EntregaClientePage = () => {
     let cancelled = false;
     (async () => {
       setLoadingRegistros(true);
-      let q = supabase
-        .from("entrega_cliente")
-        .select("id,data_entrega,oficina_nome,status,qtd_entregue,segunda_qualidade,tempo_producao,observacoes,created_at,ordem_corte_id")
-        .order("data_entrega", { ascending: false, nullsFirst: false })
-        .limit(2000);
-      if (filtroOficina) q = q.ilike("oficina_nome", `%${filtroOficina}%`);
-      if (filtroStatus) q = q.eq("status", filtroStatus);
-      if (filtroDataDe) q = q.gte("data_entrega", filtroDataDe);
-      if (filtroDataAte) q = q.lte("data_entrega", filtroDataAte);
-      const { data, error } = await q;
+      const rowsAll: any[] = [];
+      const step = 1000;
+      let from = 0;
+      let lastError: any = null;
+      while (true) {
+        let q = supabase
+          .from("entrega_cliente")
+          .select("id,data_entrega,oficina_nome,status,qtd_entregue,segunda_qualidade,tempo_producao,observacoes,created_at,ordem_corte_id")
+          .order("data_entrega", { ascending: false, nullsFirst: false })
+          .range(from, from + step - 1);
+        if (filtroOficina) q = q.ilike("oficina_nome", `%${filtroOficina}%`);
+        if (filtroStatus) q = q.eq("status", filtroStatus);
+        if (filtroDataDe) q = q.gte("data_entrega", filtroDataDe);
+        if (filtroDataAte) q = q.lte("data_entrega", filtroDataAte);
+        const { data, error } = await q;
+        if (error) { lastError = error; break; }
+        const batch = data || [];
+        rowsAll.push(...batch);
+        if (batch.length < step) break;
+        from += step;
+      }
       if (!cancelled) {
-        let rows: any[] = error ? [] : (data || []);
+        let rows: any[] = lastError ? [] : rowsAll;
         const ocMap: Record<string, any> = {};
         ordensCorteDb.forEach((o: any) => { ocMap[o.id] = o; });
         if (rows.length && (filtroOrdem || filtroPedido)) {
