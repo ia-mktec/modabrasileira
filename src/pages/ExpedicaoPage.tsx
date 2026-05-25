@@ -726,9 +726,13 @@ const ExpedicaoPage = () => {
     <div className="p-4 md:p-6 space-y-4 expedicao-ficha">
       <style>{`
         @media print {
-          @page { size: A4; margin: 8mm; }
+          @page { size: A4; margin: 6mm; }
           .expedicao-ficha { padding: 0 !important; }
-          .expedicao-ficha .space-y-4 > * + * { margin-top: 6px !important; }
+          .expedicao-ficha .space-y-4 > * + * { margin-top: 3px !important; }
+          .expedicao-ficha .space-y-3 > * + * { margin-top: 2px !important; }
+          .expedicao-ficha .space-y-1 > * + * { margin-top: 1px !important; }
+          .expedicao-ficha .gap-4 { gap: 4px !important; }
+          .expedicao-ficha .gap-3 { gap: 3px !important; }
           .expedicao-ficha input, .expedicao-ficha textarea {
             background: transparent !important;
             border-color: hsl(220 15% 80%) !important;
@@ -736,23 +740,42 @@ const ExpedicaoPage = () => {
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
             height: auto !important;
-            min-height: 24px !important;
+            min-height: 18px !important;
+            padding: 1px 4px !important;
+            font-size: 9px !important;
           }
-          .expedicao-ficha .text-xs, .expedicao-ficha .text-\\[10px\\], .expedicao-ficha .text-\\[11px\\] { font-size: 9px !important; }
-          .expedicao-ficha .text-sm { font-size: 10px !important; }
-          .expedicao-ficha h1 { font-size: 14px !important; }
-          .expedicao-ficha h3 { font-size: 11px !important; }
-          .expedicao-ficha .p-4, .expedicao-ficha .md\\:p-6, .expedicao-ficha .p-3 { padding: 6px !important; }
-          .expedicao-ficha .py-3 { padding-top: 4px !important; padding-bottom: 4px !important; }
-          .expedicao-ficha img { max-height: 320px !important; min-height: 260px !important; object-fit: contain !important; width: 100% !important; }
+          .expedicao-ficha label { font-size: 8px !important; margin-bottom: 0 !important; line-height: 1.1 !important; }
+          .expedicao-ficha .text-xs, .expedicao-ficha .text-\[10px\], .expedicao-ficha .text-\[11px\] { font-size: 8px !important; }
+          .expedicao-ficha .text-sm { font-size: 9px !important; }
+          .expedicao-ficha h1 { font-size: 12px !important; }
+          .expedicao-ficha h3 { font-size: 10px !important; }
+          .expedicao-ficha .p-4, .expedicao-ficha .md\:p-6, .expedicao-ficha .p-3 { padding: 3px !important; }
+          .expedicao-ficha .p-2 { padding: 2px !important; }
+          .expedicao-ficha .py-3 { padding-top: 2px !important; padding-bottom: 2px !important; }
+          .expedicao-ficha .py-1\.5 { padding-top: 1px !important; padding-bottom: 1px !important; }
+          .expedicao-ficha .px-4 { padding-left: 4px !important; padding-right: 4px !important; }
+          .expedicao-ficha .dados-ordem-grid { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; gap: 3px !important; }
+          .expedicao-ficha .dados-ordem-grid .col-span-2 { grid-column: span 2 / span 2 !important; }
+          .expedicao-ficha .dados-ordem-readonly {
+            height: auto !important;
+            min-height: 16px !important;
+            padding: 1px 4px !important;
+            font-size: 9px !important;
+            line-height: 1.2 !important;
+          }
+          .expedicao-ficha img { max-height: 180px !important; min-height: 0 !important; object-fit: contain !important; width: 100% !important; }
+          .expedicao-ficha .min-h-\[200px\] { min-height: 0 !important; }
           .expedicao-ficha .print-hide-row { display: none !important; }
           .expedicao-ficha .print-saidas-parciais { display: none !important; }
           .expedicao-ficha .print-enviar-label::after { content: "Quantidade"; }
           .expedicao-ficha .print-enviar-label > span { display: none !important; }
+          .expedicao-ficha table { font-size: 8px !important; }
+          .expedicao-ficha table th, .expedicao-ficha table td { padding: 1px 3px !important; }
           .expedicao-ficha table, .expedicao-ficha [class*="rounded-lg"] {
             page-break-inside: avoid; break-inside: avoid;
           }
           .expedicao-ficha button { display: none !important; }
+          .expedicao-ficha .print-page-break { page-break-before: always; break-before: page; }
         }
       `}</style>
       {/* Header */}
