@@ -1266,7 +1266,27 @@ const ExpedicaoPage = () => {
             <div className="bg-[hsl(38,92%,50%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
               <h3 className="text-sm font-bold tracking-wide text-center">OBSERVAÇÕES</h3>
             </div>
-            <CardContent className="p-4">
+            <CardContent className="p-4 space-y-3">
+              {(obsModelo || obsCorte) && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="rounded-md border bg-muted/40 p-3">
+                    <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">
+                      Observações do Modelo
+                    </div>
+                    <div className="text-sm whitespace-pre-wrap min-h-[40px]">
+                      {obsModelo || <span className="text-muted-foreground">—</span>}
+                    </div>
+                  </div>
+                  <div className="rounded-md border bg-muted/40 p-3">
+                    <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">
+                      Observações do Corte
+                    </div>
+                    <div className="text-sm whitespace-pre-wrap min-h-[40px]">
+                      {obsCorte || <span className="text-muted-foreground">—</span>}
+                    </div>
+                  </div>
+                </div>
+              )}
               <Textarea
                 value={observacoes}
                 onChange={(e) => setObservacoes(e.target.value)}
