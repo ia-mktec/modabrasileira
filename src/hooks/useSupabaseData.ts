@@ -250,9 +250,11 @@ export function useAviamentos() {
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
-    const { data, error } = await supabase.from("aviamentos").select("*, fornecedores(razao_social)").order("tipo, descricao");
+    const { data, error } = await fetchAllRows((from, to) =>
+      supabase.from("aviamentos").select("*, fornecedores(razao_social)").order("tipo").order("descricao").range(from, to),
+    );
     if (error) { toast({ title: "Erro ao buscar aviamentos", description: error.message, variant: "destructive" }); }
-    else setAviamentos(data || []);
+    else setAviamentos(data);
     setLoading(false);
   }, []);
 
