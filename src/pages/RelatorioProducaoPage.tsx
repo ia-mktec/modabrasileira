@@ -7,7 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarDays, Clock, Package, TrendingUp, Activity, Shirt } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { CalendarDays, Clock, Package, TrendingUp, Activity, Shirt, Search } from "lucide-react";
 import { PedidoTimeline } from "@/components/shared/PedidoTimeline";
 import { cn, formatDateBR } from "@/lib/utils";
 
@@ -190,6 +191,7 @@ const RelatorioProducaoPage = () => {
   const [selectedPedido, setSelectedPedido] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [filtroCliente, setFiltroCliente] = useState<string>("__all__");
+  const [filtroOC, setFiltroOC] = useState<string>("");
 
   useEffect(() => {
     // Helper para paginar tabelas que podem exceder 1000 linhas (limite padrão do Supabase)
@@ -371,10 +373,27 @@ const RelatorioProducaoPage = () => {
     return Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
   }, [pedidos]);
 
-  const pedidosFiltrados = useMemo(
-    () => (filtroCliente === "__all__" ? pedidos : pedidos.filter((p) => (p.cliente || "") === filtroCliente)),
-    [pedidos, filtroCliente]
-  );
+  const ocsByPedido = useMemo(() => {
+    const m: Record<string, string[]> = {};
+    ordens.forEach((o) => {
+      if (o.numero_pedido && o.numero) {
+        (m[o.numero_pedido] ||= []).push(o.numero);
+      }
+    });
+    return m;
+  }, [ordens]);
+
+  const pedidosFiltrados = useMemo(() => {
+    const ocQuery = filtroOC.trim().toLowerCase();
+    return pedidos.filter((p) => {
+      if (filtroCliente !== "__all__" && (p.cliente || "") !== filtroCliente) return false;
+      if (ocQuery) {
+        const ocs = ocsByPedido[p.numero_pedido] || [];
+        if (!ocs.some((n) => n.toLowerCase().includes(ocQuery))) return false;
+      }
+      return true;
+    });
+  }, [pedidos, filtroCliente, filtroOC, ocsByPedido]);
 
   const grouped = useMemo(() => {
     const g: Record<ColKey, PedidoRow[]> = {
@@ -440,8 +459,20 @@ const RelatorioProducaoPage = () => {
               </SelectContent>
             </Select>
           </div>
-          {filtroCliente !== "__all__" && (
-            <Button variant="ghost" size="sm" onClick={() => setFiltroCliente("__all__")}>
+          <div className="flex flex-col gap-1 min-w-[200px] flex-1 max-w-sm">
+            <label className="text-xs font-semibold text-muted-foreground">Ordem de Corte</label>
+            <div className="relative">
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                value={filtroOC}
+                onChange={(e) => setFiltroOC(e.target.value)}
+                placeholder="Buscar por nº da OC..."
+                className="h-9 pl-8"
+              />
+            </div>
+          </div>
+          {(filtroCliente !== "__all__" || filtroOC) && (
+            <Button variant="ghost" size="sm" onClick={() => { setFiltroCliente("__all__"); setFiltroOC(""); }}>
               Limpar
             </Button>
           )}
