@@ -9,9 +9,11 @@ export function useClientes() {
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
-    const { data, error } = await supabase.from("clientes").select("*").order("razao_social");
+    const { data, error } = await fetchAllRows((from, to) =>
+      supabase.from("clientes").select("*").order("razao_social").range(from, to),
+    );
     if (error) { toast({ title: "Erro ao buscar clientes", description: error.message, variant: "destructive" }); }
-    else setClientes(data || []);
+    else setClientes(data);
     setLoading(false);
   }, []);
 
