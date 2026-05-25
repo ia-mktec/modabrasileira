@@ -191,6 +191,7 @@ const RelatorioProducaoPage = () => {
   const [selectedPedido, setSelectedPedido] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [filtroCliente, setFiltroCliente] = useState<string>("__all__");
+  const [filtroOC, setFiltroOC] = useState<string>("");
 
   useEffect(() => {
     // Helper para paginar tabelas que podem exceder 1000 linhas (limite padrão do Supabase)
