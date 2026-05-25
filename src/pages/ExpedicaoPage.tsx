@@ -252,6 +252,8 @@ const ExpedicaoPage = () => {
     setOficina("");
     setPreco("");
     setObservacoes("");
+    setObsModelo((foundModelo as any)?.observacoes || "");
+    setObsCorte(oc.observacoes || "");
     setStatusKanban("");
     setGradeRows([]);
     setAviamentosExp([]);
