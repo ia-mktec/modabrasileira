@@ -313,19 +313,47 @@ const CortePage = () => {
   // Carrega pedidos de modelos (apenas nao vinculados a ordens de corte)
   useEffect(() => {
     const loadPedidos = async () => {
-      const [{ data: pedidosData }, { data: ordensData }] = await Promise.all([
-        supabase
+      // Busca paginada para evitar o limite default de 1000 linhas
+      const allPedidos: any[] = [];
+      const step = 1000;
+      let from = 0;
+      while (true) {
+        const { data, error } = await supabase
           .from("modelo_pedidos")
           .select("*")
-          .order("created_at", { ascending: false }),
-        supabase
+          .order("created_at", { ascending: false })
+          .range(from, from + step - 1);
+        if (error || !data || data.length === 0) break;
+        allPedidos.push(...data);
+        if (data.length < step) break;
+        from += step;
+      }
+
+      const allOrdens: any[] = [];
+      let fromO = 0;
+      while (true) {
+        const { data, error } = await supabase
           .from("ordens_corte")
           .select("numero_pedido")
-          .not("numero_pedido", "is", null),
-      ]);
-      setPedidos(pedidosData || []);
+          .not("numero_pedido", "is", null)
+          .range(fromO, fromO + step - 1);
+        if (error || !data || data.length === 0) break;
+        allOrdens.push(...data);
+        if (data.length < step) break;
+        fromO += step;
+      }
+
+      // Dedupe por numero_pedido (várias linhas por pedido)
+      const seen = new Set<string>();
+      const unique = allPedidos.filter((p: any) => {
+        if (seen.has(p.numero_pedido)) return false;
+        seen.add(p.numero_pedido);
+        return true;
+      });
+      setPedidos(unique);
+
       const vinculados = new Set<string>();
-      (ordensData || []).forEach((o: any) => {
+      allOrdens.forEach((o: any) => {
         if (o.numero_pedido) vinculados.add(String(o.numero_pedido));
       });
       setPedidosVinculados(vinculados);
