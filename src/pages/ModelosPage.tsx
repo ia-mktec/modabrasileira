@@ -202,6 +202,7 @@ const ModelosPage = () => {
     setObservacoes(m.observacoes || "");
     setQtdeRolos((m as any).qtde_rolos != null ? String((m as any).qtde_rolos) : "");
     setCorte((m as any).corte || "");
+    setRisco((m as any).risco || "");
     setFotoCliente1((m as any).foto_cliente_1_url || null);
     setFotoCliente2((m as any).foto_cliente_2_url || null);
     try {
