@@ -1467,7 +1467,7 @@ const ModelosPage = () => {
             onClick={() => setDeleteDialogOpen(true)}>
 
             <Trash2 className="w-4 h-4" />
-            <span>Limpar Registro</span>
+            <span>Limpar Tela</span>
           </Button>
 
           <Separator />
