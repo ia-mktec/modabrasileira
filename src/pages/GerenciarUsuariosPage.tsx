@@ -100,7 +100,8 @@ export default function GerenciarUsuariosPage() {
           .upsert({ route, role, permission: value }, { onConflict: "route,role" });
         if (error) throw error;
       }
-      await loadRoutePermissionsFromDB();
+      // Defer to allow Radix Select portal to unmount cleanly
+      setTimeout(() => { loadRoutePermissionsFromDB(); }, 100);
       toast({ title: "Permissão atualizada" });
     } catch (e: any) {
       toast({ title: "Erro", description: e.message ?? "Falha ao salvar permissão", variant: "destructive" });
