@@ -782,6 +782,12 @@ const ModelosPage = () => {
             const ins = await supabase.from("aviamentos_pedido" as any).insert(aviamentosRows);
             if (ins.error) error = ins.error;
           }
+          // Regra: 1º pedido de uma referência cria o modelo pai automaticamente
+          // (se já existir, apenas atualiza a ficha com os dados deste pedido).
+          if (!error) {
+            const mid = await ensureParentModelo();
+            if (!mid) error = new Error("Falha ao sincronizar modelo pai");
+          }
         }
       }
     } finally {
