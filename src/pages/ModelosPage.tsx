@@ -834,8 +834,9 @@ const ModelosPage = () => {
   <div className="flex-1 space-y-4">
       {/* Header fields */}
       <Card>
-        <CardContent className="p-4">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <CardContent className="p-4 print:p-2">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 print:grid-cols-6 gap-3 print:gap-2">
+
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Referência</Label>
               <Input value={referencia} onChange={(e) => { setReferencia(e.target.value); setNumeroPedido(""); }} className={yellowInput} placeholder="MK-2024-001" />
@@ -978,7 +979,7 @@ const ModelosPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Image column */}
         <div className="space-y-4">
-          <Card className="flex items-center justify-center min-h-[280px] print:min-h-[560px] overflow-hidden">
+          <Card className="flex items-center justify-center min-h-[280px] print:min-h-[760px] overflow-hidden">
             <input
               ref={imageInputRef}
               type="file"
@@ -987,8 +988,9 @@ const ModelosPage = () => {
               className="hidden"
             />
             {modelImage ? (
-              <div className="relative w-full h-full min-h-[280px] print:min-h-[560px]">
+              <div className="relative w-full h-full min-h-[280px] print:min-h-[760px]">
                 <img src={modelImage} alt="Modelo" className="w-full h-full object-contain p-2 print:p-1" />
+
                 <Button
                   variant="outline"
                   size="sm"
