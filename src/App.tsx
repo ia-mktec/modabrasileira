@@ -15,6 +15,7 @@ import ModelosPage from "./pages/ModelosPage";
 import CortePage from "./pages/CortePage";
 import PedidosPage from "./pages/PedidosPage";
 import FichaPedidoPage from "./pages/FichaPedidoPage";
+import PedidoImpressaoPage from "./pages/PedidoImpressaoPage";
 import CadastroPage from "./pages/CadastroPage";
 import AviamentosPage from "./pages/AviamentosPage";
 import ExpedicaoPage from "./pages/ExpedicaoPage";
