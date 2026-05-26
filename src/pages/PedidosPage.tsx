@@ -118,7 +118,13 @@ export default function PedidosPage() {
         return true;
       });
       // ordena do maior número para o menor (PED-XXXXX é zero-padded → ordem lexicográfica funciona)
-      unique.sort((a, b) => (b.numero_pedido || "").localeCompare(a.numero_pedido || ""));
+      unique.sort((a, b) => {
+        const aOC = (a.numero_pedido || "").startsWith("PED-OC");
+        const bOC = (b.numero_pedido || "").startsWith("PED-OC");
+        if (aOC && !bOC) return -1;
+        if (!aOC && bOC) return 1;
+        return (b.numero_pedido || "").localeCompare(a.numero_pedido || "");
+      });
       setPedidos(unique);
       setLoading(false);
     })();
