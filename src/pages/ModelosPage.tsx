@@ -620,6 +620,7 @@ const ModelosPage = () => {
   // ── Include ──
   const handleIncluir = () => {
     limparCampos();
+    setIsIncluding(true);
     toast({ title: "Novo modelo", description: "Campos abertos para inclusão de nova referência. Preencha todos os campos." });
   };
 
