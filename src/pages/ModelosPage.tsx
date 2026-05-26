@@ -254,6 +254,7 @@ const ModelosPage = () => {
 
     setSearchOpen(false);
     setIsLoadedFromSearch(true);
+    setIsIncluding(false);
   };
 
   const limparCampos = () => {
