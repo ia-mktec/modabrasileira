@@ -278,6 +278,7 @@ const ModelosPage = () => {
     setModelImage(null);
     setCurrentModeloId(null);
     setIsLoadedFromSearch(false);
+    setIsIncluding(false);
   };
 
   // ── Edição de pedido vinda da tela de Pedidos ──
