@@ -1137,7 +1137,7 @@ const ModelosPage = () => {
                           <span className="text-muted-foreground italic">Nenhum</span>
                         )}
                       </td>
-                      <td className="py-1.5 px-3 text-center">
+                      <td className="py-1.5 px-3 text-center print:hidden">
                         <div className="flex items-center justify-center gap-1">
                           {(av.selectedItem || av.partesQtde) && (
                             <Button
