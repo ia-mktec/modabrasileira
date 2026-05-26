@@ -117,6 +117,8 @@ export default function PedidosPage() {
         seen.add(p.numero_pedido);
         return true;
       });
+      // ordena do maior número para o menor (PED-XXXXX é zero-padded → ordem lexicográfica funciona)
+      unique.sort((a, b) => (b.numero_pedido || "").localeCompare(a.numero_pedido || ""));
       setPedidos(unique);
       setLoading(false);
     })();
