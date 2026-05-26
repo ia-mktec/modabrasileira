@@ -979,7 +979,7 @@ const ModelosPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-4 print:gap-2 print:items-start">
         {/* Image column */}
         <div className="space-y-4">
-          <Card className="flex items-center justify-center min-h-[280px] print:min-h-[760px] overflow-hidden">
+          <Card className="flex items-center justify-center min-h-[280px] print:min-h-[980px] overflow-hidden">
             <input
               ref={imageInputRef}
               type="file"
@@ -988,7 +988,7 @@ const ModelosPage = () => {
               className="hidden"
             />
             {modelImage ? (
-              <div className="relative w-full h-full min-h-[280px] print:min-h-[760px]">
+              <div className="relative w-full h-full min-h-[280px] print:min-h-[980px]">
                 <img src={modelImage} alt="Modelo" className="w-full h-full object-contain p-2 print:p-1" />
 
                 <Button
