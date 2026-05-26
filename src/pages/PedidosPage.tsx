@@ -119,10 +119,9 @@ export default function PedidosPage() {
       });
       // ordena do maior número para o menor (PED-XXXXX é zero-padded → ordem lexicográfica funciona)
       unique.sort((a, b) => {
-        const aOC = (a.numero_pedido || "").startsWith("PED-OC");
-        const bOC = (b.numero_pedido || "").startsWith("PED-OC");
-        if (aOC && !bOC) return -1;
-        if (!aOC && bOC) return 1;
+        const da = a.data_pedido || "";
+        const db = b.data_pedido || "";
+        if (da !== db) return db.localeCompare(da);
         return (b.numero_pedido || "").localeCompare(a.numero_pedido || "");
       });
       setPedidos(unique);
