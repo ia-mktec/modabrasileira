@@ -869,7 +869,7 @@ const ModelosPage = () => {
               <Label className="text-xs font-semibold">Nº de Pedido</Label>
               <div className="flex gap-1">
                 <Input value={numeroPedido} readOnly className={`flex-1 min-w-0 ${yellowInput} font-mono text-xs`} placeholder="REF-AAAAMMDD" />
-                <Button variant="default" size="sm" className="h-10 shrink-0 px-3 text-xs whitespace-nowrap" onClick={handleGerarNumeroPedido}>
+                <Button variant="default" size="sm" className="h-10 shrink-0 px-3 text-xs whitespace-nowrap print:hidden" onClick={handleGerarNumeroPedido}>
                   Gerar Nº Pedido
                 </Button>
               </div>
