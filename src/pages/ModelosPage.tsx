@@ -842,6 +842,18 @@ const ModelosPage = () => {
               </select>
             </div>
             <div className="space-y-1">
+              <Label className="text-xs font-semibold">Corte</Label>
+              <select
+                value={corte}
+                onChange={(e) => setCorte(e.target.value)}
+                className={`flex h-10 w-full items-center rounded-md border px-3 py-2 text-sm ${yellowInput}`}
+              >
+                <option value="">Selecionar</option>
+                <option value="interno">Interno</option>
+                <option value="externo">Externo</option>
+              </select>
+            </div>
+            <div className="space-y-1">
               <Label className="text-xs font-semibold">Data do Pedido</Label>
               <Input type="date" value={dataPedido} onChange={(e) => setDataPedido(e.target.value)} className={yellowInput} />
             </div>
