@@ -937,7 +937,47 @@ const ModelosPage = () => {
               </div>
             </CardContent>
           </Card>
-        </div>
+          {/* Foto Cliente — até 2 imagens, exibidas apenas na ficha do pedido (impressão) */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-start gap-4">
+                <h3 className="text-sm font-bold whitespace-nowrap pt-1">FOTO CLIENTE</h3>
+                <div className="flex flex-col gap-2 flex-1">
+                  <input ref={fotoCliente1Ref} type="file" accept="image/*" onChange={(e) => handleFotoClienteSelect(e, 1)} className="hidden" />
+                  <input ref={fotoCliente2Ref} type="file" accept="image/*" onChange={(e) => handleFotoClienteSelect(e, 2)} className="hidden" />
+                  {[1, 2].map((slot) => {
+                    const url = slot === 1 ? fotoCliente1 : fotoCliente2;
+                    const ref = slot === 1 ? fotoCliente1Ref : fotoCliente2Ref;
+                    return (
+                      <div key={slot} className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" className="gap-2 text-xs" onClick={() => ref.current?.click()}>
+                          <Upload className="w-3 h-3" /> Foto {slot}
+                        </Button>
+                        {url ? (
+                          <>
+                            <a href={url} target="_blank" rel="noreferrer" className="text-xs text-primary underline truncate max-w-[220px]">
+                              {url.split("/").pop()}
+                            </a>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0 text-destructive"
+                              onClick={() => slot === 1 ? setFotoCliente1(null) : setFotoCliente2(null)}
+                              title="Remover"
+                            >
+                              <X className="w-3 h-3" />
+                            </Button>
+                          </>
+                        ) : (
+                          <span className="text-xs text-muted-foreground italic">Nenhuma foto</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
         {/* Aviamentos + Serviços */}
         <div className="space-y-4">
