@@ -123,6 +123,12 @@ const ModelosPage = () => {
   const [forroQtde, setForroQtde] = useState("");
   const [forroConsumoPeca, setForroConsumoPeca] = useState("");
   const [observacoes, setObservacoes] = useState("");
+  const [qtdeRolos, setQtdeRolos] = useState("");
+  const [corte, setCorte] = useState("");
+  const [fotoCliente1, setFotoCliente1] = useState<string | null>(null);
+  const [fotoCliente2, setFotoCliente2] = useState<string | null>(null);
+  const fotoCliente1Ref = useRef<HTMLInputElement>(null);
+  const fotoCliente2Ref = useRef<HTMLInputElement>(null);
 
   const [aviamentos, setAviamentos] = useState<AviamentoRow[]>(defaultAviamentos.map((a) => ({ ...a })));
   const [servicos, setServicos] = useState<ServicoRow[]>(defaultServicos.map((s) => ({ ...s })));
@@ -193,6 +199,10 @@ const ModelosPage = () => {
     setForroConsumoPeca((m as any).forro_tecido2_consumo_peca ? String((m as any).forro_tecido2_consumo_peca) : "");
     setModelImage(m.imagem_url || null);
     setObservacoes(m.observacoes || "");
+    setQtdeRolos((m as any).qtde_rolos != null ? String((m as any).qtde_rolos) : "");
+    setCorte((m as any).corte || "");
+    setFotoCliente1((m as any).foto_cliente_1_url || null);
+    setFotoCliente2((m as any).foto_cliente_2_url || null);
     try {
       const parsed = m.tamanhos_grade ? JSON.parse(m.tamanhos_grade) : null;
       setGradeTamanhos(parsed && typeof parsed === "object" ? { ...emptyGradeTamanhos(), ...parsed } : emptyGradeTamanhos());
@@ -267,6 +277,10 @@ const ModelosPage = () => {
     setGradacao(Array.from({ length: 6 }, emptyGradacao));
     setGradeTamanhos(emptyGradeTamanhos());
     setObservacoes("");
+    setQtdeRolos("");
+    setCorte("");
+    setFotoCliente1(null);
+    setFotoCliente2(null);
     setModelagemFile(null);
     setModelagemUrl(null);
     setModelImage(null);
@@ -405,6 +419,21 @@ const ModelosPage = () => {
     toast({ title: "Imagem carregada", description: file.name });
   };
 
+  const handleFotoClienteSelect = async (e: React.ChangeEvent<HTMLInputElement>, slot: 1 | 2) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const fileName = `fotos-cliente/${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage.from("modelos").upload(fileName, file, { upsert: true });
+    if (error) {
+      toast({ title: "Erro ao enviar foto", description: error.message, variant: "destructive" });
+      return;
+    }
+    const { data: urlData } = supabase.storage.from("modelos").getPublicUrl(fileName);
+    if (slot === 1) setFotoCliente1(urlData.publicUrl);
+    else setFotoCliente2(urlData.publicUrl);
+    toast({ title: "Foto cliente carregada", description: file.name });
+  };
+
   // ── Aviamentos handlers ──
   const selectAviamentoItem = (idx: number, item: any) => {
     setAviamentos((prev) => prev.map((a, i) => i === idx ? { ...a, selectedItem: item } : a));
@@ -477,6 +506,10 @@ const ModelosPage = () => {
     imagem_url: modelImage || null,
     observacoes: observacoes || null,
     tamanhos_grade: JSON.stringify(gradeTamanhos),
+    qtde_rolos: parseInt(qtdeRolos) || 0,
+    corte: corte || null,
+    foto_cliente_1_url: fotoCliente1 || null,
+    foto_cliente_2_url: fotoCliente2 || null,
   });
 
   const buildChildren = () => ({
@@ -761,6 +794,17 @@ const ModelosPage = () => {
               />
             </div>
             <div className="space-y-1">
+              <Label className="text-xs font-semibold">Qtde de Rolos</Label>
+              <Input
+                type="number"
+                min="0"
+                value={qtdeRolos}
+                onChange={(e) => setQtdeRolos(e.target.value)}
+                className={yellowInput}
+                placeholder="0"
+              />
+            </div>
+            <div className="space-y-1">
               <Label className="text-xs font-semibold">Cliente</Label>
               <div className="flex gap-1">
                 <Input value={cliente} onChange={(e) => setCliente(e.target.value)} className={`flex-1 ${yellowInput}`} placeholder="Cliente" />
@@ -795,6 +839,18 @@ const ModelosPage = () => {
                 <option value="">Selecionar</option>
                 <option value="sim">SIM</option>
                 <option value="nao">NÃO</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold">Corte</Label>
+              <select
+                value={corte}
+                onChange={(e) => setCorte(e.target.value)}
+                className={`flex h-10 w-full items-center rounded-md border px-3 py-2 text-sm ${yellowInput}`}
+              >
+                <option value="">Selecionar</option>
+                <option value="interno">Interno</option>
+                <option value="externo">Externo</option>
               </select>
             </div>
             <div className="space-y-1">
@@ -877,6 +933,47 @@ const ModelosPage = () => {
                       {modelagemFile?.name || (modelagemUrl ? <a href={modelagemUrl} target="_blank" rel="noreferrer" className="underline text-primary">{modelagemUrl.split("/").pop()}</a> : "")}
                     </span>
                   )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          {/* Foto Cliente — até 2 imagens, exibidas apenas na ficha do pedido (impressão) */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-start gap-4">
+                <h3 className="text-sm font-bold whitespace-nowrap pt-1">FOTO CLIENTE</h3>
+                <div className="flex flex-col gap-2 flex-1">
+                  <input ref={fotoCliente1Ref} type="file" accept="image/*" onChange={(e) => handleFotoClienteSelect(e, 1)} className="hidden" />
+                  <input ref={fotoCliente2Ref} type="file" accept="image/*" onChange={(e) => handleFotoClienteSelect(e, 2)} className="hidden" />
+                  {[1, 2].map((slot) => {
+                    const url = slot === 1 ? fotoCliente1 : fotoCliente2;
+                    const ref = slot === 1 ? fotoCliente1Ref : fotoCliente2Ref;
+                    return (
+                      <div key={slot} className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" className="gap-2 text-xs" onClick={() => ref.current?.click()}>
+                          <Upload className="w-3 h-3" /> Foto {slot}
+                        </Button>
+                        {url ? (
+                          <>
+                            <a href={url} target="_blank" rel="noreferrer" className="text-xs text-primary underline truncate max-w-[220px]">
+                              {url.split("/").pop()}
+                            </a>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0 text-destructive"
+                              onClick={() => slot === 1 ? setFotoCliente1(null) : setFotoCliente2(null)}
+                              title="Remover"
+                            >
+                              <X className="w-3 h-3" />
+                            </Button>
+                          </>
+                        ) : (
+                          <span className="text-xs text-muted-foreground italic">Nenhuma foto</span>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </CardContent>
