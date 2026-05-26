@@ -22,6 +22,7 @@ interface PedidoData {
   status_kanban: string;
   piloto_entregue: boolean | null;
   consumo_tecido: number | null;
+  observacoes: string | null;
 }
 
 interface ModeloData {
