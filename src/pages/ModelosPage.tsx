@@ -199,6 +199,10 @@ const ModelosPage = () => {
     setForroConsumoPeca((m as any).forro_tecido2_consumo_peca ? String((m as any).forro_tecido2_consumo_peca) : "");
     setModelImage(m.imagem_url || null);
     setObservacoes(m.observacoes || "");
+    setQtdeRolos((m as any).qtde_rolos != null ? String((m as any).qtde_rolos) : "");
+    setCorte((m as any).corte || "");
+    setFotoCliente1((m as any).foto_cliente_1_url || null);
+    setFotoCliente2((m as any).foto_cliente_2_url || null);
     try {
       const parsed = m.tamanhos_grade ? JSON.parse(m.tamanhos_grade) : null;
       setGradeTamanhos(parsed && typeof parsed === "object" ? { ...emptyGradeTamanhos(), ...parsed } : emptyGradeTamanhos());
