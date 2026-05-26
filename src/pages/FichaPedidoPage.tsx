@@ -22,6 +22,7 @@ interface PedidoData {
   status_kanban: string;
   piloto_entregue: boolean | null;
   consumo_tecido: number | null;
+  observacoes: string | null;
 }
 
 interface ModeloData {
@@ -388,20 +389,36 @@ export default function FichaPedidoPage() {
         </Card>
       )}
 
-      {/* Gradação — pivot: 1 linha por item, tamanhos em colunas */}
+      {/* Gradação de Aviamentos — 1 linha por item; PP/G1/G2/G3 derivados de P + aumento */}
       {(() => {
         const SIZES = ["PP", "P", "M", "G", "GG", "G1", "G2", "G3"] as const;
-        // Agrupa por nome do item (observacao). Se não houver, usa "—"
-        const grupos = new Map<string, Record<string, number | null>>();
-        gradacao.forEach((g: any) => {
-          const item = (g.observacao || "—").trim();
-          if (!grupos.has(item)) grupos.set(item, {});
-          const sizeKey = (g.tamanho || "").toUpperCase().trim();
-          const valor =
-            g.medida_a ?? g.medida_b ?? g.medida_c ?? g.medida_d ?? null;
-          if (sizeKey) grupos.get(item)![sizeKey] = valor;
-        });
-        const linhas = Array.from(grupos.entries());
+        const fmt = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(2));
+        const linhas = gradacao
+          .map((g: any) => {
+            const descricao = (g.tamanho || "").trim();
+            const obs: string = g.observacao || "";
+            const m = obs.match(/Aumento:\s*([0-9.,]+)/i);
+            const aumento = m ? parseFloat(m[1].replace(",", ".")) : NaN;
+            const p = g.medida_a != null ? Number(g.medida_a) : 0;
+            const mv = g.medida_b != null ? Number(g.medida_b) : 0;
+            const gv = g.medida_c != null ? Number(g.medida_c) : 0;
+            const ggv = g.medida_d != null ? Number(g.medida_d) : 0;
+            const vals: Record<string, number | null> = {
+              PP: null, P: p || null, M: mv || null, G: gv || null, GG: ggv || null,
+              G1: null, G2: null, G3: null,
+            };
+            if (!isNaN(aumento) && p) {
+              vals.PP = p - aumento;
+              vals.M = p + aumento;
+              vals.G = p + 2 * aumento;
+              vals.GG = p + 3 * aumento;
+              vals.G1 = p + 4 * aumento;
+              vals.G2 = p + 5 * aumento;
+              vals.G3 = p + 6 * aumento;
+            }
+            return { descricao, aumento, vals };
+          })
+          .filter((l) => l.descricao || Object.values(l.vals).some((v) => v && Number(v) !== 0));
 
         return (
           <Card>
@@ -413,6 +430,7 @@ export default function FichaPedidoPage() {
                 <thead>
                   <tr className="border-b bg-muted/50">
                     <th className="text-left py-2 px-2 font-semibold">DESCRIÇÃO</th>
+                    <th className="text-center py-2 px-1 font-semibold w-20">AUMENTO</th>
                     {SIZES.map((s) => (
                       <th key={s} className="text-center py-2 px-1 font-semibold w-14">{s}</th>
                     ))}
@@ -421,19 +439,22 @@ export default function FichaPedidoPage() {
                 <tbody>
                   {linhas.length === 0 ? (
                     <tr>
-                      <td colSpan={SIZES.length + 1} className="text-center text-muted-foreground py-4">
+                      <td colSpan={SIZES.length + 2} className="text-center text-muted-foreground py-4">
                         Sem gradação
                       </td>
                     </tr>
                   ) : (
-                    linhas.map(([item, vals], i) => (
+                    linhas.map((l, i) => (
                       <tr key={i} className="border-b last:border-0">
-                        <td className="py-1 px-2 font-medium">{item}</td>
+                        <td className="py-1 px-2 font-medium">{l.descricao || "—"}</td>
+                        <td className="py-1 px-1 text-center font-mono">
+                          {!isNaN(l.aumento) ? `${fmt(l.aumento)} cm` : "—"}
+                        </td>
                         {SIZES.map((s) => {
-                          const v = vals[s];
+                          const v = l.vals[s];
                           return (
                             <td key={s} className="py-1 px-1 text-center font-mono">
-                              {v != null && Number(v) !== 0 ? Number(v) : "—"}
+                              {v != null && Number(v) !== 0 ? fmt(Number(v)) : "—"}
                             </td>
                           );
                         })}
@@ -446,6 +467,18 @@ export default function FichaPedidoPage() {
           </Card>
         );
       })()}
+
+      {/* Observações */}
+      {pedido.observacoes && (
+        <Card>
+          <div className="bg-[hsl(199,89%,30%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
+            <h3 className="text-sm font-bold tracking-wide text-center">OBSERVAÇÕES</h3>
+          </div>
+          <CardContent className="p-4">
+            <p className="text-sm whitespace-pre-wrap">{pedido.observacoes}</p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
