@@ -875,31 +875,40 @@ export type Database = {
       }
       pedido_historico: {
         Row: {
+          campo: string | null
           changed_by: string | null
           created_at: string
           id: string
           modelo_ref: string | null
           numero_pedido: string
           status_anterior: string | null
-          status_novo: string
+          status_novo: string | null
+          valor_anterior: string | null
+          valor_novo: string | null
         }
         Insert: {
+          campo?: string | null
           changed_by?: string | null
           created_at?: string
           id?: string
           modelo_ref?: string | null
           numero_pedido: string
           status_anterior?: string | null
-          status_novo: string
+          status_novo?: string | null
+          valor_anterior?: string | null
+          valor_novo?: string | null
         }
         Update: {
+          campo?: string | null
           changed_by?: string | null
           created_at?: string
           id?: string
           modelo_ref?: string | null
           numero_pedido?: string
           status_anterior?: string | null
-          status_novo?: string
+          status_novo?: string | null
+          valor_anterior?: string | null
+          valor_novo?: string | null
         }
         Relationships: []
       }

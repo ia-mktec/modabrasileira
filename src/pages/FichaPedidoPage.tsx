@@ -7,7 +7,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Printer, ArrowLeft, Shirt } from "lucide-react";
+import { Printer, ArrowLeft, Shirt, History } from "lucide-react";
+import { PedidoHistoricoDialog } from "@/components/shared/PedidoHistoricoDialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { canAccessRoute } from "@/lib/permissions";
 
 interface PedidoData {
   numero_pedido: string;
@@ -75,6 +78,9 @@ export default function FichaPedidoPage() {
   const [gradacao, setGradacao] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [histOpen, setHistOpen] = useState(false);
+  const { roles } = useAuth();
+  const canViewHistorico = canAccessRoute("/pedidos/historico", roles);
 
   useEffect(() => {
     if (!numero) return;
@@ -174,10 +180,23 @@ export default function FichaPedidoPage() {
         <Button variant="outline" size="sm" onClick={() => navigate("/pedidos")}>
           <ArrowLeft className="w-4 h-4" /> Voltar
         </Button>
-        <Button size="sm" onClick={() => window.print()}>
-          <Printer className="w-4 h-4" /> Imprimir / Salvar PDF
-        </Button>
+        <div className="flex gap-2">
+          {canViewHistorico && (
+            <Button variant="outline" size="sm" onClick={() => setHistOpen(true)}>
+              <History className="w-4 h-4" /> Histórico do Pedido
+            </Button>
+          )}
+          <Button size="sm" onClick={() => window.print()}>
+            <Printer className="w-4 h-4" /> Imprimir / Salvar PDF
+          </Button>
+        </div>
       </div>
+
+      <PedidoHistoricoDialog
+        numeroPedido={pedido.numero_pedido}
+        open={histOpen}
+        onOpenChange={setHistOpen}
+      />
 
       {/* Header */}
       <div className="bg-[hsl(217,71%,25%)] text-[hsl(0,0%,100%)] rounded-t-lg px-6 py-3 text-center">
