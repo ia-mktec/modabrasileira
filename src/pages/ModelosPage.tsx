@@ -616,7 +616,7 @@ const ModelosPage = () => {
   const handleDeleteConfirm = () => {
     setDeleteDialogOpen(false);
     limparCampos();
-    toast({ title: "Registro limpo", description: "Todos os dados do produto foram apagados da tela." });
+    toast({ title: "Tela limpa", description: "Os campos foram apagados da tela. Nenhum dado foi excluído do banco." });
   };
 
   // ── Include ──
@@ -1467,7 +1467,7 @@ const ModelosPage = () => {
             onClick={() => setDeleteDialogOpen(true)}>
 
             <Trash2 className="w-4 h-4" />
-            <span>Limpar Registro</span>
+            <span>Limpar Tela</span>
           </Button>
 
           <Separator />
@@ -1532,15 +1532,15 @@ const ModelosPage = () => {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Limpar Registro</AlertDialogTitle>
+            <AlertDialogTitle>Limpar Tela</AlertDialogTitle>
             <AlertDialogDescription>
-              Todos os dados do produto serão deletados. <strong>Deseja continuar?</strong>
+              Os campos exibidos serão apagados da tela. <strong>Nenhum dado será excluído do banco</strong> — o modelo e seus pedidos permanecem salvos. Deseja continuar?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Sim, Limpar
+              Sim, Limpar Tela
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
