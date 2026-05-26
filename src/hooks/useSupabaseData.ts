@@ -182,7 +182,7 @@ export function useModelos() {
     existingId?: string,
     children?: {
       aviamentos?: { ordem: number; descricao?: string; quantidade?: number; unidade?: string; observacao?: string }[];
-      servicos?: { ordem: number; descricao?: string; valor_unitario?: number; observacao?: string }[];
+      
       gradacao?: { ordem: number; tamanho?: string; medida_a?: number; medida_b?: number; medida_c?: number; medida_d?: number; observacao?: string }[];
     }
   ) => {
@@ -203,12 +203,6 @@ export function useModelos() {
             await supabase.from("modelo_aviamentos" as any).insert(children.aviamentos.map(r => ({ ...r, modelo_id: modeloId })));
           }
         }
-        if (children.servicos) {
-          await supabase.from("modelo_servicos" as any).delete().eq("modelo_id", modeloId);
-          if (children.servicos.length) {
-            await supabase.from("modelo_servicos" as any).insert(children.servicos.map(r => ({ ...r, modelo_id: modeloId })));
-          }
-        }
         if (children.gradacao) {
           await supabase.from("modelo_gradacao" as any).delete().eq("modelo_id", modeloId);
           if (children.gradacao.length) {
@@ -225,12 +219,11 @@ export function useModelos() {
   }, [fetch]);
 
   const carregarModeloCompleto = useCallback(async (modeloId: string) => {
-    const [av, sv, gr] = await Promise.all([
+    const [av, gr] = await Promise.all([
       supabase.from("modelo_aviamentos" as any).select("*").eq("modelo_id", modeloId).order("ordem"),
-      supabase.from("modelo_servicos" as any).select("*").eq("modelo_id", modeloId).order("ordem"),
       supabase.from("modelo_gradacao" as any).select("*").eq("modelo_id", modeloId).order("ordem"),
     ]);
-    return { aviamentos: av.data || [], servicos: sv.data || [], gradacao: gr.data || [] };
+    return { aviamentos: av.data || [], gradacao: gr.data || [] };
   }, []);
 
   const deletarModelo = useCallback(async (id: string) => {

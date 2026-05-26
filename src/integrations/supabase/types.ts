@@ -686,47 +686,6 @@ export type Database = {
         }
         Relationships: []
       }
-      modelo_servicos: {
-        Row: {
-          created_at: string
-          descricao: string | null
-          id: string
-          modelo_id: string
-          observacao: string | null
-          ordem: number
-          updated_at: string
-          valor_unitario: number | null
-        }
-        Insert: {
-          created_at?: string
-          descricao?: string | null
-          id?: string
-          modelo_id: string
-          observacao?: string | null
-          ordem?: number
-          updated_at?: string
-          valor_unitario?: number | null
-        }
-        Update: {
-          created_at?: string
-          descricao?: string | null
-          id?: string
-          modelo_id?: string
-          observacao?: string | null
-          ordem?: number
-          updated_at?: string
-          valor_unitario?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "modelo_servicos_modelo_id_fkey"
-            columns: ["modelo_id"]
-            isOneToOne: false
-            referencedRelation: "modelos"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       modelos: {
         Row: {
           arquivo_modelagem_url: string | null
