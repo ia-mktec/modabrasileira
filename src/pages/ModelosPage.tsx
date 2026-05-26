@@ -1457,7 +1457,7 @@ const ModelosPage = () => {
               onClick={handleSaveClick}>
 
               <Save className="w-4 h-4" />
-              <span>{isIncluding ? "Salvar Modelo" : "Salvar Alterações da Ficha"}</span>
+              <span>{isIncluding ? "Salvar Modelo" : "Salvar Alterações"}</span>
             </Button>
           )}
 
