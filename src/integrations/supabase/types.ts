@@ -734,6 +734,7 @@ export type Database = {
           consumo_gramas: number | null
           consumo_metros: number | null
           consumo_tecido: number | null
+          corte: string | null
           created_at: string
           descricao: string
           entretela: boolean | null
@@ -744,10 +745,13 @@ export type Database = {
           forro_tecido2_consumo_peca: number | null
           forro_tecido2_descricao: string | null
           forro_tecido2_quantidade: number | null
+          foto_cliente_1_url: string | null
+          foto_cliente_2_url: string | null
           id: string
           imagem_url: string | null
           modelo: string | null
           observacoes: string | null
+          qtde_rolos: number | null
           referencia: string
           status: string
           tamanhos_grade: string | null
@@ -760,6 +764,7 @@ export type Database = {
           consumo_gramas?: number | null
           consumo_metros?: number | null
           consumo_tecido?: number | null
+          corte?: string | null
           created_at?: string
           descricao: string
           entretela?: boolean | null
@@ -770,10 +775,13 @@ export type Database = {
           forro_tecido2_consumo_peca?: number | null
           forro_tecido2_descricao?: string | null
           forro_tecido2_quantidade?: number | null
+          foto_cliente_1_url?: string | null
+          foto_cliente_2_url?: string | null
           id?: string
           imagem_url?: string | null
           modelo?: string | null
           observacoes?: string | null
+          qtde_rolos?: number | null
           referencia: string
           status?: string
           tamanhos_grade?: string | null
@@ -786,6 +794,7 @@ export type Database = {
           consumo_gramas?: number | null
           consumo_metros?: number | null
           consumo_tecido?: number | null
+          corte?: string | null
           created_at?: string
           descricao?: string
           entretela?: boolean | null
@@ -796,10 +805,13 @@ export type Database = {
           forro_tecido2_consumo_peca?: number | null
           forro_tecido2_descricao?: string | null
           forro_tecido2_quantidade?: number | null
+          foto_cliente_1_url?: string | null
+          foto_cliente_2_url?: string | null
           id?: string
           imagem_url?: string | null
           modelo?: string | null
           observacoes?: string | null
+          qtde_rolos?: number | null
           referencia?: string
           status?: string
           tamanhos_grade?: string | null
