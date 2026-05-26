@@ -902,7 +902,7 @@ const ModelosPage = () => {
                 <Input value={cliente} onChange={(e) => setCliente(e.target.value)} className={`flex-1 ${yellowInput}`} placeholder="Cliente" />
                 <Sheet open={clienteSearchOpen} onOpenChange={(open) => {setClienteSearchOpen(open);setClienteSearchTerm("");}}>
                   <SheetTrigger asChild>
-                    <Button variant="outline" size="icon" className="h-10 w-10 shrink-0"><Search className="w-4 h-4" /></Button>
+                    <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 print:hidden"><Search className="w-4 h-4" /></Button>
                   </SheetTrigger>
                   <SheetContent side="right" className="w-80">
                     <SheetHeader><SheetTitle>Buscar Cliente</SheetTitle></SheetHeader>
