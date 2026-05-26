@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Printer, ArrowLeft } from "lucide-react";
+import { Printer, ArrowLeft, History } from "lucide-react";
+import { PedidoHistoricoDialog } from "@/components/shared/PedidoHistoricoDialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { canAccessRoute } from "@/lib/permissions";
 import { PageLoading } from "@/components/shared/PageLoading";
 import { formatDateBR } from "@/lib/utils";
 
@@ -34,6 +37,9 @@ export default function PedidoImpressaoPage() {
   const [pedido, setPedido] = useState<PedidoData | null>(null);
   const [modelo, setModelo] = useState<ModeloData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [histOpen, setHistOpen] = useState(false);
+  const { roles } = useAuth();
+  const canViewHistorico = canAccessRoute("/pedidos/historico", roles);
 
   useEffect(() => {
     if (!numero) return;
@@ -85,10 +91,23 @@ export default function PedidoImpressaoPage() {
         <Button variant="outline" size="sm" onClick={() => navigate("/pedidos")}>
           <ArrowLeft className="w-4 h-4" /> Voltar
         </Button>
-        <Button size="sm" onClick={() => window.print()}>
-          <Printer className="w-4 h-4" /> Imprimir / Salvar PDF
-        </Button>
+        <div className="flex gap-2">
+          {canViewHistorico && (
+            <Button variant="outline" size="sm" onClick={() => setHistOpen(true)}>
+              <History className="w-4 h-4" /> Histórico do Pedido
+            </Button>
+          )}
+          <Button size="sm" onClick={() => window.print()}>
+            <Printer className="w-4 h-4" /> Imprimir / Salvar PDF
+          </Button>
+        </div>
       </div>
+
+      <PedidoHistoricoDialog
+        numeroPedido={pedido.numero_pedido}
+        open={histOpen}
+        onOpenChange={setHistOpen}
+      />
 
       <div className="border border-foreground text-foreground text-sm bg-background">
         {/* Top header: PEDIDO | número | DATA | data | CLIENTE | cliente */}
