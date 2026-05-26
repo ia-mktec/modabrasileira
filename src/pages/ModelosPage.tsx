@@ -1348,13 +1348,15 @@ const ModelosPage = () => {
             <span>Incluir Modelo</span>
           </Button>
 
-          <Button
-            className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]"
-            onClick={handleSaveClick}>
+          {!editingPedidoNumero && (
+            <Button
+              className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]"
+              onClick={handleSaveClick}>
 
-            <Save className="w-4 h-4" />
-            <span>Salvar</span>
-          </Button>
+              <Save className="w-4 h-4" />
+              <span>Salvar</span>
+            </Button>
+          )}
 
           <Button
             variant="destructive"
@@ -1374,10 +1376,10 @@ const ModelosPage = () => {
 
           <Button
             disabled={savingPedido}
-            className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]"
+            className={`justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 text-[hsl(0,0%,100%)] ${editingPedidoNumero ? "bg-[hsl(25,90%,50%)] hover:bg-[hsl(25,90%,42%)] ring-2 ring-[hsl(25,90%,50%)] ring-offset-2 animate-pulse" : "bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)]"}`}
             onClick={handleRegistrarPedido}>
             <ClipboardCheck className="w-4 h-4" />
-            <span>{savingPedido ? (editingPedidoNumero ? "Salvando..." : "Registrando...") : (editingPedidoNumero ? "Salvar Alterações" : "Registrar Pedido")}</span>
+            <span>{savingPedido ? (editingPedidoNumero ? "Salvando..." : "Registrando...") : (editingPedidoNumero ? `Salvar Alterações (${editingPedidoNumero})` : "Registrar Pedido")}</span>
           </Button>
         </div>
 
