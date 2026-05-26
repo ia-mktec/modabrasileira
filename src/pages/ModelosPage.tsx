@@ -1532,15 +1532,15 @@ const ModelosPage = () => {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Limpar Registro</AlertDialogTitle>
+            <AlertDialogTitle>Limpar Tela</AlertDialogTitle>
             <AlertDialogDescription>
-              Todos os dados do produto serão deletados. <strong>Deseja continuar?</strong>
+              Os campos exibidos serão apagados da tela. <strong>Nenhum dado será excluído do banco</strong> — o modelo e seus pedidos permanecem salvos. Deseja continuar?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Sim, Limpar
+              Sim, Limpar Tela
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
