@@ -19,6 +19,7 @@ interface PedidoData {
 interface ModeloData {
   qtde_rolos: number | null;
   corte: string | null;
+  risco: string | null;
   foto_cliente_1_url: string | null;
   foto_cliente_2_url: string | null;
   tamanhos_grade: string | null;
@@ -47,7 +48,7 @@ export default function PedidoImpressaoPage() {
         setPedido(p as any);
         const { data: m } = await supabase
           .from("modelos")
-          .select("qtde_rolos,corte,foto_cliente_1_url,foto_cliente_2_url,tamanhos_grade,tecido_principal")
+          .select("qtde_rolos,corte,risco,foto_cliente_1_url,foto_cliente_2_url,tamanhos_grade,tecido_principal")
           .eq("referencia", p.modelo_ref)
           .maybeSingle();
         if (m) setModelo(m as any);
@@ -184,10 +185,10 @@ export default function PedidoImpressaoPage() {
                 </td>
               </tr>
 
-              {/* RISCO (campo manual) */}
+              {/* RISCO */}
               <tr>
                 <td className="border border-foreground bg-muted font-bold text-center py-2 px-2">RISCO</td>
-                <td className="border border-foreground text-center py-2 px-2" colSpan={3}>&nbsp;</td>
+                <td className="border border-foreground text-center font-bold py-2 px-2" colSpan={3}>{modelo?.risco || ""}</td>
               </tr>
 
               {/* CORTE INTERNO / CORTE EXTERNO */}

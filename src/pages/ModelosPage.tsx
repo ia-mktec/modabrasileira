@@ -125,6 +125,7 @@ const ModelosPage = () => {
   const [observacoes, setObservacoes] = useState("");
   const [qtdeRolos, setQtdeRolos] = useState("");
   const [corte, setCorte] = useState("");
+  const [risco, setRisco] = useState("");
   const [fotoCliente1, setFotoCliente1] = useState<string | null>(null);
   const [fotoCliente2, setFotoCliente2] = useState<string | null>(null);
   const fotoCliente1Ref = useRef<HTMLInputElement>(null);
@@ -201,6 +202,7 @@ const ModelosPage = () => {
     setObservacoes(m.observacoes || "");
     setQtdeRolos((m as any).qtde_rolos != null ? String((m as any).qtde_rolos) : "");
     setCorte((m as any).corte || "");
+    setRisco((m as any).risco || "");
     setFotoCliente1((m as any).foto_cliente_1_url || null);
     setFotoCliente2((m as any).foto_cliente_2_url || null);
     try {
@@ -279,6 +281,7 @@ const ModelosPage = () => {
     setObservacoes("");
     setQtdeRolos("");
     setCorte("");
+    setRisco("");
     setFotoCliente1(null);
     setFotoCliente2(null);
     setModelagemFile(null);
@@ -508,6 +511,7 @@ const ModelosPage = () => {
     tamanhos_grade: JSON.stringify(gradeTamanhos),
     qtde_rolos: parseInt(qtdeRolos) || 0,
     corte: corte || null,
+    risco: risco || null,
     foto_cliente_1_url: fotoCliente1 || null,
     foto_cliente_2_url: fotoCliente2 || null,
   });
@@ -852,6 +856,15 @@ const ModelosPage = () => {
                 <option value="interno">Interno</option>
                 <option value="externo">Externo</option>
               </select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold">Risco</Label>
+              <Input
+                value={risco}
+                onChange={(e) => setRisco(e.target.value)}
+                placeholder="Informar risco"
+                className={yellowInput}
+              />
             </div>
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Data do Pedido</Label>
