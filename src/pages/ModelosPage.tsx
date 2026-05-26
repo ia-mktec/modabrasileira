@@ -123,6 +123,12 @@ const ModelosPage = () => {
   const [forroQtde, setForroQtde] = useState("");
   const [forroConsumoPeca, setForroConsumoPeca] = useState("");
   const [observacoes, setObservacoes] = useState("");
+  const [qtdeRolos, setQtdeRolos] = useState("");
+  const [corte, setCorte] = useState("");
+  const [fotoCliente1, setFotoCliente1] = useState<string | null>(null);
+  const [fotoCliente2, setFotoCliente2] = useState<string | null>(null);
+  const fotoCliente1Ref = useRef<HTMLInputElement>(null);
+  const fotoCliente2Ref = useRef<HTMLInputElement>(null);
 
   const [aviamentos, setAviamentos] = useState<AviamentoRow[]>(defaultAviamentos.map((a) => ({ ...a })));
   const [servicos, setServicos] = useState<ServicoRow[]>(defaultServicos.map((s) => ({ ...s })));
