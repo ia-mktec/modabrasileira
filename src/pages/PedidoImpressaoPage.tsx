@@ -19,6 +19,7 @@ interface PedidoData {
 interface ModeloData {
   qtde_rolos: number | null;
   corte: string | null;
+  risco: string | null;
   foto_cliente_1_url: string | null;
   foto_cliente_2_url: string | null;
   tamanhos_grade: string | null;
