@@ -1477,13 +1477,15 @@ const ModelosPage = () => {
             <span>Imprimir Ficha</span>
           </Button>
 
-          <Button
-            disabled={savingPedido}
-            className={`justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 text-[hsl(0,0%,100%)] ${editingPedidoNumero ? "bg-[hsl(25,90%,50%)] hover:bg-[hsl(25,90%,42%)] ring-2 ring-[hsl(25,90%,50%)] ring-offset-2 animate-pulse" : "bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)]"}`}
-            onClick={handleRegistrarPedido}>
-            <ClipboardCheck className="w-4 h-4" />
-            <span>{savingPedido ? (editingPedidoNumero ? "Salvando..." : "Registrando...") : (editingPedidoNumero ? `Salvar Alterações (${editingPedidoNumero})` : "Registrar Pedido")}</span>
-          </Button>
+          {(numeroPedido || editingPedidoNumero) && (
+            <Button
+              disabled={savingPedido}
+              className={`justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 text-[hsl(0,0%,100%)] ${editingPedidoNumero ? "bg-[hsl(25,90%,50%)] hover:bg-[hsl(25,90%,42%)] ring-2 ring-[hsl(25,90%,50%)] ring-offset-2 animate-pulse" : "bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)]"}`}
+              onClick={handleRegistrarPedido}>
+              <ClipboardCheck className="w-4 h-4" />
+              <span>{savingPedido ? (editingPedidoNumero ? "Salvando..." : "Registrando...") : (editingPedidoNumero ? `Salvar Alterações (${editingPedidoNumero})` : "Registrar Pedido")}</span>
+            </Button>
+          )}
         </div>
 
         {fichaContent}
