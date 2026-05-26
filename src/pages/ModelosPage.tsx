@@ -834,8 +834,9 @@ const ModelosPage = () => {
   <div className="flex-1 space-y-4">
       {/* Header fields */}
       <Card>
-        <CardContent className="p-4">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <CardContent className="p-4 print:p-2">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 print:grid-cols-6 gap-3 print:gap-2">
+
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Referência</Label>
               <Input value={referencia} onChange={(e) => { setReferencia(e.target.value); setNumeroPedido(""); }} className={yellowInput} placeholder="MK-2024-001" />
