@@ -156,7 +156,22 @@
   input:placeholder-shown,
   textarea:placeholder-shown {
     background-color: hsl(0 0% 92%) !important;
+    border-color: hsl(0 0% 80%) !important;
+    color: transparent !important;
+    box-shadow: none !important;
   }
+  /* Empty (marked) fields — applied via .print-empty utility */
+  .print-empty {
+    background-color: hsl(0 0% 92%) !important;
+    border-color: hsl(0 0% 80%) !important;
+    color: transparent !important;
+    box-shadow: none !important;
+  }
+  .print-empty::-webkit-datetime-edit,
+  .print-empty option {
+    color: transparent !important;
+  }
+
 
   /* Make content full width and constrain to single page width */
   main {
