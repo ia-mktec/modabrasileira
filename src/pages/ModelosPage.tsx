@@ -1405,7 +1405,7 @@ const ModelosPage = () => {
             <SheetTrigger asChild>
               <Button variant="outline" className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0">
                 <Search className="w-4 h-4" />
-                <span>Buscar Modelo</span>
+                <span>Buscar Referência</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-80">
