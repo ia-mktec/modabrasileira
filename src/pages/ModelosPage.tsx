@@ -847,7 +847,7 @@ const ModelosPage = () => {
                 <Input value={modelo} onChange={(e) => setModelo(e.target.value)} className={`flex-1 ${yellowInput}`} placeholder="Nome do modelo" />
                 <Sheet open={modeloCadastroSearchOpen} onOpenChange={(open) => {setModeloCadastroSearchOpen(open);setModeloCadastroSearchTerm("");}}>
                   <SheetTrigger asChild>
-                    <Button variant="outline" size="icon" className="h-10 w-10 shrink-0"><Search className="w-4 h-4" /></Button>
+                    <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 print:hidden"><Search className="w-4 h-4" /></Button>
                   </SheetTrigger>
                   <SheetContent side="right" className="w-80">
                     <SheetHeader><SheetTitle>Buscar Modelo (Cadastro)</SheetTitle></SheetHeader>
@@ -902,7 +902,7 @@ const ModelosPage = () => {
                 <Input value={cliente} onChange={(e) => setCliente(e.target.value)} className={`flex-1 ${yellowInput}`} placeholder="Cliente" />
                 <Sheet open={clienteSearchOpen} onOpenChange={(open) => {setClienteSearchOpen(open);setClienteSearchTerm("");}}>
                   <SheetTrigger asChild>
-                    <Button variant="outline" size="icon" className="h-10 w-10 shrink-0"><Search className="w-4 h-4" /></Button>
+                    <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 print:hidden"><Search className="w-4 h-4" /></Button>
                   </SheetTrigger>
                   <SheetContent side="right" className="w-80">
                     <SheetHeader><SheetTitle>Buscar Cliente</SheetTitle></SheetHeader>
@@ -979,7 +979,7 @@ const ModelosPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-4 print:gap-2 print:items-start">
         {/* Image column */}
         <div className="space-y-4">
-          <Card className="flex items-center justify-center min-h-[280px] print:min-h-[760px] overflow-hidden">
+          <Card className="flex items-center justify-center min-h-[280px] print:min-h-[980px] overflow-hidden">
             <input
               ref={imageInputRef}
               type="file"
@@ -988,7 +988,7 @@ const ModelosPage = () => {
               className="hidden"
             />
             {modelImage ? (
-              <div className="relative w-full h-full min-h-[280px] print:min-h-[760px]">
+              <div className="relative w-full h-full min-h-[280px] print:min-h-[980px]">
                 <img src={modelImage} alt="Modelo" className="w-full h-full object-contain p-2 print:p-1" />
 
                 <Button
@@ -1096,7 +1096,7 @@ const ModelosPage = () => {
                   <tr className="border-b bg-muted/50">
                     <th className="text-left py-2 px-3 font-semibold">TIPO</th>
                     <th className="text-left py-2 px-3 font-semibold">ITEM SELECIONADO</th>
-                    <th className="text-center py-2 px-3 font-semibold w-20">BUSCAR</th>
+                    <th className="text-center py-2 px-3 font-semibold w-20 print:hidden">BUSCAR</th>
                     <th className="text-center py-2 px-3 font-semibold w-24">PARTES/QTDE</th>
                     <th className="text-center py-2 px-3 font-semibold w-12"></th>
                   </tr>
@@ -1137,7 +1137,7 @@ const ModelosPage = () => {
                           <span className="text-muted-foreground italic">Nenhum</span>
                         )}
                       </td>
-                      <td className="py-1.5 px-3 text-center">
+                      <td className="py-1.5 px-3 text-center print:hidden">
                         <div className="flex items-center justify-center gap-1">
                           {(av.selectedItem || av.partesQtde) && (
                             <Button
@@ -1291,12 +1291,12 @@ const ModelosPage = () => {
       </Card>
 
       {/* Grade de Tamanhos */}
-      <Card>
+      <Card className="print:break-before-page">
         <div className="bg-[hsl(199,89%,30%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
           <h3 className="text-sm font-bold tracking-wide text-center">GRADE DE TAMANHOS PEDIDO</h3>
         </div>
         <CardContent className="p-3">
-          <p className="text-xs text-muted-foreground mb-2">Informativo para a tela de Corte. Informe a quantidade de peças por tamanho.</p>
+          <p className="text-xs text-muted-foreground mb-2 print:hidden">Informativo para a tela de Corte. Informe a quantidade de peças por tamanho.</p>
           <div className="grid grid-cols-9 gap-2">
             {(["pp","p","m","g","gg","g1","g2","g3"] as const).map((size) => (
               <div key={size} className="space-y-1">
