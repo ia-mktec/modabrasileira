@@ -204,23 +204,11 @@
     min-height: 0 !important;
   }
 
-  /* Smaller text */
-  .text-xl, .text-2xl {
-    font-size: 14px !important;
-  }
+  /* Keep original text sizes on print to avoid word truncation */
 
-  .text-sm {
-    font-size: 10px !important;
-  }
-
-  .text-xs {
-    font-size: 9px !important;
-  }
-
-  /* Constrain model photo so it stays harmonious in print */
+  /* Let model photo fill its card on print */
   img {
     max-width: 100% !important;
-    max-height: 220px !important;
     object-fit: contain !important;
   }
 
