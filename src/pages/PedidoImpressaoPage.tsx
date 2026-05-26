@@ -185,10 +185,10 @@ export default function PedidoImpressaoPage() {
                 </td>
               </tr>
 
-              {/* RISCO (campo manual) */}
+              {/* RISCO */}
               <tr>
                 <td className="border border-foreground bg-muted font-bold text-center py-2 px-2">RISCO</td>
-                <td className="border border-foreground text-center py-2 px-2" colSpan={3}>&nbsp;</td>
+                <td className="border border-foreground text-center font-bold py-2 px-2" colSpan={3}>{modelo?.risco || ""}</td>
               </tr>
 
               {/* CORTE INTERNO / CORTE EXTERNO */}
