@@ -506,6 +506,32 @@ const ModelosPage = () => {
     foto_cliente_2_url: fotoCliente2 || null,
   });
 
+  const buildModeloFichaPayload = () => ({
+    descricao: modelo,
+    modelo,
+    tecido_principal: tecido || null,
+    consumo_tecido: parseFloat(consumoMetros) || 0,
+    consumo_metros: parseFloat(consumoMetros) || 0,
+    consumo_gramas: parseFloat(consumoGramas) || 0,
+    entretela,
+    entretela_descricao: entretelaDescricao || null,
+    entretela_quantidade: parseFloat(entreTelaQtde) || 0,
+    entretela_consumo_peca: parseFloat(entreTelaConsumoPeca) || 0,
+    forro_tecido2: forroTecido2,
+    forro_tecido2_descricao: forroDescricao || null,
+    forro_tecido2_quantidade: parseFloat(forroQtde) || 0,
+    forro_tecido2_consumo_peca: parseFloat(forroConsumoPeca) || 0,
+    arquivo_modelagem_url: modelagemUrl || null,
+    imagem_url: modelImage || null,
+    tamanhos_grade: JSON.stringify(gradeTamanhos),
+    qtde_rolos: parseInt(qtdeRolos) || 0,
+    corte: corte || null,
+    risco: risco || null,
+    foto_cliente_1_url: fotoCliente1 || null,
+    foto_cliente_2_url: fotoCliente2 || null,
+    updated_at: new Date().toISOString(),
+  });
+
   const buildChildren = () => ({
     aviamentos: aviamentos.map((a, i) => ({
       ordem: i + 1,
@@ -653,6 +679,17 @@ const ModelosPage = () => {
           } as any)
           .eq("numero_pedido", numeroAtual);
         error = res.error;
+
+        // A tela de edição do pedido também exibe campos da ficha do modelo
+        // (Corte, Risco, Qtde de Rolos, fotos, consumo etc.). Antes eles não
+        // eram persistidos ao clicar em "Salvar Alterações".
+        if (!error && currentModeloId) {
+          const modeloRes = await supabase
+            .from("modelos")
+            .update(buildModeloFichaPayload() as any)
+            .eq("id", currentModeloId);
+          error = modeloRes.error;
+        }
 
         // Substitui aviamentos específicos do pedido
         if (!error) {
