@@ -794,6 +794,17 @@ const ModelosPage = () => {
               />
             </div>
             <div className="space-y-1">
+              <Label className="text-xs font-semibold">Qtde de Rolos</Label>
+              <Input
+                type="number"
+                min="0"
+                value={qtdeRolos}
+                onChange={(e) => setQtdeRolos(e.target.value)}
+                className={yellowInput}
+                placeholder="0"
+              />
+            </div>
+            <div className="space-y-1">
               <Label className="text-xs font-semibold">Cliente</Label>
               <div className="flex gap-1">
                 <Input value={cliente} onChange={(e) => setCliente(e.target.value)} className={`flex-1 ${yellowInput}`} placeholder="Cliente" />
