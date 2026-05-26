@@ -34,7 +34,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Search, ChevronLeft, ChevronRight, FileText, Trash2, Pencil } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, FileText, Trash2, Pencil, Printer } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
