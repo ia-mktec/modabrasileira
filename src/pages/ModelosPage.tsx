@@ -277,6 +277,10 @@ const ModelosPage = () => {
     setGradacao(Array.from({ length: 6 }, emptyGradacao));
     setGradeTamanhos(emptyGradeTamanhos());
     setObservacoes("");
+    setQtdeRolos("");
+    setCorte("");
+    setFotoCliente1(null);
+    setFotoCliente2(null);
     setModelagemFile(null);
     setModelagemUrl(null);
     setModelImage(null);
