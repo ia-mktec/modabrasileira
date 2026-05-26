@@ -858,6 +858,15 @@ const ModelosPage = () => {
               </select>
             </div>
             <div className="space-y-1">
+              <Label className="text-xs font-semibold">Risco</Label>
+              <Input
+                value={risco}
+                onChange={(e) => setRisco(e.target.value)}
+                placeholder="Informar risco"
+                className={yellowInput}
+              />
+            </div>
+            <div className="space-y-1">
               <Label className="text-xs font-semibold">Data do Pedido</Label>
               <Input type="date" value={dataPedido} onChange={(e) => setDataPedido(e.target.value)} className={yellowInput} />
             </div>
