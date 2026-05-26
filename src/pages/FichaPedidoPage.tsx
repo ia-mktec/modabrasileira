@@ -395,6 +395,25 @@ export default function FichaPedidoPage() {
         </Card>
       )}
 
+      {/* Fotos do Cliente — visíveis apenas na impressão */}
+      {(modelo?.foto_cliente_1_url || modelo?.foto_cliente_2_url) && (
+        <Card className="hidden print:block">
+          <div className="bg-[hsl(199,89%,30%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
+            <h3 className="text-sm font-bold tracking-wide text-center">FOTOS DO CLIENTE</h3>
+          </div>
+          <CardContent className="p-3">
+            <div className="grid grid-cols-2 gap-3">
+              {modelo?.foto_cliente_1_url && (
+                <img src={modelo.foto_cliente_1_url} alt="Foto cliente 1" className="w-full max-h-[380px] object-contain border rounded" />
+              )}
+              {modelo?.foto_cliente_2_url && (
+                <img src={modelo.foto_cliente_2_url} alt="Foto cliente 2" className="w-full max-h-[380px] object-contain border rounded" />
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Gradação — pivot: 1 linha por item, tamanhos em colunas */}
       {(() => {
         const SIZES = ["PP", "P", "M", "G", "GG", "G1", "G2", "G3"] as const;
