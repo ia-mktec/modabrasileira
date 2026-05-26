@@ -327,6 +327,17 @@ export default function PedidosPage() {
                             <FileText className="w-3.5 h-3.5" />
                             Ver Ficha
                           </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1 text-xs"
+                            onClick={() =>
+                              window.open(`/pedidos/${encodeURIComponent(p.numero_pedido)}/impressao`, "_blank")
+                            }
+                          >
+                            <Printer className="w-3.5 h-3.5" />
+                            Imprimir
+                          </Button>
                           {canEdit && (
                             <Button
                               variant="secondary"
