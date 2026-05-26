@@ -978,6 +978,7 @@ const ModelosPage = () => {
               </div>
             </CardContent>
           </Card>
+        </div>
 
         {/* Aviamentos + Serviços */}
         <div className="space-y-4">
