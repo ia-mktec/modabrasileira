@@ -15,6 +15,7 @@ import ModelosPage from "./pages/ModelosPage";
 import CortePage from "./pages/CortePage";
 import PedidosPage from "./pages/PedidosPage";
 import FichaPedidoPage from "./pages/FichaPedidoPage";
+import PedidoImpressaoPage from "./pages/PedidoImpressaoPage";
 import CadastroPage from "./pages/CadastroPage";
 import AviamentosPage from "./pages/AviamentosPage";
 import ExpedicaoPage from "./pages/ExpedicaoPage";
@@ -54,6 +55,7 @@ const App = () => (
                     <Route path="/corte" element={<CortePage />} />
                     <Route path="/pedidos" element={<PedidosPage />} />
                     <Route path="/pedidos/:numero/ficha" element={<FichaPedidoPage />} />
+                    <Route path="/pedidos/:numero/impressao" element={<PedidoImpressaoPage />} />
                     <Route path="/cadastro" element={<CadastroPage />} />
                     <Route path="/aviamentos" element={<AviamentosPage />} />
                     <Route path="/expedicao" element={<ExpedicaoPage />} />

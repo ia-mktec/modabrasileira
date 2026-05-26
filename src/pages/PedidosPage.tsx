@@ -34,7 +34,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Search, ChevronLeft, ChevronRight, FileText, Trash2, Pencil } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, FileText, Trash2, Pencil, Printer } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -117,6 +117,8 @@ export default function PedidosPage() {
         seen.add(p.numero_pedido);
         return true;
       });
+      // ordena do maior número para o menor (PED-XXXXX é zero-padded → ordem lexicográfica funciona)
+      unique.sort((a, b) => (b.numero_pedido || "").localeCompare(a.numero_pedido || ""));
       setPedidos(unique);
       setLoading(false);
     })();
@@ -324,6 +326,17 @@ export default function PedidosPage() {
                           >
                             <FileText className="w-3.5 h-3.5" />
                             Ver Ficha
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1 text-xs"
+                            onClick={() =>
+                              window.open(`/pedidos/${encodeURIComponent(p.numero_pedido)}/impressao`, "_blank")
+                            }
+                          >
+                            <Printer className="w-3.5 h-3.5" />
+                            Imprimir
                           </Button>
                           {canEdit && (
                             <Button
