@@ -281,6 +281,7 @@ const ModelosPage = () => {
     setObservacoes("");
     setQtdeRolos("");
     setCorte("");
+    setRisco("");
     setFotoCliente1(null);
     setFotoCliente2(null);
     setModelagemFile(null);
