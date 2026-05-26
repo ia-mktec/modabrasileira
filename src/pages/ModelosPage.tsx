@@ -1007,7 +1007,7 @@ const ModelosPage = () => {
             )}
           </Card>
           {/* Arquivo Modelagem Aprovada */}
-          <Card>
+          <Card className="print:hidden">
             <CardContent className="p-4">
               <div className="flex items-center gap-4">
                 <h3 className="text-sm font-bold whitespace-nowrap">ARQUIVO MODELAGEM APROVADA</h3>
@@ -1038,7 +1038,7 @@ const ModelosPage = () => {
             </CardContent>
           </Card>
           {/* Foto Cliente — até 2 imagens, exibidas apenas na ficha do pedido (impressão) */}
-          <Card>
+          <Card className="print:hidden">
             <CardContent className="p-4">
               <div className="flex items-start gap-4">
                 <h3 className="text-sm font-bold whitespace-nowrap pt-1">FOTO CLIENTE</h3>
