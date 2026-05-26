@@ -753,6 +753,7 @@ export type Database = {
           observacoes: string | null
           qtde_rolos: number | null
           referencia: string
+          risco: string | null
           status: string
           tamanhos_grade: string | null
           tecido_principal: string | null
@@ -783,6 +784,7 @@ export type Database = {
           observacoes?: string | null
           qtde_rolos?: number | null
           referencia: string
+          risco?: string | null
           status?: string
           tamanhos_grade?: string | null
           tecido_principal?: string | null
@@ -813,6 +815,7 @@ export type Database = {
           observacoes?: string | null
           qtde_rolos?: number | null
           referencia?: string
+          risco?: string | null
           status?: string
           tamanhos_grade?: string | null
           tecido_principal?: string | null
