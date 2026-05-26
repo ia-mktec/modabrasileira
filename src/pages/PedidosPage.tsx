@@ -286,13 +286,13 @@ export default function PedidosPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nº Pedido</TableHead>
-                  <TableHead>Data</TableHead>
-                  <TableHead>Referência</TableHead>
-                  <TableHead>Cliente</TableHead>
-                  <TableHead>Tecido / Cor</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
+                  <TableHead className="whitespace-nowrap">Nº Pedido</TableHead>
+                  <TableHead className="whitespace-nowrap">Data</TableHead>
+                  <TableHead className="whitespace-nowrap">Referência</TableHead>
+                  <TableHead className="whitespace-nowrap">Cliente</TableHead>
+                  <TableHead className="whitespace-nowrap">Tecido / Cor</TableHead>
+                  <TableHead className="whitespace-nowrap">Status</TableHead>
+                  <TableHead className="text-right whitespace-nowrap">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -315,64 +315,68 @@ export default function PedidosPage() {
                       className="cursor-pointer"
                       onClick={() => handleRowClick(p.numero_pedido)}
                     >
-                      <TableCell className="font-mono text-xs font-semibold text-primary">
+                      <TableCell className="font-mono text-xs font-semibold text-primary whitespace-nowrap">
                         {p.numero_pedido}
                       </TableCell>
-                      <TableCell className="text-sm">
+                      <TableCell className="text-sm whitespace-nowrap">
                         {formatDateBR(p.data_pedido)}
                       </TableCell>
-                      <TableCell className="font-mono text-xs">{p.modelo_ref}</TableCell>
-                      <TableCell className="text-sm">{p.cliente || "—"}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
+                      <TableCell className="font-mono text-xs whitespace-nowrap">{p.modelo_ref}</TableCell>
+                      <TableCell className="text-sm whitespace-nowrap max-w-[220px] truncate" title={p.cliente || ""}>{p.cliente || "—"}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground whitespace-nowrap max-w-[220px] truncate" title={[p.tecido, p.cor].filter(Boolean).join(" • ")}>
                         {[p.tecido, p.cor].filter(Boolean).join(" • ") || "—"}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="whitespace-nowrap">
                         <StatusBadge status={p.status_kanban} />
                       </TableCell>
-                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex justify-end gap-2">
+                      <TableCell className="text-right whitespace-nowrap w-px" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-end gap-1.5 flex-nowrap">
                           <Button
                             variant="outline"
                             size="sm"
-                            className="gap-1 text-xs"
+                            className="gap-1 text-xs h-8 px-2"
+                            title="Ver Ficha"
                             onClick={() =>
                               window.open(`/pedidos/${encodeURIComponent(p.numero_pedido)}/ficha`, "_blank")
                             }
                           >
                             <FileText className="w-3.5 h-3.5" />
-                            Ver Ficha
+                            <span className="hidden xl:inline">Ver Ficha</span>
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
-                            className="gap-1 text-xs"
+                            className="gap-1 text-xs h-8 px-2"
+                            title="Imprimir"
                             onClick={() =>
                               window.open(`/pedidos/${encodeURIComponent(p.numero_pedido)}/impressao`, "_blank")
                             }
                           >
                             <Printer className="w-3.5 h-3.5" />
-                            Imprimir
+                            <span className="hidden xl:inline">Imprimir</span>
                           </Button>
                           {canEdit && (
                             <Button
                               variant="secondary"
                               size="sm"
-                              className="gap-1 text-xs"
+                              className="gap-1 text-xs h-8 px-2"
+                              title="Editar"
                               onClick={() => handleOpenEdit(p)}
                             >
                               <Pencil className="w-3.5 h-3.5" />
-                              Editar
+                              <span className="hidden xl:inline">Editar</span>
                             </Button>
                           )}
                           {canDelete && (
                             <Button
                               variant="destructive"
                               size="sm"
-                              className="gap-1 text-xs"
+                              className="gap-1 text-xs h-8 px-2"
+                              title="Excluir"
                               onClick={() => setPedidoToDelete(p.numero_pedido)}
                             >
                               <Trash2 className="w-3.5 h-3.5" />
-                              Excluir
+                              <span className="hidden xl:inline">Excluir</span>
                             </Button>
                           )}
                         </div>
