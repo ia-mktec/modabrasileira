@@ -1348,13 +1348,15 @@ const ModelosPage = () => {
             <span>Incluir Modelo</span>
           </Button>
 
-          <Button
-            className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]"
-            onClick={handleSaveClick}>
+          {!editingPedidoNumero && (
+            <Button
+              className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]"
+              onClick={handleSaveClick}>
 
-            <Save className="w-4 h-4" />
-            <span>Salvar</span>
-          </Button>
+              <Save className="w-4 h-4" />
+              <span>Salvar</span>
+            </Button>
+          )}
 
           <Button
             variant="destructive"
