@@ -283,16 +283,24 @@ const ModelosPage = () => {
   // correspondente (para trazer aviamentos, serviços, gradação) e em seguida
   // sobrescrevemos os campos próprios do pedido + aviamentos específicos.
   useEffect(() => {
-    const ep: any = (location.state as any)?.editPedido;
-    if (!ep || loadingModelos || modelos.length === 0) return;
-    if (editingPedidoNumero === ep.numero_pedido) return;
+    const epNav: any = (location.state as any)?.editPedido;
+    if (!epNav || loadingModelos || modelos.length === 0) return;
+    if (editingPedidoNumero === epNav.numero_pedido) return;
 
     (async () => {
+      // Busca dados FRESCOS do pedido no banco (evita usar cache stale da PedidosPage)
+      const { data: epFresh } = await supabase
+        .from("modelo_pedidos")
+        .select("numero_pedido,modelo_ref,cliente,tecido,cor,status_kanban,data_pedido,consumo_tecido,observacoes,piloto_entregue")
+        .eq("numero_pedido", epNav.numero_pedido)
+        .limit(1)
+        .maybeSingle();
+      const ep: any = epFresh || epNav;
+
       const m = modelos.find((mm: any) => mm.referencia === ep.modelo_ref);
       if (m) {
         await loadModelo(m);
       } else {
-        // Modelo não cadastrado — apenas limpa e segue com dados do pedido
         setReferencia(ep.modelo_ref || "");
       }
 
@@ -345,6 +353,7 @@ const ModelosPage = () => {
       });
     })();
   }, [location.state, loadingModelos, modelos, editingPedidoNumero]);
+
 
 
 
