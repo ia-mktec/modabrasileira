@@ -71,7 +71,7 @@ export default function FichaPedidoPage() {
   const [pedido, setPedido] = useState<PedidoData | null>(null);
   const [modelo, setModelo] = useState<ModeloData | null>(null);
   const [aviamentos, setAviamentos] = useState<any[]>([]);
-  const [servicos, setServicos] = useState<any[]>([]);
+  
   const [gradacao, setGradacao] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -119,17 +119,14 @@ export default function FichaPedidoPage() {
 
       if (mData) {
         setModelo(mData as any);
-        const promises: any[] = [
-          supabase.from("modelo_servicos" as any).select("*").eq("modelo_id", mData.id).order("ordem"),
-        ];
         if (!avsPedido || avsPedido.length === 0) {
-          promises.push(
-            supabase.from("modelo_aviamentos" as any).select("*").eq("modelo_id", mData.id).order("ordem")
-          );
+          const { data: avsModelo } = await supabase
+            .from("modelo_aviamentos" as any)
+            .select("*")
+            .eq("modelo_id", mData.id)
+            .order("ordem");
+          setAviamentos(avsModelo || []);
         }
-        const results = await Promise.all(promises);
-        setServicos(results[0].data || []);
-        if (results[1]) setAviamentos(results[1].data || []);
       }
 
       // Gradação por pedido (preferencial). Fallback para gradação do modelo se não houver.
@@ -169,10 +166,6 @@ export default function FichaPedidoPage() {
     );
   }
 
-  const custoTotalServicos = servicos.reduce(
-    (sum, s) => sum + (Number(s.valor_unitario) || 0),
-    0
-  );
 
   return (
     <div className="p-4 md:p-6 space-y-4 print:p-2 max-w-[1200px] mx-auto">
@@ -282,44 +275,6 @@ export default function FichaPedidoPage() {
             </CardContent>
           </Card>
 
-          {/* Serviços */}
-          <Card>
-            <div className="bg-[hsl(199,89%,30%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
-              <h3 className="text-sm font-bold tracking-wide text-center">SERVIÇOS</h3>
-            </div>
-            <CardContent className="p-0">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b bg-muted/50">
-                    <th className="text-left py-2 px-3 font-semibold">DESCRIÇÃO</th>
-                    <th className="text-center py-2 px-3 font-semibold w-28">CUSTO P/ PEÇA (R$)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {servicos.length === 0 ? (
-                    <tr>
-                      <td colSpan={2} className="text-center text-muted-foreground py-4">Sem serviços</td>
-                    </tr>
-                  ) : (
-                    servicos.map((s, i) => (
-                      <tr key={i} className="border-b last:border-0">
-                        <td className="py-1.5 px-3">{s.descricao || "—"}</td>
-                        <td className="py-1.5 px-3 text-center font-mono">
-                          {Number(s.valor_unitario || 0).toFixed(2)}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                  <tr className="bg-muted/30">
-                    <td className="py-2 px-3 font-bold text-right">CUSTO TOTAL P/ PEÇA:</td>
-                    <td className="py-2 px-3 text-center font-bold font-mono">
-                      R$ {custoTotalServicos.toFixed(2)}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
         </div>
       </div>
 
