@@ -247,10 +247,33 @@ const ModelosPage = () => {
       setAviamentos(defaultAviamentos.map((a) => ({ ...a })));
     }
     if (grs.length) {
-      setGradacao(grs.map((r: any) => ({ descricao: r.tamanho || "", aumentoCm: "", pp: "", p: r.medida_a ? String(r.medida_a) : "", m: "", g: "", gg: "", g1: "", g2: "", g3: "" })));
+      setGradacao(grs.map((r: any) => {
+        const obs: string = r.observacao || "";
+        const match = obs.match(/Aumento:\s*([0-9.,]+)/i);
+        const aumentoCm = match ? match[1].replace(",", ".") : "";
+        const p = r.medida_a != null && Number(r.medida_a) !== 0 ? String(r.medida_a) : "";
+        const base: GradacaoRow = {
+          descricao: r.tamanho || "",
+          aumentoCm,
+          pp: "",
+          p,
+          m: r.medida_b != null && Number(r.medida_b) !== 0 ? String(r.medida_b) : "",
+          g: r.medida_c != null && Number(r.medida_c) !== 0 ? String(r.medida_c) : "",
+          gg: r.medida_d != null && Number(r.medida_d) !== 0 ? String(r.medida_d) : "",
+          g1: "", g2: "", g3: "",
+        };
+        // Recalcula colunas derivadas se houver P + aumento (preenche pp, g1, g2, g3 e
+        // sobrescreve m/g/gg de forma consistente).
+        if (p && aumentoCm) {
+          const calc = calcGradacao(p, aumentoCm);
+          return { ...base, ...calc } as GradacaoRow;
+        }
+        return base;
+      }));
     } else {
       setGradacao(Array.from({ length: 6 }, emptyGradacao));
     }
+
 
     setSearchOpen(false);
     setIsLoadedFromSearch(true);
