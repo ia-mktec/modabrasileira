@@ -92,42 +92,52 @@ export default function PedidosPage() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const { clientes: clienteOptions, tecidos: tecidoOptions, cores: corOptions } = useEntityOptions();
+  const loadPedidos = async () => {
+    setLoading(true);
+    const all: PedidoRow[] = [];
+    let from = 0;
+    const step = 1000;
+    while (true) {
+      const { data, error } = await supabase
+        .from("modelo_pedidos")
+        .select("numero_pedido,modelo_ref,cliente,tecido,cor,status_kanban,data_pedido,consumo_tecido,observacoes,piloto_entregue")
+        .order("data_pedido", { ascending: false })
+        .range(from, from + step - 1);
+      if (error || !data || data.length === 0) break;
+      all.push(...data);
+      if (data.length < step) break;
+      from += step;
+    }
+    const seen = new Set<string>();
+    const unique = all.filter((p) => {
+      if (seen.has(p.numero_pedido)) return false;
+      seen.add(p.numero_pedido);
+      return true;
+    });
+    unique.sort((a, b) => {
+      const da = a.data_pedido || "";
+      const db = b.data_pedido || "";
+      if (da !== db) return db.localeCompare(da);
+      return (b.numero_pedido || "").localeCompare(a.numero_pedido || "");
+    });
+    setPedidos(unique);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      // fetch all in batches to avoid 1000 row limit
-      const all: PedidoRow[] = [];
-      let from = 0;
-      const step = 1000;
-      while (true) {
-        const { data, error } = await supabase
-          .from("modelo_pedidos")
-          .select("numero_pedido,modelo_ref,cliente,tecido,cor,status_kanban,data_pedido,consumo_tecido,observacoes,piloto_entregue")
-          .order("data_pedido", { ascending: false })
-          .range(from, from + step - 1);
-        if (error || !data || data.length === 0) break;
-        all.push(...data);
-        if (data.length < step) break;
-        from += step;
-      }
-      // dedupe by numero_pedido (multiple rows per pedido)
-      const seen = new Set<string>();
-      const unique = all.filter((p) => {
-        if (seen.has(p.numero_pedido)) return false;
-        seen.add(p.numero_pedido);
-        return true;
-      });
-      // ordena do maior número para o menor (PED-XXXXX é zero-padded → ordem lexicográfica funciona)
-      unique.sort((a, b) => {
-        const da = a.data_pedido || "";
-        const db = b.data_pedido || "";
-        if (da !== db) return db.localeCompare(da);
-        return (b.numero_pedido || "").localeCompare(a.numero_pedido || "");
-      });
-      setPedidos(unique);
-      setLoading(false);
-    })();
+    loadPedidos();
+    // Recarrega ao voltar para a aba (após editar em outra tela)
+    const onVisible = () => {
+      if (document.visibilityState === "visible") loadPedidos();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", loadPedidos);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", loadPedidos);
+    };
   }, []);
+
 
   const filtered = useMemo(() => {
     const s = search.trim().toLowerCase();
