@@ -578,6 +578,8 @@ const ModelosPage = () => {
       }
       if (result) {
         setCurrentModeloId(result);
+        setIsIncluding(false);
+        setIsLoadedFromSearch(true);
         toast({ title: "Modelo salvo", description: `Referência ${referencia} salva com sucesso.` });
       }
     }
