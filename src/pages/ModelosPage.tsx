@@ -156,6 +156,7 @@ const ModelosPage = () => {
   const [saveOverwriteDialogOpen, setSaveOverwriteDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isLoadedFromSearch, setIsLoadedFromSearch] = useState(false);
+  const [isIncluding, setIsIncluding] = useState(false);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -253,6 +254,7 @@ const ModelosPage = () => {
 
     setSearchOpen(false);
     setIsLoadedFromSearch(true);
+    setIsIncluding(false);
   };
 
   const limparCampos = () => {
@@ -276,6 +278,7 @@ const ModelosPage = () => {
     setModelImage(null);
     setCurrentModeloId(null);
     setIsLoadedFromSearch(false);
+    setIsIncluding(false);
   };
 
   // ── Edição de pedido vinda da tela de Pedidos ──
@@ -575,6 +578,8 @@ const ModelosPage = () => {
       }
       if (result) {
         setCurrentModeloId(result);
+        setIsIncluding(false);
+        setIsLoadedFromSearch(true);
         toast({ title: "Modelo salvo", description: `Referência ${referencia} salva com sucesso.` });
       }
     }
@@ -617,6 +622,7 @@ const ModelosPage = () => {
   // ── Include ──
   const handleIncluir = () => {
     limparCampos();
+    setIsIncluding(true);
     toast({ title: "Novo modelo", description: "Campos abertos para inclusão de nova referência. Preencha todos os campos." });
   };
 
@@ -1445,13 +1451,13 @@ const ModelosPage = () => {
             <span>Incluir Modelo</span>
           </Button>
 
-          {!editingPedidoNumero && (
+          {!editingPedidoNumero && (isIncluding || isLoadedFromSearch) && (
             <Button
               className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]"
               onClick={handleSaveClick}>
 
               <Save className="w-4 h-4" />
-              <span>Salvar</span>
+              <span>{isIncluding ? "Salvar Modelo" : "Salvar Alterações da Ficha"}</span>
             </Button>
           )}
 
