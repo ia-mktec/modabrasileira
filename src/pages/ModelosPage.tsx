@@ -1291,12 +1291,12 @@ const ModelosPage = () => {
       </Card>
 
       {/* Grade de Tamanhos */}
-      <Card>
+      <Card className="print:break-before-page">
         <div className="bg-[hsl(199,89%,30%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
           <h3 className="text-sm font-bold tracking-wide text-center">GRADE DE TAMANHOS PEDIDO</h3>
         </div>
         <CardContent className="p-3">
-          <p className="text-xs text-muted-foreground mb-2">Informativo para a tela de Corte. Informe a quantidade de peças por tamanho.</p>
+          <p className="text-xs text-muted-foreground mb-2 print:hidden">Informativo para a tela de Corte. Informe a quantidade de peças por tamanho.</p>
           <div className="grid grid-cols-9 gap-2">
             {(["pp","p","m","g","gg","g1","g2","g3"] as const).map((size) => (
               <div key={size} className="space-y-1">
