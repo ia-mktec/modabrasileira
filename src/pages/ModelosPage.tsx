@@ -978,7 +978,7 @@ const ModelosPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Image column */}
         <div className="space-y-4">
-          <Card className="flex items-center justify-center min-h-[280px] overflow-hidden">
+          <Card className="flex items-center justify-center min-h-[280px] print:min-h-[560px] overflow-hidden">
             <input
               ref={imageInputRef}
               type="file"
@@ -987,8 +987,8 @@ const ModelosPage = () => {
               className="hidden"
             />
             {modelImage ? (
-              <div className="relative w-full h-full min-h-[280px]">
-                <img src={modelImage} alt="Modelo" className="w-full h-full object-contain p-2" />
+              <div className="relative w-full h-full min-h-[280px] print:min-h-[560px]">
+                <img src={modelImage} alt="Modelo" className="w-full h-full object-contain p-2 print:p-1" />
                 <Button
                   variant="outline"
                   size="sm"
@@ -998,6 +998,7 @@ const ModelosPage = () => {
                   Trocar Imagem
                 </Button>
               </div>
+
             ) : (
               <div className="text-center text-muted-foreground space-y-2">
                 <Shirt className="w-16 h-16 mx-auto opacity-30" />
