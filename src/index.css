@@ -147,6 +147,17 @@
     display: none !important;
   }
 
+  /* Hide placeholder text on print; show neutral gray bg for empty inputs */
+  input::placeholder,
+  textarea::placeholder {
+    color: transparent !important;
+    opacity: 0 !important;
+  }
+  input:placeholder-shown,
+  textarea:placeholder-shown {
+    background-color: hsl(0 0% 92%) !important;
+  }
+
   /* Make content full width and constrain to single page width */
   main {
     width: 100% !important;
