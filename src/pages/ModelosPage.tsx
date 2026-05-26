@@ -892,7 +892,7 @@ const ModelosPage = () => {
                 min="0"
                 value={qtdeRolos}
                 onChange={(e) => setQtdeRolos(e.target.value)}
-                className={yellowInput}
+                className={`${yellowInput} ${!qtdeRolos || qtdeRolos === "0" ? "print-empty" : ""}`}
                 placeholder="0"
               />
             </div>
@@ -926,7 +926,7 @@ const ModelosPage = () => {
               <select
                 value={pilotoEntregue}
                 onChange={(e) => setPilotoEntregue(e.target.value)}
-                className={`flex h-10 w-full items-center rounded-md border px-3 py-2 text-sm ${yellowInput}`}
+                className={`flex h-10 w-full items-center rounded-md border px-3 py-2 text-sm ${yellowInput} ${!pilotoEntregue ? "print-empty" : ""}`}
               >
                 <option value="">Selecionar</option>
                 <option value="sim">SIM</option>
@@ -938,7 +938,7 @@ const ModelosPage = () => {
               <select
                 value={corte}
                 onChange={(e) => setCorte(e.target.value)}
-                className={`flex h-10 w-full items-center rounded-md border px-3 py-2 text-sm ${yellowInput}`}
+                className={`flex h-10 w-full items-center rounded-md border px-3 py-2 text-sm ${yellowInput} ${!corte ? "print-empty" : ""}`}
               >
                 <option value="">Selecionar</option>
                 <option value="interno">Interno</option>
@@ -956,14 +956,14 @@ const ModelosPage = () => {
             </div>
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Data do Pedido</Label>
-              <Input type="date" value={dataPedido} onChange={(e) => setDataPedido(e.target.value)} className={yellowInput} />
+              <Input type="date" value={dataPedido} onChange={(e) => setDataPedido(e.target.value)} className={`${yellowInput} ${!dataPedido ? "print-empty" : ""}`} />
             </div>
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Status</Label>
               <select
                 value={statusKanban}
                 onChange={(e) => setStatusKanban(e.target.value)}
-                className={`flex h-10 w-full items-center rounded-md border px-3 py-2 text-sm ${yellowInput}`}
+                className={`flex h-10 w-full items-center rounded-md border px-3 py-2 text-sm ${yellowInput} ${!statusKanban ? "print-empty" : ""}`}
               >
                 <option value="">Selecionar</option>
                 <option value="em_andamento">Em Andamento</option>
@@ -971,6 +971,7 @@ const ModelosPage = () => {
                 <option value="concluido">Concluído</option>
               </select>
             </div>
+
           </div>
         </CardContent>
       </Card>
