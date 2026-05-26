@@ -616,7 +616,7 @@ const ModelosPage = () => {
   const handleDeleteConfirm = () => {
     setDeleteDialogOpen(false);
     limparCampos();
-    toast({ title: "Registro limpo", description: "Todos os dados do produto foram apagados da tela." });
+    toast({ title: "Tela limpa", description: "Os campos foram apagados da tela. Nenhum dado foi excluído do banco." });
   };
 
   // ── Include ──
