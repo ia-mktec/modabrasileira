@@ -33,10 +33,6 @@ interface AviamentoRow {
   isCustom?: boolean;
 }
 
-interface ServicoRow {
-  descricao: string;
-  custoPorPeca: string;
-}
 
 interface GradacaoRow {
   descricao: string;
@@ -59,10 +55,6 @@ const defaultAviamentos: AviamentoRow[] = [
 { tipo: "Outros Aviamentos", selectedItem: null, partesQtde: "" }];
 
 
-const defaultServicos: ServicoRow[] = [
-{ descricao: "Serviço de Entretela (Partes)", custoPorPeca: "" },
-{ descricao: "Serviço de Oficina", custoPorPeca: "" },
-{ descricao: "Acabamento Interno", custoPorPeca: "" }];
 
 
 const emptyGradacao = (): GradacaoRow => ({
@@ -132,7 +124,7 @@ const ModelosPage = () => {
   const fotoCliente2Ref = useRef<HTMLInputElement>(null);
 
   const [aviamentos, setAviamentos] = useState<AviamentoRow[]>(defaultAviamentos.map((a) => ({ ...a })));
-  const [servicos, setServicos] = useState<ServicoRow[]>(defaultServicos.map((s) => ({ ...s })));
+  
   const [consumoMetros, setConsumoMetros] = useState("");
   const [consumoGramas, setConsumoGramas] = useState("");
   const [gradacao, setGradacao] = useState<GradacaoRow[]>(Array.from({ length: 6 }, emptyGradacao));
@@ -216,7 +208,7 @@ const ModelosPage = () => {
     setCurrentModeloId(m.id);
 
     // Carrega filhos
-    const { aviamentos: avs, servicos: svs, gradacao: grs } = await carregarModeloCompleto(m.id);
+    const { aviamentos: avs, gradacao: grs } = await carregarModeloCompleto(m.id);
     if (avs.length) {
       const parseDesc = (raw: string, tipoBase?: string) => {
         const desc: string = raw || "";
@@ -253,11 +245,6 @@ const ModelosPage = () => {
     } else {
       setAviamentos(defaultAviamentos.map((a) => ({ ...a })));
     }
-    if (svs.length) {
-      setServicos(svs.map((r: any) => ({ descricao: r.descricao || "", custoPorPeca: r.valor_unitario ? String(r.valor_unitario) : "" })));
-    } else {
-      setServicos(defaultServicos.map((s) => ({ ...s })));
-    }
     if (grs.length) {
       setGradacao(grs.map((r: any) => ({ descricao: r.tamanho || "", aumentoCm: "", pp: "", p: r.medida_a ? String(r.medida_a) : "", m: "", g: "", gg: "", g1: "", g2: "", g3: "" })));
     } else {
@@ -274,7 +261,7 @@ const ModelosPage = () => {
     setEntretela(false);setEntreTelaDescricao("");setEntreTelaQtde("");setEntreTelaConsumoPeca("");
     setForroTecido2(false);setForroDescricao("");setForroQtde("");setForroConsumoPeca("");
     setAviamentos(defaultAviamentos.map((a) => ({ ...a })));
-    setServicos(defaultServicos.map((s) => ({ ...s })));
+    
     setConsumoMetros("");setConsumoGramas("");
     setGradacao(Array.from({ length: 6 }, emptyGradacao));
     setGradeTamanhos(emptyGradeTamanhos());
@@ -464,12 +451,6 @@ const ModelosPage = () => {
     new Set((dbAviamentos || []).map((a: any) => a.tipo).filter(Boolean))
   ).sort((a: string, b: string) => a.localeCompare(b, "pt-BR"));
 
-  // ── Serviços handlers ──
-  const updateServicoCusto = (idx: number, value: string) => {
-    setServicos((prev) => prev.map((s, i) => i === idx ? { ...s, custoPorPeca: value } : s));
-  };
-
-  const custoTotalServicos = servicos.reduce((sum, s) => sum + (parseFloat(s.custoPorPeca) || 0), 0);
 
   // ── Gradação handlers ──
   const updateGradacao = (idx: number, field: keyof GradacaoRow, value: string) => {
@@ -522,12 +503,6 @@ const ModelosPage = () => {
       descricao: a.selectedItem ? `${a.tipo} — ${a.selectedItem.descricao || ""}` : a.tipo,
       quantidade: parseFloat(a.partesQtde) || 0,
       unidade: a.selectedItem?.tamanho || null,
-      observacao: null,
-    })),
-    servicos: servicos.map((s, i) => ({
-      ordem: i + 1,
-      descricao: s.descricao,
-      valor_unitario: parseFloat(s.custoPorPeca) || 0,
       observacao: null,
     })),
     gradacao: gradacao.map((g, i) => ({
@@ -1127,43 +1102,6 @@ const ModelosPage = () => {
             </CardContent>
           </Card>
 
-          {/* Serviços */}
-          <Card>
-            <div className="bg-[hsl(199,89%,30%)] text-[hsl(0,0%,100%)] px-4 py-1.5 rounded-t-lg">
-              <h3 className="text-sm font-bold tracking-wide text-center">SERVIÇOS</h3>
-            </div>
-            <CardContent className="p-0">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b bg-muted/50">
-                    <th className="text-left py-2 px-3 font-semibold">DESCRIÇÃO</th>
-                    <th className="text-center py-2 px-3 font-semibold w-28">CUSTO P/ PEÇA (R$)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {servicos.map((sv, idx) =>
-                <tr key={idx} className="border-b last:border-0">
-                      <td className="py-1.5 px-3 font-medium">{sv.descricao}</td>
-                      <td className="py-1.5 px-3">
-                        <Input
-                      value={sv.custoPorPeca}
-                      onChange={(e) => updateServicoCusto(idx, e.target.value)}
-                      className={`h-7 text-xs text-center ${yellowInput}`}
-                      placeholder="0.00" />
-
-                      </td>
-                    </tr>
-                )}
-                  <tr className="bg-muted/30">
-                    <td className="py-2 px-3 font-bold text-right">CUSTO TOTAL P/ PEÇA:</td>
-                    <td className="py-2 px-3 text-center font-bold font-mono">
-                      R$ {custoTotalServicos.toFixed(2)}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
         </div>
       </div>
 
