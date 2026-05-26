@@ -865,7 +865,7 @@ const ModelosPage = () => {
                 </Sheet>
               </div>
             </div>
-            <div className="space-y-1 col-span-2">
+            <div className="space-y-1">
               <Label className="text-xs font-semibold">Nº de Pedido</Label>
               <div className="flex gap-1">
                 <Input value={numeroPedido} readOnly className={`flex-1 min-w-0 ${yellowInput} font-mono text-xs`} placeholder="REF-AAAAMMDD" />
