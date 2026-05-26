@@ -1096,7 +1096,7 @@ const ModelosPage = () => {
                   <tr className="border-b bg-muted/50">
                     <th className="text-left py-2 px-3 font-semibold">TIPO</th>
                     <th className="text-left py-2 px-3 font-semibold">ITEM SELECIONADO</th>
-                    <th className="text-center py-2 px-3 font-semibold w-20">BUSCAR</th>
+                    <th className="text-center py-2 px-3 font-semibold w-20 print:hidden">BUSCAR</th>
                     <th className="text-center py-2 px-3 font-semibold w-24">PARTES/QTDE</th>
                     <th className="text-center py-2 px-3 font-semibold w-12"></th>
                   </tr>
