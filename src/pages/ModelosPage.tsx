@@ -625,6 +625,65 @@ const ModelosPage = () => {
     window.print();
   }, []);
 
+  // Garante que existe um modelo pai para a referência. Se não existir, cria
+  // a partir dos dados do pedido atual (1º pedido = modelo pai). Se já existir,
+  // atualiza os campos da ficha (Corte, Risco, Qtde de Rolos, fotos, consumo etc.).
+  // Retorna o id do modelo ou null em caso de erro.
+  const ensureParentModelo = async (): Promise<string | null> => {
+    try {
+      // Tenta localizar pelo id em cache; senão, busca por referência.
+      let modeloId = currentModeloId;
+      if (!modeloId) {
+        const { data: existing } = await supabase
+          .from("modelos")
+          .select("id")
+          .eq("referencia", referencia)
+          .maybeSingle();
+        modeloId = existing?.id || null;
+      }
+
+      const children = buildChildren();
+
+      if (modeloId) {
+        // Atualiza a ficha do modelo pai
+        const { error: upErr } = await supabase
+          .from("modelos")
+          .update(buildModeloFichaPayload() as any)
+          .eq("id", modeloId);
+        if (upErr) throw upErr;
+      } else {
+        // Cria o modelo pai a partir dos dados do pedido (upsert evita corrida)
+        const { data, error: insErr } = await supabase
+          .from("modelos")
+          .upsert(buildModeloPayload() as any, { onConflict: "referencia" })
+          .select("id")
+          .single();
+        if (insErr) throw insErr;
+        modeloId = data.id;
+        setCurrentModeloId(modeloId);
+      }
+
+      // Substitui filhas (aviamentos e gradação) do modelo pai com o que está na tela.
+      // Só sobrescreve se houver dados, para não apagar dados existentes acidentalmente.
+      if (modeloId && children.aviamentos.length > 0) {
+        await supabase.from("modelo_aviamentos" as any).delete().eq("modelo_id", modeloId);
+        await supabase
+          .from("modelo_aviamentos" as any)
+          .insert(children.aviamentos.map((r) => ({ ...r, modelo_id: modeloId })));
+      }
+      if (modeloId && children.gradacao.length > 0) {
+        await supabase.from("modelo_gradacao" as any).delete().eq("modelo_id", modeloId);
+        await supabase
+          .from("modelo_gradacao" as any)
+          .insert(children.gradacao.map((r) => ({ ...r, modelo_id: modeloId })));
+      }
+      return modeloId;
+    } catch (e: any) {
+      toast({ title: "Erro ao sincronizar modelo pai", description: e.message, variant: "destructive" });
+      return null;
+    }
+  };
+
   // ── Registrar Pedido ──
   const handleRegistrarPedido = async () => {
     if (savingPedido) return;
@@ -680,15 +739,10 @@ const ModelosPage = () => {
           .eq("numero_pedido", numeroAtual);
         error = res.error;
 
-        // A tela de edição do pedido também exibe campos da ficha do modelo
-        // (Corte, Risco, Qtde de Rolos, fotos, consumo etc.). Antes eles não
-        // eram persistidos ao clicar em "Salvar Alterações".
-        if (!error && currentModeloId) {
-          const modeloRes = await supabase
-            .from("modelos")
-            .update(buildModeloFichaPayload() as any)
-            .eq("id", currentModeloId);
-          error = modeloRes.error;
+        // Garante modelo pai (cria se não existir, atualiza ficha se existir).
+        if (!error) {
+          const mid = await ensureParentModelo();
+          if (!mid) error = new Error("Falha ao sincronizar modelo pai");
         }
 
         // Substitui aviamentos específicos do pedido
