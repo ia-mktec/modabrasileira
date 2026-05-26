@@ -874,7 +874,7 @@ const ModelosPage = () => {
                 </Button>
               </div>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 col-span-2">
               <Label className="text-xs font-semibold">Tecido</Label>
               <SearchableSelect
                 options={tecidoOptions}
