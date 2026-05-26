@@ -511,6 +511,7 @@ const ModelosPage = () => {
     tamanhos_grade: JSON.stringify(gradeTamanhos),
     qtde_rolos: parseInt(qtdeRolos) || 0,
     corte: corte || null,
+    risco: risco || null,
     foto_cliente_1_url: fotoCliente1 || null,
     foto_cliente_2_url: fotoCliente2 || null,
   });
