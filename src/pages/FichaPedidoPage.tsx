@@ -39,6 +39,8 @@ interface ModeloData {
   forro_tecido2_consumo_peca: number | null;
   imagem_url: string | null;
   arquivo_modelagem_url: string | null;
+  foto_cliente_1_url: string | null;
+  foto_cliente_2_url: string | null;
 }
 
 const yellowReadonly =
