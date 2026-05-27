@@ -142,10 +142,12 @@ const ExpedicaoPage = () => {
       // para empurrar o filtro pro banco via .in("ordem_corte_id", ids)
       // e evitar timeout ao paginar toda a tabela de expedições.
       let restrictIds: string[] | null = null;
-      if (filtroOrdem || filtroPedido || filtroReferencia) {
+      // Referência exige no mínimo 3 caracteres para evitar matches massivos
+      const refAtivo = filtroReferencia.trim().length >= 3;
+      if (filtroOrdem || filtroPedido || refAtivo) {
         const fo = filtroOrdem.toLowerCase();
         const fp = filtroPedido.toLowerCase();
-        const fr = filtroReferencia.toLowerCase();
+        const fr = refAtivo ? filtroReferencia.toLowerCase() : "";
         restrictIds = ordensCorteDb
           .filter((o: any) => {
             if (fo && !(o.numero || "").toLowerCase().includes(fo)) return false;
@@ -654,7 +656,7 @@ const ExpedicaoPage = () => {
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Referência</Label>
-                <Input value={filtroReferencia} onChange={(e) => setFiltroReferencia(e.target.value)} placeholder="Filtrar..." className="h-8 text-xs" />
+                <Input value={filtroReferencia} onChange={(e) => setFiltroReferencia(e.target.value)} placeholder="Mín. 3 caracteres..." className="h-8 text-xs" />
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Oficina</Label>
