@@ -503,25 +503,34 @@ const RecebimentoPage = () => {
                   <Input placeholder="Nº Ordem, Nº Pedido ou modelo..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9" />
                 </div>
                 <div className="space-y-1 max-h-[70vh] overflow-y-auto">
-                  {filteredEnvios.map(({ exp, oc, jaRecebido }) => (
-                    <button
-                      key={exp.id}
-                      onClick={() => loadOrdem(oc, exp)}
-                      disabled={jaRecebido}
-                      className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="font-mono text-xs font-semibold text-primary">{oc.numero}</div>
-                        {jaRecebido && <span className="text-[9px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">Recebido</span>}
-                      </div>
-                      {oc.numero_pedido && <div className="text-[10px] font-mono text-muted-foreground">Pedido: {oc.numero_pedido}</div>}
-                      <div className="text-muted-foreground text-xs">{oc.modelo_ref} — {oc.tecido_nome}</div>
-                      <div className="text-foreground text-[11px] font-semibold mt-0.5">Oficina: {exp.oficina_nome || "—"}</div>
-                      <div className="text-muted-foreground text-[10px]">Saída: {exp.data_saida || "—"} • {oc.quantidade_pecas} peças</div>
-                    </button>
-                  ))}
-                  {filteredEnvios.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-4">Nenhum envio encontrado</p>
+                  {(loadingExpedicoes || loadingOrdens || loadingRecebimentos) ? (
+                    <div className="flex flex-col items-center justify-center gap-2 py-8">
+                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                      <p className="text-xs text-muted-foreground">Carregando ordens...</p>
+                    </div>
+                  ) : (
+                    <>
+                      {filteredEnvios.map(({ exp, oc, jaRecebido }) => (
+                        <button
+                          key={exp.id}
+                          onClick={() => loadOrdem(oc, exp)}
+                          disabled={jaRecebido}
+                          className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="font-mono text-xs font-semibold text-primary">{oc.numero}</div>
+                            {jaRecebido && <span className="text-[9px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">Recebido</span>}
+                          </div>
+                          {oc.numero_pedido && <div className="text-[10px] font-mono text-muted-foreground">Pedido: {oc.numero_pedido}</div>}
+                          <div className="text-muted-foreground text-xs">{oc.modelo_ref} — {oc.tecido_nome}</div>
+                          <div className="text-foreground text-[11px] font-semibold mt-0.5">Oficina: {exp.oficina_nome || "—"}</div>
+                          <div className="text-muted-foreground text-[10px]">Saída: {exp.data_saida || "—"} • {oc.quantidade_pecas} peças</div>
+                        </button>
+                      ))}
+                      {filteredEnvios.length === 0 && (
+                        <p className="text-sm text-muted-foreground text-center py-4">Nenhum envio encontrado</p>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
