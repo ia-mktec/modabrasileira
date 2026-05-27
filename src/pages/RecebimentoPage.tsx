@@ -113,8 +113,9 @@ const RecebimentoPage = () => {
           .range(from, from + step - 1);
         if (filtroOficina) q = q.ilike("oficina_nome", `%${filtroOficina}%`);
         if (filtroStatus) q = q.eq("status", filtroStatus);
-        if (filtroDataDe) q = q.gte("data_recebimento", filtroDataDe);
-        if (filtroDataAte) q = q.lte("data_recebimento", filtroDataAte);
+        const bypassData = !!filtroOrdem || !!filtroPedido;
+        if (!bypassData && filtroDataDe) q = q.gte("data_recebimento", filtroDataDe);
+        if (!bypassData && filtroDataAte) q = q.lte("data_recebimento", filtroDataAte);
         const { data, error } = await q;
         if (error) { lastError = error; break; }
         const batch = data || [];
