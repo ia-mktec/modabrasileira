@@ -417,6 +417,7 @@ export function useExpedicao() {
         .from("expedicao")
         .select("id, ordem_corte_id, data_saida, oficina_nome, status, grade_expedicao(cor, pp_exp, p_exp, m_exp, g_exp, gg_exp, g1_exp, g2_exp, g3_exp)")
         .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
         .range(from, to),
       300,
     );
@@ -477,6 +478,7 @@ export function useRecebimento() {
         .from("recebimento")
         .select("*, ordens_corte(numero, modelo_ref, tecido_nome), expedicao(oficina_nome, data_saida)")
         .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
         .range(from, to),
     );
     if (error) { toast({ title: "Erro ao buscar recebimentos", description: error.message, variant: "destructive" }); }
