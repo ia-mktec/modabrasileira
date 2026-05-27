@@ -137,74 +137,55 @@ const ExpedicaoPage = () => {
     let cancelled = false;
     (async () => {
       setLoadingRegistros(true);
+      setRegistros([]); // limpa resultados antigos para não confundir o usuário
 
-      // Pré-resolve OCs que casam com filtros baseados em ordens_corte
-      // para empurrar o filtro pro banco via .in("ordem_corte_id", ids)
-      // e evitar timeout ao paginar toda a tabela de expedições.
-      let restrictIds: string[] | null = null;
       // Referência exige no mínimo 3 caracteres para evitar matches massivos
       const refAtivo = filtroReferencia.trim().length >= 3;
-      if (filtroOrdem || filtroPedido || refAtivo) {
-        const fo = filtroOrdem.toLowerCase();
-        const fp = filtroPedido.toLowerCase();
-        const fr = refAtivo ? filtroReferencia.toLowerCase() : "";
-        restrictIds = ordensCorteDb
-          .filter((o: any) => {
-            if (fo && !(o.numero || "").toLowerCase().includes(fo)) return false;
-            if (fp && !(o.numero_pedido || "").toLowerCase().includes(fp)) return false;
-            if (fr && !(o.modelo_ref || "").toLowerCase().includes(fr)) return false;
-            return true;
-          })
-          .map((o: any) => o.id);
-        if (restrictIds.length === 0) {
-          if (!cancelled) { setRegistros([]); setLoadingRegistros(false); }
-          return;
-        }
-      }
+      const usaJoinOC = !!(filtroOrdem || filtroPedido || refAtivo);
 
       const rowsAll: any[] = [];
       const step = 1000;
       let lastError: any = null;
+      let from = 0;
 
-      // Divide IDs em lotes para evitar URL excessivamente grande (Failed to fetch)
-      // quando o filtro casa com milhares de OCs.
-      const idChunks: (string[] | null)[] = restrictIds
-        ? (() => {
-            const CHUNK = 150;
-            const out: string[][] = [];
-            for (let i = 0; i < restrictIds.length; i += CHUNK) out.push(restrictIds.slice(i, i + CHUNK));
-            return out;
-          })()
-        : [null];
+      while (true) {
+        // Quando há filtro por campos de OC, usa inner join para empurrar o
+        // filtro ao Postgres (evita IN gigante e elimina rodadas extras).
+        const selectCols = usaJoinOC
+          ? "id,data_saida,oficina_nome,status,preco_peca,observacoes,created_at,ordem_corte_id,grade_expedicao(pp_exp,p_exp,m_exp,g_exp,gg_exp,g1_exp,g2_exp,g3_exp),ordens_corte!inner(id,numero,numero_pedido,modelo_ref,tecido_nome)"
+          : "id,data_saida,oficina_nome,status,preco_peca,observacoes,created_at,ordem_corte_id,grade_expedicao(pp_exp,p_exp,m_exp,g_exp,gg_exp,g1_exp,g2_exp,g3_exp)";
 
-      outer: for (const chunk of idChunks) {
-        let from = 0;
-        while (true) {
-          let q = supabase
-            .from("expedicao")
-            .select("id,data_saida,oficina_nome,status,preco_peca,observacoes,created_at,ordem_corte_id,grade_expedicao(pp_exp,p_exp,m_exp,g_exp,gg_exp,g1_exp,g2_exp,g3_exp)")
-            .order("data_saida", { ascending: false, nullsFirst: false })
-            .range(from, from + step - 1);
-          if (chunk) q = q.in("ordem_corte_id", chunk);
-          if (filtroOficina) q = q.ilike("oficina_nome", `%${filtroOficina}%`);
-          if (filtroStatus) q = q.eq("status", filtroStatus);
-          if (filtroDataDe) q = q.gte("data_saida", filtroDataDe);
-          if (filtroDataAte) q = q.lte("data_saida", filtroDataAte);
-          const { data, error } = await q;
-          if (error) { lastError = error; break outer; }
-          const batch = data || [];
-          rowsAll.push(...batch);
-          if (batch.length < step) break;
-          from += step;
-        }
+        let q = supabase
+          .from("expedicao")
+          .select(selectCols)
+          .order("data_saida", { ascending: false, nullsFirst: false })
+          .range(from, from + step - 1);
+
+        if (filtroOrdem) q = q.ilike("ordens_corte.numero", `%${filtroOrdem}%`);
+        if (filtroPedido) q = q.ilike("ordens_corte.numero_pedido", `%${filtroPedido}%`);
+        if (refAtivo) q = q.ilike("ordens_corte.modelo_ref", `%${filtroReferencia.trim()}%`);
+        if (filtroOficina) q = q.ilike("oficina_nome", `%${filtroOficina}%`);
+        if (filtroStatus) q = q.eq("status", filtroStatus);
+        if (filtroDataDe) q = q.gte("data_saida", filtroDataDe);
+        if (filtroDataAte) q = q.lte("data_saida", filtroDataAte);
+
+        const { data, error } = await q;
+        if (error) { lastError = error; break; }
+        const batch = data || [];
+        rowsAll.push(...batch);
+        if (batch.length < step) break;
+        from += step;
         if (cancelled) return;
       }
+
       if (!cancelled) {
         let rows: any[] = lastError ? [] : rowsAll;
-        // anexa dados da OC para exibição
-        const ocMap: Record<string, any> = {};
-        ordensCorteDb.forEach((o: any) => { ocMap[o.id] = o; });
-        rows = rows.map((r) => ({ ...r, ordens_corte: ocMap[r.ordem_corte_id] || null }));
+        // Se não veio o join, anexa dados da OC do cache local para exibição
+        if (!usaJoinOC) {
+          const ocMap: Record<string, any> = {};
+          ordensCorteDb.forEach((o: any) => { ocMap[o.id] = o; });
+          rows = rows.map((r) => ({ ...r, ordens_corte: ocMap[r.ordem_corte_id] || null }));
+        }
         setRegistros(rows as RegistroExpedicao[]);
         setLoadingRegistros(false);
         if (lastError) {
