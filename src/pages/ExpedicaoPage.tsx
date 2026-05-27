@@ -207,7 +207,7 @@ const ExpedicaoPage = () => {
 
   const limparFiltros = () => {
     setFiltroOrdem(""); setFiltroPedido(""); setFiltroReferencia(""); setFiltroOficina("");
-    setFiltroStatus(""); setFiltroDataDe(""); setFiltroDataAte("");
+    setFiltroStatus(""); setFiltroDataDe(seisMesesAtras); setFiltroDataAte("");
   };
 
   const totalPecasGrade = (grades: any[] | undefined) =>
