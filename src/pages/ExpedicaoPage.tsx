@@ -656,7 +656,7 @@ const ExpedicaoPage = () => {
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Referência</Label>
-                <Input value={filtroReferencia} onChange={(e) => setFiltroReferencia(e.target.value)} placeholder="Filtrar..." className="h-8 text-xs" />
+                <Input value={filtroReferencia} onChange={(e) => setFiltroReferencia(e.target.value)} placeholder="Mín. 3 caracteres..." className="h-8 text-xs" />
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Oficina</Label>
