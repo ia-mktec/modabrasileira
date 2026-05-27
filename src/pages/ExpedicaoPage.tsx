@@ -160,7 +160,7 @@ const ExpedicaoPage = () => {
       }
       if (!cancelled) {
         let rows: any[] = lastError ? [] : rowsAll;
-        if (rows.length && (filtroOrdem || filtroPedido)) {
+        if (rows.length && (filtroOrdem || filtroPedido || filtroReferencia)) {
           const ocMap: Record<string, any> = {};
           ordensCorteDb.forEach((o: any) => { ocMap[o.id] = o; });
           rows = rows.filter((r) => {
@@ -168,6 +168,7 @@ const ExpedicaoPage = () => {
             if (!oc) return false;
             if (filtroOrdem && !(oc.numero || "").toLowerCase().includes(filtroOrdem.toLowerCase())) return false;
             if (filtroPedido && !(oc.numero_pedido || "").toLowerCase().includes(filtroPedido.toLowerCase())) return false;
+            if (filtroReferencia && !(oc.modelo_ref || "").toLowerCase().includes(filtroReferencia.toLowerCase())) return false;
             return true;
           });
         }
