@@ -612,7 +612,7 @@ const ExpedicaoPage = () => {
                 Limpar filtros
               </Button>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
               <div className="space-y-1">
                 <Label className="text-xs">Ordem de Corte</Label>
                 <Input value={filtroOrdem} onChange={(e) => setFiltroOrdem(e.target.value)} placeholder="OC-..." className="h-8 text-xs" />
@@ -620,6 +620,10 @@ const ExpedicaoPage = () => {
               <div className="space-y-1">
                 <Label className="text-xs">Pedido</Label>
                 <Input value={filtroPedido} onChange={(e) => setFiltroPedido(e.target.value)} placeholder="Filtrar..." className="h-8 text-xs" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Referência</Label>
+                <Input value={filtroReferencia} onChange={(e) => setFiltroReferencia(e.target.value)} placeholder="Filtrar..." className="h-8 text-xs" />
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Oficina</Label>
