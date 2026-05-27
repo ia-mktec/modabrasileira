@@ -181,10 +181,10 @@ const ExpedicaoPage = () => {
       }
     })();
     return () => { cancelled = true; };
-  }, [viewMode, filtroOrdem, filtroPedido, filtroOficina, filtroStatus, filtroDataDe, filtroDataAte, ordensCorteDb]);
+  }, [viewMode, filtroOrdem, filtroPedido, filtroReferencia, filtroOficina, filtroStatus, filtroDataDe, filtroDataAte, ordensCorteDb]);
 
   const limparFiltros = () => {
-    setFiltroOrdem(""); setFiltroPedido(""); setFiltroOficina("");
+    setFiltroOrdem(""); setFiltroPedido(""); setFiltroReferencia(""); setFiltroOficina("");
     setFiltroStatus(""); setFiltroDataDe(""); setFiltroDataAte("");
   };
 
