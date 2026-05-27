@@ -114,7 +114,13 @@ const ExpedicaoPage = () => {
   const [filtroReferencia, setFiltroReferencia] = useState("");
   const [filtroOficina, setFiltroOficina] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("");
-  const [filtroDataDe, setFiltroDataDe] = useState("");
+  // Janela padrão: últimos 6 meses (usuário pode apagar/alterar)
+  const seisMesesAtras = (() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 6);
+    return d.toISOString().slice(0, 10);
+  })();
+  const [filtroDataDe, setFiltroDataDe] = useState(seisMesesAtras);
   const [filtroDataAte, setFiltroDataAte] = useState("");
 
   interface RegistroExpedicao {
@@ -166,8 +172,10 @@ const ExpedicaoPage = () => {
         if (refAtivo) q = q.ilike("ordens_corte.modelo_ref", `%${filtroReferencia.trim()}%`);
         if (filtroOficina) q = q.ilike("oficina_nome", `%${filtroOficina}%`);
         if (filtroStatus) q = q.eq("status", filtroStatus);
-        if (filtroDataDe) q = q.gte("data_saida", filtroDataDe);
-        if (filtroDataAte) q = q.lte("data_saida", filtroDataAte);
+        // Bypass de data quando há busca exata por Ordem ou Pedido
+        const bypassData = !!(filtroOrdem || filtroPedido);
+        if (!bypassData && filtroDataDe) q = q.gte("data_saida", filtroDataDe);
+        if (!bypassData && filtroDataAte) q = q.lte("data_saida", filtroDataAte);
 
         const { data, error } = await q;
         if (error) { lastError = error; break; }
@@ -199,7 +207,7 @@ const ExpedicaoPage = () => {
 
   const limparFiltros = () => {
     setFiltroOrdem(""); setFiltroPedido(""); setFiltroReferencia(""); setFiltroOficina("");
-    setFiltroStatus(""); setFiltroDataDe(""); setFiltroDataAte("");
+    setFiltroStatus(""); setFiltroDataDe(seisMesesAtras); setFiltroDataAte("");
   };
 
   const totalPecasGrade = (grades: any[] | undefined) =>
