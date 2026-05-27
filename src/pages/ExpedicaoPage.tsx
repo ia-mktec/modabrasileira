@@ -137,16 +137,42 @@ const ExpedicaoPage = () => {
     let cancelled = false;
     (async () => {
       setLoadingRegistros(true);
+
+      // Pré-resolve OCs que casam com filtros baseados em ordens_corte
+      // para empurrar o filtro pro banco via .in("ordem_corte_id", ids)
+      // e evitar timeout ao paginar toda a tabela de expedições.
+      let restrictIds: string[] | null = null;
+      if (filtroOrdem || filtroPedido || filtroReferencia) {
+        const fo = filtroOrdem.toLowerCase();
+        const fp = filtroPedido.toLowerCase();
+        const fr = filtroReferencia.toLowerCase();
+        restrictIds = ordensCorteDb
+          .filter((o: any) => {
+            if (fo && !(o.numero || "").toLowerCase().includes(fo)) return false;
+            if (fp && !(o.numero_pedido || "").toLowerCase().includes(fp)) return false;
+            if (fr && !(o.modelo_ref || "").toLowerCase().includes(fr)) return false;
+            return true;
+          })
+          .map((o: any) => o.id);
+        if (restrictIds.length === 0) {
+          if (!cancelled) { setRegistros([]); setLoadingRegistros(false); }
+          return;
+        }
+      }
+
       const rowsAll: any[] = [];
       const step = 1000;
       let from = 0;
       let lastError: any = null;
+      // Quando filtramos por IDs específicos, geralmente o resultado cabe em poucas páginas;
+      // mantém o loop com segurança caso a lista de IDs seja grande.
       while (true) {
         let q = supabase
           .from("expedicao")
           .select("id,data_saida,oficina_nome,status,preco_peca,observacoes,created_at,ordem_corte_id,grade_expedicao(pp_exp,p_exp,m_exp,g_exp,gg_exp,g1_exp,g2_exp,g3_exp)")
           .order("data_saida", { ascending: false, nullsFirst: false })
           .range(from, from + step - 1);
+        if (restrictIds) q = q.in("ordem_corte_id", restrictIds);
         if (filtroOficina) q = q.ilike("oficina_nome", `%${filtroOficina}%`);
         if (filtroStatus) q = q.eq("status", filtroStatus);
         if (filtroDataDe) q = q.gte("data_saida", filtroDataDe);
@@ -160,28 +186,20 @@ const ExpedicaoPage = () => {
       }
       if (!cancelled) {
         let rows: any[] = lastError ? [] : rowsAll;
-        if (rows.length && (filtroOrdem || filtroPedido || filtroReferencia)) {
-          const ocMap: Record<string, any> = {};
-          ordensCorteDb.forEach((o: any) => { ocMap[o.id] = o; });
-          rows = rows.filter((r) => {
-            const oc = ocMap[r.ordem_corte_id];
-            if (!oc) return false;
-            if (filtroOrdem && !(oc.numero || "").toLowerCase().includes(filtroOrdem.toLowerCase())) return false;
-            if (filtroPedido && !(oc.numero_pedido || "").toLowerCase().includes(filtroPedido.toLowerCase())) return false;
-            if (filtroReferencia && !(oc.modelo_ref || "").toLowerCase().includes(filtroReferencia.toLowerCase())) return false;
-            return true;
-          });
-        }
         // anexa dados da OC para exibição
         const ocMap: Record<string, any> = {};
         ordensCorteDb.forEach((o: any) => { ocMap[o.id] = o; });
         rows = rows.map((r) => ({ ...r, ordens_corte: ocMap[r.ordem_corte_id] || null }));
         setRegistros(rows as RegistroExpedicao[]);
         setLoadingRegistros(false);
+        if (lastError) {
+          toast({ title: "Erro ao buscar expedições", description: lastError.message || String(lastError), variant: "destructive" });
+        }
       }
     })();
     return () => { cancelled = true; };
   }, [viewMode, filtroOrdem, filtroPedido, filtroReferencia, filtroOficina, filtroStatus, filtroDataDe, filtroDataAte, ordensCorteDb]);
+
 
   const limparFiltros = () => {
     setFiltroOrdem(""); setFiltroPedido(""); setFiltroReferencia(""); setFiltroOficina("");
