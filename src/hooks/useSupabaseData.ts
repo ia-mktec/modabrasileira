@@ -478,6 +478,7 @@ export function useRecebimento() {
         .from("recebimento")
         .select("*, ordens_corte(numero, modelo_ref, tecido_nome), expedicao(oficina_nome, data_saida)")
         .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
         .range(from, to),
     );
     if (error) { toast({ title: "Erro ao buscar recebimentos", description: error.message, variant: "destructive" }); }
