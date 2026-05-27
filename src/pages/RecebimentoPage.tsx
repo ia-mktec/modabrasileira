@@ -146,7 +146,7 @@ const RecebimentoPage = () => {
 
   const limparFiltros = () => {
     setFiltroOrdem(""); setFiltroPedido(""); setFiltroOficina("");
-    setFiltroStatus(""); setFiltroDataDe(""); setFiltroDataAte("");
+    setFiltroStatus(""); setFiltroDataDe(seisMesesAtras); setFiltroDataAte("");
   };
 
   const loadRegistroRecebimento = (r: RegistroRecebimento) => {
