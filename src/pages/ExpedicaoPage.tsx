@@ -162,27 +162,40 @@ const ExpedicaoPage = () => {
 
       const rowsAll: any[] = [];
       const step = 1000;
-      let from = 0;
       let lastError: any = null;
-      // Quando filtramos por IDs específicos, geralmente o resultado cabe em poucas páginas;
-      // mantém o loop com segurança caso a lista de IDs seja grande.
-      while (true) {
-        let q = supabase
-          .from("expedicao")
-          .select("id,data_saida,oficina_nome,status,preco_peca,observacoes,created_at,ordem_corte_id,grade_expedicao(pp_exp,p_exp,m_exp,g_exp,gg_exp,g1_exp,g2_exp,g3_exp)")
-          .order("data_saida", { ascending: false, nullsFirst: false })
-          .range(from, from + step - 1);
-        if (restrictIds) q = q.in("ordem_corte_id", restrictIds);
-        if (filtroOficina) q = q.ilike("oficina_nome", `%${filtroOficina}%`);
-        if (filtroStatus) q = q.eq("status", filtroStatus);
-        if (filtroDataDe) q = q.gte("data_saida", filtroDataDe);
-        if (filtroDataAte) q = q.lte("data_saida", filtroDataAte);
-        const { data, error } = await q;
-        if (error) { lastError = error; break; }
-        const batch = data || [];
-        rowsAll.push(...batch);
-        if (batch.length < step) break;
-        from += step;
+
+      // Divide IDs em lotes para evitar URL excessivamente grande (Failed to fetch)
+      // quando o filtro casa com milhares de OCs.
+      const idChunks: (string[] | null)[] = restrictIds
+        ? (() => {
+            const CHUNK = 150;
+            const out: string[][] = [];
+            for (let i = 0; i < restrictIds.length; i += CHUNK) out.push(restrictIds.slice(i, i + CHUNK));
+            return out;
+          })()
+        : [null];
+
+      outer: for (const chunk of idChunks) {
+        let from = 0;
+        while (true) {
+          let q = supabase
+            .from("expedicao")
+            .select("id,data_saida,oficina_nome,status,preco_peca,observacoes,created_at,ordem_corte_id,grade_expedicao(pp_exp,p_exp,m_exp,g_exp,gg_exp,g1_exp,g2_exp,g3_exp)")
+            .order("data_saida", { ascending: false, nullsFirst: false })
+            .range(from, from + step - 1);
+          if (chunk) q = q.in("ordem_corte_id", chunk);
+          if (filtroOficina) q = q.ilike("oficina_nome", `%${filtroOficina}%`);
+          if (filtroStatus) q = q.eq("status", filtroStatus);
+          if (filtroDataDe) q = q.gte("data_saida", filtroDataDe);
+          if (filtroDataAte) q = q.lte("data_saida", filtroDataAte);
+          const { data, error } = await q;
+          if (error) { lastError = error; break outer; }
+          const batch = data || [];
+          rowsAll.push(...batch);
+          if (batch.length < step) break;
+          from += step;
+        }
+        if (cancelled) return;
       }
       if (!cancelled) {
         let rows: any[] = lastError ? [] : rowsAll;
