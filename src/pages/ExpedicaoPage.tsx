@@ -111,6 +111,7 @@ const ExpedicaoPage = () => {
   // Histórico — filtros
   const [filtroOrdem, setFiltroOrdem] = useState("");
   const [filtroPedido, setFiltroPedido] = useState("");
+  const [filtroReferencia, setFiltroReferencia] = useState("");
   const [filtroOficina, setFiltroOficina] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("");
   const [filtroDataDe, setFiltroDataDe] = useState("");
