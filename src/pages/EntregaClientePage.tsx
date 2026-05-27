@@ -74,11 +74,16 @@ const EntregaClientePage = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("ficha");
 
   // Histórico — filtros
+  const seisMesesAtras = (() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 6);
+    return d.toISOString().slice(0, 10);
+  })();
   const [filtroOrdem, setFiltroOrdem] = useState("");
   const [filtroPedido, setFiltroPedido] = useState("");
   const [filtroOficina, setFiltroOficina] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("");
-  const [filtroDataDe, setFiltroDataDe] = useState("");
+  const [filtroDataDe, setFiltroDataDe] = useState(seisMesesAtras);
   const [filtroDataAte, setFiltroDataAte] = useState("");
 
   interface RegistroEntrega {
@@ -114,8 +119,9 @@ const EntregaClientePage = () => {
           .range(from, from + step - 1);
         if (filtroOficina) q = q.ilike("oficina_nome", `%${filtroOficina}%`);
         if (filtroStatus) q = q.eq("status", filtroStatus);
-        if (filtroDataDe) q = q.gte("data_entrega", filtroDataDe);
-        if (filtroDataAte) q = q.lte("data_entrega", filtroDataAte);
+        const bypassData = !!filtroOrdem || !!filtroPedido;
+        if (!bypassData && filtroDataDe) q = q.gte("data_entrega", filtroDataDe);
+        if (!bypassData && filtroDataAte) q = q.lte("data_entrega", filtroDataAte);
         const { data, error } = await q;
         if (error) { lastError = error; break; }
         const batch = data || [];
@@ -146,7 +152,7 @@ const EntregaClientePage = () => {
 
   const limparFiltros = () => {
     setFiltroOrdem(""); setFiltroPedido(""); setFiltroOficina("");
-    setFiltroStatus(""); setFiltroDataDe(""); setFiltroDataAte("");
+    setFiltroStatus(""); setFiltroDataDe(seisMesesAtras); setFiltroDataAte("");
   };
 
   const loadRegistroEntrega = (r: RegistroEntrega) => {

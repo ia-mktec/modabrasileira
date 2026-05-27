@@ -67,11 +67,16 @@ const RecebimentoPage = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("ficha");
 
   // Histórico — filtros
+  const seisMesesAtras = (() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 6);
+    return d.toISOString().slice(0, 10);
+  })();
   const [filtroOrdem, setFiltroOrdem] = useState("");
   const [filtroPedido, setFiltroPedido] = useState("");
   const [filtroOficina, setFiltroOficina] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("");
-  const [filtroDataDe, setFiltroDataDe] = useState("");
+  const [filtroDataDe, setFiltroDataDe] = useState(seisMesesAtras);
   const [filtroDataAte, setFiltroDataAte] = useState("");
 
   interface RegistroRecebimento {
@@ -108,8 +113,9 @@ const RecebimentoPage = () => {
           .range(from, from + step - 1);
         if (filtroOficina) q = q.ilike("oficina_nome", `%${filtroOficina}%`);
         if (filtroStatus) q = q.eq("status", filtroStatus);
-        if (filtroDataDe) q = q.gte("data_recebimento", filtroDataDe);
-        if (filtroDataAte) q = q.lte("data_recebimento", filtroDataAte);
+        const bypassData = !!filtroOrdem || !!filtroPedido;
+        if (!bypassData && filtroDataDe) q = q.gte("data_recebimento", filtroDataDe);
+        if (!bypassData && filtroDataAte) q = q.lte("data_recebimento", filtroDataAte);
         const { data, error } = await q;
         if (error) { lastError = error; break; }
         const batch = data || [];
@@ -140,7 +146,7 @@ const RecebimentoPage = () => {
 
   const limparFiltros = () => {
     setFiltroOrdem(""); setFiltroPedido(""); setFiltroOficina("");
-    setFiltroStatus(""); setFiltroDataDe(""); setFiltroDataAte("");
+    setFiltroStatus(""); setFiltroDataDe(seisMesesAtras); setFiltroDataAte("");
   };
 
   const loadRegistroRecebimento = (r: RegistroRecebimento) => {
