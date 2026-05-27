@@ -111,6 +111,7 @@ const ExpedicaoPage = () => {
   // Histórico — filtros
   const [filtroOrdem, setFiltroOrdem] = useState("");
   const [filtroPedido, setFiltroPedido] = useState("");
+  const [filtroReferencia, setFiltroReferencia] = useState("");
   const [filtroOficina, setFiltroOficina] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("");
   const [filtroDataDe, setFiltroDataDe] = useState("");
@@ -159,7 +160,7 @@ const ExpedicaoPage = () => {
       }
       if (!cancelled) {
         let rows: any[] = lastError ? [] : rowsAll;
-        if (rows.length && (filtroOrdem || filtroPedido)) {
+        if (rows.length && (filtroOrdem || filtroPedido || filtroReferencia)) {
           const ocMap: Record<string, any> = {};
           ordensCorteDb.forEach((o: any) => { ocMap[o.id] = o; });
           rows = rows.filter((r) => {
@@ -167,6 +168,7 @@ const ExpedicaoPage = () => {
             if (!oc) return false;
             if (filtroOrdem && !(oc.numero || "").toLowerCase().includes(filtroOrdem.toLowerCase())) return false;
             if (filtroPedido && !(oc.numero_pedido || "").toLowerCase().includes(filtroPedido.toLowerCase())) return false;
+            if (filtroReferencia && !(oc.modelo_ref || "").toLowerCase().includes(filtroReferencia.toLowerCase())) return false;
             return true;
           });
         }
@@ -179,10 +181,10 @@ const ExpedicaoPage = () => {
       }
     })();
     return () => { cancelled = true; };
-  }, [viewMode, filtroOrdem, filtroPedido, filtroOficina, filtroStatus, filtroDataDe, filtroDataAte, ordensCorteDb]);
+  }, [viewMode, filtroOrdem, filtroPedido, filtroReferencia, filtroOficina, filtroStatus, filtroDataDe, filtroDataAte, ordensCorteDb]);
 
   const limparFiltros = () => {
-    setFiltroOrdem(""); setFiltroPedido(""); setFiltroOficina("");
+    setFiltroOrdem(""); setFiltroPedido(""); setFiltroReferencia(""); setFiltroOficina("");
     setFiltroStatus(""); setFiltroDataDe(""); setFiltroDataAte("");
   };
 
@@ -610,7 +612,7 @@ const ExpedicaoPage = () => {
                 Limpar filtros
               </Button>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
               <div className="space-y-1">
                 <Label className="text-xs">Ordem de Corte</Label>
                 <Input value={filtroOrdem} onChange={(e) => setFiltroOrdem(e.target.value)} placeholder="OC-..." className="h-8 text-xs" />
@@ -618,6 +620,10 @@ const ExpedicaoPage = () => {
               <div className="space-y-1">
                 <Label className="text-xs">Pedido</Label>
                 <Input value={filtroPedido} onChange={(e) => setFiltroPedido(e.target.value)} placeholder="Filtrar..." className="h-8 text-xs" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Referência</Label>
+                <Input value={filtroReferencia} onChange={(e) => setFiltroReferencia(e.target.value)} placeholder="Filtrar..." className="h-8 text-xs" />
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Oficina</Label>
