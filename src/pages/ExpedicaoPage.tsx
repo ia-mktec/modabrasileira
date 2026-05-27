@@ -114,7 +114,13 @@ const ExpedicaoPage = () => {
   const [filtroReferencia, setFiltroReferencia] = useState("");
   const [filtroOficina, setFiltroOficina] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("");
-  const [filtroDataDe, setFiltroDataDe] = useState("");
+  // Janela padrão: últimos 6 meses (usuário pode apagar/alterar)
+  const seisMesesAtras = (() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 6);
+    return d.toISOString().slice(0, 10);
+  })();
+  const [filtroDataDe, setFiltroDataDe] = useState(seisMesesAtras);
   const [filtroDataAte, setFiltroDataAte] = useState("");
 
   interface RegistroExpedicao {
