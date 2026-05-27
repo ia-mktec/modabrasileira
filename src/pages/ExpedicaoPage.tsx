@@ -172,8 +172,10 @@ const ExpedicaoPage = () => {
         if (refAtivo) q = q.ilike("ordens_corte.modelo_ref", `%${filtroReferencia.trim()}%`);
         if (filtroOficina) q = q.ilike("oficina_nome", `%${filtroOficina}%`);
         if (filtroStatus) q = q.eq("status", filtroStatus);
-        if (filtroDataDe) q = q.gte("data_saida", filtroDataDe);
-        if (filtroDataAte) q = q.lte("data_saida", filtroDataAte);
+        // Bypass de data quando há busca exata por Ordem ou Pedido
+        const bypassData = !!(filtroOrdem || filtroPedido);
+        if (!bypassData && filtroDataDe) q = q.gte("data_saida", filtroDataDe);
+        if (!bypassData && filtroDataAte) q = q.lte("data_saida", filtroDataAte);
 
         const { data, error } = await q;
         if (error) { lastError = error; break; }
