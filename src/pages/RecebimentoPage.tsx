@@ -30,8 +30,8 @@ interface GradeRecRow {
 
 const RecebimentoPage = () => {
   const { ordens: ordensCorteDb, loading: loadingOrdens, loadOrdemDetalhada } = useOrdensCorte();
-  const { expedicoes } = useExpedicao();
-  const { salvarRecebimento, recebimentos } = useRecebimento();
+  const { expedicoes, loading: loadingExpedicoes } = useExpedicao();
+  const { salvarRecebimento, recebimentos, loading: loadingRecebimentos } = useRecebimento();
   const { modelos: modelosDb, loading: loadingModelos } = useModelos();
   const { clientes: clientesDb } = useClientes();
   const [currentOrdemCorteId, setCurrentOrdemCorteId] = useState<string | null>(null);
