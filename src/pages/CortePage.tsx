@@ -218,18 +218,30 @@ const CortePage = () => {
     m.descricao.toLowerCase().includes(modeloSearchTerm.toLowerCase())
   );
 
-  // Filtra tecidos pelo cliente selecionado
-  const filteredTecidos = tecidosDb.filter(
-    (t: any) =>
-    t.cliente_id === selectedClienteId && (
-    t.nome.toLowerCase().includes(tecidoSearchTerm.toLowerCase()) ||
-    (t.cor || "").toLowerCase().includes(tecidoSearchTerm.toLowerCase()))
+  // Filtra tecidos pelo cliente selecionado, agrupando por TIPO (nome) — uma entrada por tipo,
+  // somando estoque de todas as cores disponíveis e contando quantas cores têm saldo > 0.
+  const tecidosPorTipoMap = (() => {
+    const map = new Map<string, { nome: string; estoque_total: number; cores_disponiveis: number; cliente_nome: string }>();
+    tecidosDb
+      .filter((t: any) => t.cliente_id === selectedClienteId)
+      .forEach((t: any) => {
+        const nome = t.nome;
+        const estoque = Number(t.estoque_kg || 0);
+        const cur = map.get(nome) || { nome, estoque_total: 0, cores_disponiveis: 0, cliente_nome: t.clientes?.razao_social || "" };
+        cur.estoque_total += estoque;
+        if (estoque > 0) cur.cores_disponiveis += 1;
+        map.set(nome, cur);
+      });
+    return map;
+  })();
+  const filteredTecidos = Array.from(tecidosPorTipoMap.values()).filter((t) =>
+    t.nome.toLowerCase().includes(tecidoSearchTerm.toLowerCase())
   );
 
-  // Cores disponíveis: tecidos do mesmo cliente e mesmo nome de tecido selecionado.
+  // Cores disponíveis em estoque (estoque_kg > 0) para o tipo de tecido selecionado.
   // O campo `cor` pode conter várias cores separadas por vírgula — explodimos em uma opção por cor.
   const coresDisponiveisData = tecidosDb
-    .filter((t: any) => t.cliente_id === selectedClienteId && t.nome === tecido)
+    .filter((t: any) => t.cliente_id === selectedClienteId && t.nome === tecido && Number(t.estoque_kg || 0) > 0)
     .flatMap((t: any) => {
       const cores = String(t.cor || "")
         .split(/[,;/|]+/)
@@ -942,13 +954,16 @@ const CortePage = () => {
                         <div className="mt-4 space-y-3">
                           <Input placeholder="Nome ou cor..." value={tecidoSearchTerm} onChange={(e) => setTecidoSearchTerm(e.target.value)} />
                           <div className="space-y-1 max-h-[60vh] overflow-y-auto">
-                            {filteredTecidos.map((t: any) =>
-                            <button key={t.id} onClick={() => {setTecido(t.nome);setSelectedTecidoId(t.id);setTecidoSearchOpen(false);}} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
+                            {filteredTecidos.map((t) =>
+                            <button key={t.nome} onClick={() => {setTecido(t.nome);setSelectedTecidoId("");setTecidoSearchOpen(false);}} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
                                 <div className="font-mono text-xs font-semibold text-primary">{t.nome}</div>
-                                <div className="text-muted-foreground text-xs">{t.cor} — {t.clientes?.razao_social || ""}</div>
-                                <div className="text-muted-foreground text-[10px]">Estoque: {t.estoque_kg} mt</div>
+                                <div className="text-muted-foreground text-xs">{t.cliente_nome}</div>
+                                <div className="text-muted-foreground text-[10px]">{t.cores_disponiveis} cor(es) em estoque — Total: {t.estoque_total.toFixed(2)} mt</div>
                               </button>
                             )}
+                            {filteredTecidos.length === 0 &&
+                              <p className="text-sm text-muted-foreground text-center py-4">Nenhum tecido cadastrado</p>
+                            }
                           </div>
                         </div>
                       </SheetContent>
@@ -1120,7 +1135,7 @@ const CortePage = () => {
                                 className={`${yellowInput} h-8 text-xs flex-1 cursor-pointer`}
                                 placeholder="Selecione"
                                 onClick={() => {
-                                  if (!selectedTecidoId) {
+                                  if (!tecido) {
                                     toast({ title: "Selecione o tecido", description: "É necessário selecionar o tecido antes de escolher a cor.", variant: "destructive" });
                                     return;
                                   }
@@ -1134,7 +1149,7 @@ const CortePage = () => {
                                 size="icon"
                                 className="h-8 w-8 shrink-0"
                                 onClick={() => {
-                                  if (!selectedTecidoId) {
+                                  if (!tecido) {
                                     toast({ title: "Selecione o tecido", description: "É necessário selecionar o tecido antes de escolher a cor.", variant: "destructive" });
                                     return;
                                   }
