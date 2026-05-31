@@ -302,6 +302,7 @@ const ModelosPage = () => {
     setModelagemFile(null);
     setModelagemUrl(null);
     setModelImage(null);
+    setModelImageCostas(null);
     setCurrentModeloId(null);
     setIsLoadedFromSearch(false);
     setIsIncluding(false);
