@@ -128,23 +128,42 @@ export default function PedidoImpressaoPage() {
 
         {/* Body: fotos + tabela */}
         <div className="grid grid-cols-[1fr_1fr]">
-          {/* Fotos do cliente */}
-          <div className="border-r border-foreground p-2 grid grid-cols-2 gap-2">
-            {[1, 2].map((slot) => {
-              const url = slot === 1 ? modelo?.foto_cliente_1_url : modelo?.foto_cliente_2_url;
-              return (
-                <div key={slot} className="flex flex-col">
-                  <div className="text-xs font-bold mb-1">FOTO CLIENTE {slot}</div>
-                  <div className="border border-foreground bg-muted/30 flex items-center justify-center h-[320px] overflow-hidden">
-                    {url ? (
-                      <img src={url} alt={`Foto cliente ${slot}`} className="w-full h-full object-contain" />
+          {/* Fotos do cliente + Imagens do modelo */}
+          <div className="border-r border-foreground p-2 flex flex-col gap-2">
+            <div className="grid grid-cols-2 gap-2">
+              {[1, 2].map((slot) => {
+                const url = slot === 1 ? modelo?.foto_cliente_1_url : modelo?.foto_cliente_2_url;
+                return (
+                  <div key={slot} className="flex flex-col">
+                    <div className="text-xs font-bold mb-1">FOTO CLIENTE {slot}</div>
+                    <div className="border border-foreground bg-muted/30 flex items-center justify-center h-[220px] overflow-hidden">
+                      {url ? (
+                        <img src={url} alt={`Foto cliente ${slot}`} className="w-full h-full object-contain" />
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Sem foto</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { label: "IMAGEM DO MODELO (FRENTE)", url: modelo?.imagem_url },
+                { label: "IMAGEM DO MODELO (COSTAS)", url: modelo?.imagem_costas_url },
+              ]).map((item) => (
+                <div key={item.label} className="flex flex-col">
+                  <div className="text-xs font-bold mb-1">{item.label}</div>
+                  <div className="border border-foreground bg-muted/30 flex items-center justify-center h-[260px] overflow-hidden">
+                    {item.url ? (
+                      <img src={item.url} alt={item.label} className="w-full h-full object-contain" />
                     ) : (
                       <span className="text-xs text-muted-foreground">Sem foto</span>
                     )}
                   </div>
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
 
           {/* Tabela à direita */}
