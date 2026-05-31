@@ -56,7 +56,7 @@ export default function PedidoImpressaoPage() {
         setPedido(p as any);
         const { data: m } = await supabase
           .from("modelos")
-          .select("qtde_rolos,corte,risco,foto_cliente_1_url,foto_cliente_2_url,tamanhos_grade,tecido_principal")
+          .select("qtde_rolos,corte,risco,foto_cliente_1_url,foto_cliente_2_url,imagem_url,imagem_costas_url,tamanhos_grade,tecido_principal")
           .eq("referencia", p.modelo_ref)
           .maybeSingle();
         if (m) setModelo(m as any);
