@@ -954,13 +954,16 @@ const CortePage = () => {
                         <div className="mt-4 space-y-3">
                           <Input placeholder="Nome ou cor..." value={tecidoSearchTerm} onChange={(e) => setTecidoSearchTerm(e.target.value)} />
                           <div className="space-y-1 max-h-[60vh] overflow-y-auto">
-                            {filteredTecidos.map((t: any) =>
-                            <button key={t.id} onClick={() => {setTecido(t.nome);setSelectedTecidoId(t.id);setTecidoSearchOpen(false);}} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
+                            {filteredTecidos.map((t) =>
+                            <button key={t.nome} onClick={() => {setTecido(t.nome);setSelectedTecidoId("");setTecidoSearchOpen(false);}} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
                                 <div className="font-mono text-xs font-semibold text-primary">{t.nome}</div>
-                                <div className="text-muted-foreground text-xs">{t.cor} — {t.clientes?.razao_social || ""}</div>
-                                <div className="text-muted-foreground text-[10px]">Estoque: {t.estoque_kg} mt</div>
+                                <div className="text-muted-foreground text-xs">{t.cliente_nome}</div>
+                                <div className="text-muted-foreground text-[10px]">{t.cores_disponiveis} cor(es) em estoque — Total: {t.estoque_total.toFixed(2)} mt</div>
                               </button>
                             )}
+                            {filteredTecidos.length === 0 &&
+                              <p className="text-sm text-muted-foreground text-center py-4">Nenhum tecido cadastrado</p>
+                            }
                           </div>
                         </div>
                       </SheetContent>
