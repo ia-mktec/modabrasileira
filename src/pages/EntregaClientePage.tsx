@@ -59,6 +59,7 @@ const EntregaClientePage = () => {
 
   // Imagem ref
   const [refImage, setRefImage] = useState<string | null>(null);
+  const [refImageCostas, setRefImageCostas] = useState<string | null>(null);
 
   // Grades
   const [gradeCortada, setGradeCortada] = useState<GradeCortadaRow[]>([]);
@@ -196,7 +197,7 @@ const EntregaClientePage = () => {
     setDataEnvio("");
     setDataEntrega(undefined);
     setTempoProducao("");
-    setRefImage(foundModelo?.imagem_url || null);
+    setRefImage(foundModelo?.imagem_url || null); setRefImageCostas((foundModelo as any)?.imagem_costas_url || null);
     setGradeCortada([]);
     setGradeEntregue([]);
     setSearchOpen(false);

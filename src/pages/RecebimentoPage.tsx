@@ -53,6 +53,7 @@ const RecebimentoPage = () => {
 
   // Imagem ref (cadastro modelo)
   const [refImage, setRefImage] = useState<string | null>(null);
+  const [refImageCostas, setRefImageCostas] = useState<string | null>(null);
 
   // Grade cortada
   const [gradeRows, setGradeRows] = useState<GradeRecRow[]>([]);
@@ -255,7 +256,7 @@ const RecebimentoPage = () => {
     const candidatos = modelosDb.filter((m: any) => (m.referencia || "").trim().toLowerCase() === refTrim);
     const foundModelo = candidatos.find((m: any) => !!m.imagem_url) || candidatos[0];
     setModelo(foundModelo?.descricao || oc.modelo_ref || "");
-    setRefImage(foundModelo?.imagem_url || null);
+    setRefImage(foundModelo?.imagem_url || null); setRefImageCostas((foundModelo as any)?.imagem_costas_url || null);
     setGradeRows([]);
     setSearchOpen(false);
     setIsLoaded(true);
@@ -328,7 +329,7 @@ const RecebimentoPage = () => {
     setReferencia(""); setOrdemCorte(""); setCliente(""); setModelo("");
     setOficina(""); setDataEnvio(""); setDataRecebimento("");
     setObservacoes(""); setStatusKanban(""); setQtdTotalRecebida("");
-    setGradeRows([]); setRefImage(null); setIsLoaded(false);
+    setGradeRows([]); setRefImage(null); setRefImageCostas(null); setIsLoaded(false);
   };
 
   const handlePrint = useCallback(() => { window.print(); }, []);

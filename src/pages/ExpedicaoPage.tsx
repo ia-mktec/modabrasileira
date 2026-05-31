@@ -71,6 +71,7 @@ const ExpedicaoPage = () => {
 
   // Imagem da referência
   const [refImage, setRefImage] = useState<string | null>(null);
+  const [refImageCostas, setRefImageCostas] = useState<string | null>(null);
 
   // Dados da Entrada Oficina (editáveis - persistidos em recebimento)
   const [entradaOficinaData, setEntradaOficinaData] = useState("");
@@ -269,7 +270,7 @@ const ExpedicaoPage = () => {
       if (pedido?.cliente) nomeCliente = pedido.cliente;
     }
     setCliente(nomeCliente);
-    setRefImage(foundModelo?.imagem_url || null);
+    setRefImage(foundModelo?.imagem_url || null); setRefImageCostas((foundModelo as any)?.imagem_costas_url || null);
     setSearchOpen(false);
     setIsLoaded(true);
     setDataSaida("");
