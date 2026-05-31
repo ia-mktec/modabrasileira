@@ -343,28 +343,48 @@ export function useOrdensCorte() {
         const { error } = await supabase.from("aviamentos_ordem").insert(avRows);
         if (error) throw error;
       }
-      // Baixa de estoque ao concluir (apenas uma vez: quando o status muda para concluido)
-      if (ordem.status === "concluido" && ordem.tecido_id && ordem.consumo_por_peca && ordem.quantidade_pecas) {
-        const consumoTotal = Number(ordem.consumo_por_peca) * Number(ordem.quantidade_pecas);
-        // Verifica se já existe movimentação de saída para esta ordem
-        const { data: movExistente } = await supabase
-          .from("estoque_movimentacoes")
-          .select("id")
-          .eq("ordem_corte_id", ordemId!)
-          .eq("tipo", "saida")
-          .maybeSingle();
-        if (!movExistente && consumoTotal > 0) {
-          const { data: tecidoData } = await supabase
-            .from("tecidos").select("estoque_kg").eq("id", ordem.tecido_id).single();
-          const novoEstoque = Math.max(0, Number(tecidoData?.estoque_kg || 0) - consumoTotal);
-          await supabase.from("tecidos").update({ estoque_kg: novoEstoque }).eq("id", ordem.tecido_id);
-          await supabase.from("estoque_movimentacoes").insert({
-            tecido_id: ordem.tecido_id,
-            quantidade_kg: consumoTotal,
-            ordem_corte_id: ordemId!,
-            tipo: "saida",
-            descricao: `Baixa OC ${ordem.numero} — ${ordem.quantidade_pecas} peças`,
-          });
+      // Baixa de estoque ao concluir — agrupa por tecido_id de cada linha da grade
+      // (cada cor pode usar um tecido diferente). Fallback: usa tecido_id principal da OC.
+      if (ordem.status === "concluido" && ordem.consumo_por_peca && ordemId) {
+        const consumoPorPeca = Number(ordem.consumo_por_peca);
+        if (consumoPorPeca > 0) {
+          // Agregação: tecido_id => total de peças
+          const consumoPorTecido = new Map<string, number>();
+          for (const g of grade) {
+            const qtdLinha = (g.pp || 0) + (g.p || 0) + (g.m || 0) + (g.g || 0)
+              + (g.gg || 0) + (g.g1 || 0) + (g.g2 || 0) + (g.g3 || 0);
+            if (qtdLinha <= 0) continue;
+            const tid = g.tecido_id || ordem.tecido_id;
+            if (!tid) continue;
+            consumoPorTecido.set(tid, (consumoPorTecido.get(tid) || 0) + qtdLinha);
+          }
+          // Se nenhuma linha tem tecido, usa o principal com qtd total
+          if (consumoPorTecido.size === 0 && ordem.tecido_id && ordem.quantidade_pecas) {
+            consumoPorTecido.set(ordem.tecido_id, Number(ordem.quantidade_pecas));
+          }
+          for (const [tecidoId, pecas] of consumoPorTecido.entries()) {
+            const consumoKg = pecas * consumoPorPeca;
+            if (consumoKg <= 0) continue;
+            const { data: movExistente } = await supabase
+              .from("estoque_movimentacoes")
+              .select("id")
+              .eq("ordem_corte_id", ordemId)
+              .eq("tecido_id", tecidoId)
+              .eq("tipo", "saida")
+              .maybeSingle();
+            if (movExistente) continue;
+            const { data: tecidoData } = await supabase
+              .from("tecidos").select("estoque_kg").eq("id", tecidoId).single();
+            const novoEstoque = Math.max(0, Number(tecidoData?.estoque_kg || 0) - consumoKg);
+            await supabase.from("tecidos").update({ estoque_kg: novoEstoque }).eq("id", tecidoId);
+            await supabase.from("estoque_movimentacoes").insert({
+              tecido_id: tecidoId,
+              quantidade_kg: consumoKg,
+              ordem_corte_id: ordemId,
+              tipo: "saida",
+              descricao: `Baixa OC ${ordem.numero} — ${pecas} peças`,
+            });
+          }
         }
       }
       // Sincroniza status_kanban do pedido (Fase 4)
