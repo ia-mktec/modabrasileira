@@ -809,6 +809,44 @@ const ExpedicaoPage = () => {
         <div className="text-xs text-muted-foreground text-right">
           {registros.length} registro(s){registros.length >= 2000 ? " (limite atingido — refine os filtros)" : ""}
         </div>
+
+        <AlertDialog open={!!devolverTarget} onOpenChange={(o) => { if (!o) setDevolverTarget(null); }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Registrar devolução da oficina</AlertDialogTitle>
+              <AlertDialogDescription>
+                A expedição será marcada como <strong>Devolvido p/ oficina</strong> e a OC{" "}
+                <span className="font-mono">{devolverTarget?.ordens_corte?.numero || ""}</span> voltará a ficar
+                disponível para uma nova expedição. O registro permanece no histórico para rastreabilidade.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="space-y-3 py-2">
+              <div className="space-y-1">
+                <Label className="text-xs">Data da devolução</Label>
+                <Input type="date" value={devolverData} onChange={(e) => setDevolverData(e.target.value)} className="h-9" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Motivo da devolução *</Label>
+                <Textarea
+                  value={devolverMotivo}
+                  onChange={(e) => setDevolverMotivo(e.target.value)}
+                  placeholder="Ex.: oficina sem capacidade, peças incompletas, problema de qualidade..."
+                  className="min-h-[90px]"
+                />
+              </div>
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={devolverSaving}>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={devolverSaving || !devolverMotivo.trim()}
+                onClick={(e) => { e.preventDefault(); confirmarDevolucao(); }}
+                className="bg-[hsl(0,72%,45%)] hover:bg-[hsl(0,72%,40%)] text-[hsl(0,0%,100%)]"
+              >
+                {devolverSaving ? "Salvando..." : "Confirmar devolução"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     );
   }
