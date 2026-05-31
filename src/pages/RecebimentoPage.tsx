@@ -170,6 +170,7 @@ const RecebimentoPage = () => {
 
   const envios = useMemo(() => {
     return (expedicoes || [])
+      .filter((exp: any) => (exp.status || "").toLowerCase() !== "devolvido")
       .map((exp: any) => {
         const oc = ordensCorteDb.find((o: any) => o.id === exp.ordem_corte_id);
         if (!oc) return null;
