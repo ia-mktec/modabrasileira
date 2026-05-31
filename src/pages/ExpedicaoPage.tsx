@@ -283,6 +283,7 @@ const ExpedicaoPage = () => {
       case "em_andamento":return "Em Andamento";
       case "concluido":return "Concluído";
       case "cancelado":return "Cancelado";
+      case "devolvido":return "Devolvido p/ oficina";
       default:return s;
     }
   };
