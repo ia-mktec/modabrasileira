@@ -447,6 +447,21 @@ const ModelosPage = () => {
     toast({ title: "Imagem carregada", description: file.name });
   };
 
+  const handleImageCostasSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const fileName = `imagens-costas/${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage.from("modelos").upload(fileName, file, { upsert: true });
+    if (error) {
+      toast({ title: "Erro ao enviar imagem", description: error.message, variant: "destructive" });
+      return;
+    }
+    const { data: urlData } = supabase.storage.from("modelos").getPublicUrl(fileName);
+    setModelImageCostas(urlData.publicUrl);
+    toast({ title: "Imagem das costas carregada", description: file.name });
+  };
+
+
   const handleFotoClienteSelect = async (e: React.ChangeEvent<HTMLInputElement>, slot: 1 | 2) => {
     const file = e.target.files?.[0];
     if (!file) return;
