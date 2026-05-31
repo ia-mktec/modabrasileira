@@ -25,6 +25,8 @@ interface ModeloData {
   risco: string | null;
   foto_cliente_1_url: string | null;
   foto_cliente_2_url: string | null;
+  imagem_url: string | null;
+  imagem_costas_url: string | null;
   tamanhos_grade: string | null;
   tecido_principal: string | null;
 }
