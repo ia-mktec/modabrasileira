@@ -112,6 +112,7 @@ const CortePage = () => {
 
   // Imagem da referência
   const [refImage, setRefImage] = useState<string | null>(null);
+  const [refImageCostas, setRefImageCostas] = useState<string | null>(null);
   const emptyGradePedido = () => ({ PP: 0, P: 0, M: 0, G: 0, GG: 0, G1: 0, G2: 0, G3: 0 } as Record<string, number>);
   const [gradeTamanhosPedido, setGradeTamanhosPedido] = useState<Record<string, number>>(emptyGradePedido());
   const parseGradePedido = (raw: any): Record<string, number> => {
