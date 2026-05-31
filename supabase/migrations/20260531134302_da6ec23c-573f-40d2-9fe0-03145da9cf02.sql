@@ -1,0 +1,1 @@
+ALTER TABLE public.modelos ADD COLUMN IF NOT EXISTS imagem_costas_url text;
