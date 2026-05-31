@@ -708,6 +708,7 @@ const ExpedicaoPage = () => {
                     <SelectItem value="em_andamento">Em Andamento</SelectItem>
                     <SelectItem value="concluido">Concluído</SelectItem>
                     <SelectItem value="cancelado">Cancelado</SelectItem>
+                    <SelectItem value="devolvido">Devolvido p/ oficina</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
