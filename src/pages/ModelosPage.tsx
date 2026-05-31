@@ -145,7 +145,9 @@ const ModelosPage = () => {
   const [modelagemUrl, setModelagemUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const imageCostasInputRef = useRef<HTMLInputElement>(null);
   const [modelImage, setModelImage] = useState<string | null>(null);
+  const [modelImageCostas, setModelImageCostas] = useState<string | null>(null);
   const [currentModeloId, setCurrentModeloId] = useState<string | null>(null);
   const [editingPedidoNumero, setEditingPedidoNumero] = useState<string | null>(null);
   const location = useLocation();
@@ -192,6 +194,7 @@ const ModelosPage = () => {
     setForroQtde(m.forro_tecido2_quantidade ? String(m.forro_tecido2_quantidade) : "");
     setForroConsumoPeca((m as any).forro_tecido2_consumo_peca ? String((m as any).forro_tecido2_consumo_peca) : "");
     setModelImage(m.imagem_url || null);
+    setModelImageCostas((m as any).imagem_costas_url || null);
     setObservacoes(m.observacoes || "");
     setQtdeRolos((m as any).qtde_rolos != null ? String((m as any).qtde_rolos) : "");
     setCorte((m as any).corte || "");
@@ -299,6 +302,7 @@ const ModelosPage = () => {
     setModelagemFile(null);
     setModelagemUrl(null);
     setModelImage(null);
+    setModelImageCostas(null);
     setCurrentModeloId(null);
     setIsLoadedFromSearch(false);
     setIsIncluding(false);
@@ -444,6 +448,21 @@ const ModelosPage = () => {
     toast({ title: "Imagem carregada", description: file.name });
   };
 
+  const handleImageCostasSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const fileName = `imagens-costas/${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage.from("modelos").upload(fileName, file, { upsert: true });
+    if (error) {
+      toast({ title: "Erro ao enviar imagem", description: error.message, variant: "destructive" });
+      return;
+    }
+    const { data: urlData } = supabase.storage.from("modelos").getPublicUrl(fileName);
+    setModelImageCostas(urlData.publicUrl);
+    toast({ title: "Imagem das costas carregada", description: file.name });
+  };
+
+
   const handleFotoClienteSelect = async (e: React.ChangeEvent<HTMLInputElement>, slot: 1 | 2) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -523,6 +542,7 @@ const ModelosPage = () => {
     arquivo_modelagem_url: modelagemUrl || null,
     status: statusKanban === "concluido" ? "ativo" : statusKanban === "pendente" ? "desenvolvimento" : "ativo",
     imagem_url: modelImage || null,
+    imagem_costas_url: modelImageCostas || null,
     observacoes: observacoes || null,
     tamanhos_grade: JSON.stringify(gradeTamanhos),
     qtde_rolos: parseInt(qtdeRolos) || 0,
@@ -549,6 +569,7 @@ const ModelosPage = () => {
     forro_tecido2_consumo_peca: parseFloat(forroConsumoPeca) || 0,
     arquivo_modelagem_url: modelagemUrl || null,
     imagem_url: modelImage || null,
+    imagem_costas_url: modelImageCostas || null,
     tamanhos_grade: JSON.stringify(gradeTamanhos),
     qtde_rolos: parseInt(qtdeRolos) || 0,
     corte: corte || null,
@@ -1003,36 +1024,65 @@ const ModelosPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-4 print:gap-2 print:items-start">
         {/* Image column */}
         <div className="space-y-4">
-          <Card className="flex items-center justify-center min-h-[280px] print:min-h-[980px] overflow-hidden">
-            <input
-              ref={imageInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageSelect}
-              className="hidden"
-            />
-            {modelImage ? (
-              <div className="relative w-full h-full min-h-[280px] print:min-h-[980px]">
-                <img src={modelImage} alt="Modelo" className="w-full h-full object-contain p-2 print:p-0" />
+          <div className="grid grid-cols-2 gap-2">
+            <Card className="flex items-center justify-center min-h-[280px] print:min-h-[980px] overflow-hidden">
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageSelect}
+                className="hidden"
+              />
+              {modelImage ? (
+                <div className="relative w-full h-full min-h-[280px] print:min-h-[980px]">
+                  <img src={modelImage} alt="Modelo - Frente" className="w-full h-full object-contain p-2 print:p-0" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="absolute bottom-2 right-2 text-xs print:hidden"
+                    onClick={() => imageInputRef.current?.click()}
+                  >
+                    Trocar Imagem
+                  </Button>
+                </div>
+              ) : (
+                <div className="text-center text-muted-foreground space-y-2">
+                  <Shirt className="w-16 h-16 mx-auto opacity-30" />
+                  <p className="text-sm">Imagem do Modelo (Frente)</p>
+                  <Button variant="outline" size="sm" className="text-xs" onClick={() => imageInputRef.current?.click()}>Upload Imagem</Button>
+                </div>
+              )}
+            </Card>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="absolute bottom-2 right-2 text-xs print:hidden"
-                  onClick={() => imageInputRef.current?.click()}
-                >
-                  Trocar Imagem
-                </Button>
-              </div>
-
-            ) : (
-              <div className="text-center text-muted-foreground space-y-2">
-                <Shirt className="w-16 h-16 mx-auto opacity-30" />
-                <p className="text-sm">Imagem do Modelo</p>
-                <Button variant="outline" size="sm" className="text-xs" onClick={() => imageInputRef.current?.click()}>Upload Imagem</Button>
-              </div>
-            )}
-          </Card>
+            <Card className="flex items-center justify-center min-h-[280px] print:min-h-[980px] overflow-hidden">
+              <input
+                ref={imageCostasInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageCostasSelect}
+                className="hidden"
+              />
+              {modelImageCostas ? (
+                <div className="relative w-full h-full min-h-[280px] print:min-h-[980px]">
+                  <img src={modelImageCostas} alt="Modelo - Costas" className="w-full h-full object-contain p-2 print:p-0" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="absolute bottom-2 right-2 text-xs print:hidden"
+                    onClick={() => imageCostasInputRef.current?.click()}
+                  >
+                    Trocar Imagem
+                  </Button>
+                </div>
+              ) : (
+                <div className="text-center text-muted-foreground space-y-2">
+                  <Shirt className="w-16 h-16 mx-auto opacity-30" />
+                  <p className="text-sm">Imagem do Modelo (Costas)</p>
+                  <Button variant="outline" size="sm" className="text-xs" onClick={() => imageCostasInputRef.current?.click()}>Upload Imagem</Button>
+                </div>
+              )}
+            </Card>
+          </div>
           {/* Arquivo Modelagem Aprovada */}
           <Card className="print:hidden">
             <CardContent className="p-4">

@@ -112,6 +112,7 @@ const CortePage = () => {
 
   // Imagem da referência
   const [refImage, setRefImage] = useState<string | null>(null);
+  const [refImageCostas, setRefImageCostas] = useState<string | null>(null);
   const emptyGradePedido = () => ({ PP: 0, P: 0, M: 0, G: 0, GG: 0, G1: 0, G2: 0, G3: 0 } as Record<string, number>);
   const [gradeTamanhosPedido, setGradeTamanhosPedido] = useState<Record<string, number>>(emptyGradePedido());
   const parseGradePedido = (raw: any): Record<string, number> => {
@@ -188,18 +189,18 @@ const CortePage = () => {
   useEffect(() => {
     if (!modeloRef.trim()) {
       setModeloNome("");
-      setRefImage(null);
+      setRefImage(null); setRefImageCostas(null);
       setGradeTamanhosPedido(emptyGradePedido());
       return;
     }
     const found = findModeloByReferencia(modelosDb, modeloRef);
     if (found) {
       setModeloNome(getModeloNome(found));
-      setRefImage(found.imagem_url || null);
+      setRefImage(found.imagem_url || null); setRefImageCostas((found as any).imagem_costas_url || null);
       setGradeTamanhosPedido(parseGradePedido((found as any).tamanhos_grade));
     } else {
       setModeloNome("");
-      setRefImage(null);
+      setRefImage(null); setRefImageCostas(null);
       setGradeTamanhosPedido(emptyGradePedido());
     }
   }, [modeloRef, modelosDb]);
@@ -266,7 +267,7 @@ const CortePage = () => {
     setModeloRef(oc.modelo_ref || "");
     const foundModelo = findModeloByReferencia(modelosDb, oc.modelo_ref);
     setModeloNome(getModeloNome(foundModelo));
-    setRefImage(foundModelo?.imagem_url || null);
+    setRefImage(foundModelo?.imagem_url || null); setRefImageCostas((foundModelo as any)?.imagem_costas_url || null);
     setTecido(oc.tecido_nome || "");
     setSelectedTecidoId(oc.tecido_id || "");
     setSelectedClienteId(oc.cliente_id || "");
@@ -323,7 +324,7 @@ const CortePage = () => {
     setSelectedClienteId("");setClienteNome("");
     setGradeRows([createEmptyGradeRow()]);
     setAviamentos([]);
-    setRefImage(null);
+    setRefImage(null); setRefImageCostas(null);
     setIsLoadedFromSearch(false);
     setReservaAtiva(false);
   };
@@ -407,7 +408,7 @@ const CortePage = () => {
     setModeloRef(p.modelo_ref || "");
     const foundModelo = findModeloByReferencia(modelosDb, p.modelo_ref);
     setModeloNome(getModeloNome(foundModelo));
-    setRefImage(foundModelo?.imagem_url || null);
+    setRefImage(foundModelo?.imagem_url || null); setRefImageCostas((foundModelo as any)?.imagem_costas_url || null);
     if (p.tecido) setTecido(p.tecido);
     if (p.consumo_tecido) setConsumoPorPeca(String(p.consumo_tecido));
     if (p.cliente) {
@@ -913,7 +914,7 @@ const CortePage = () => {
                           <Input placeholder="Referência ou descrição..." value={modeloSearchTerm} onChange={(e) => setModeloSearchTerm(e.target.value)} />
                           <div className="space-y-1 max-h-[60vh] overflow-y-auto">
                             {filteredModelos.map((m) =>
-                            <button key={m.id} onClick={() => {setModeloRef(m.referencia);setModeloNome(getModeloNome(m));setRefImage(m.imagem_url || null);setModeloSearchOpen(false);}} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
+                            <button key={m.id} onClick={() => {setModeloRef(m.referencia);setModeloNome(getModeloNome(m));setRefImage(m.imagem_url || null); setRefImageCostas((m as any).imagem_costas_url || null);setModeloSearchOpen(false);}} className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
                                 <div className="font-mono text-xs font-semibold text-primary">{m.referencia}</div>
                                 <div className="text-muted-foreground text-xs">{getModeloNome(m) || m.descricao}</div>
                               </button>
@@ -1038,9 +1039,10 @@ const CortePage = () => {
                 <h3 className="text-xs font-bold tracking-wide text-center">IMAGEM REF.</h3>
               </div>
               <CardContent className="p-2 flex-1 flex flex-col items-center justify-center">
-                {refImage ?
-                <div className="w-full h-full min-h-[200px]">
-                    <img src={refImage} alt="Referência do modelo" className="w-full h-full object-contain rounded" />
+                {refImage || refImageCostas ?
+                <div className={`w-full h-full min-h-[200px] grid ${refImageCostas ? "grid-cols-2" : "grid-cols-1"} gap-2`}>
+                    {refImage && <img src={refImage} alt="Frente" className="w-full h-full object-contain rounded" />}
+                    {refImageCostas && <img src={refImageCostas} alt="Costas" className="w-full h-full object-contain rounded" />}
                   </div> :
 
                 <div className="flex flex-col items-center gap-2 text-muted-foreground py-8">

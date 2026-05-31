@@ -53,6 +53,7 @@ const RecebimentoPage = () => {
 
   // Imagem ref (cadastro modelo)
   const [refImage, setRefImage] = useState<string | null>(null);
+  const [refImageCostas, setRefImageCostas] = useState<string | null>(null);
 
   // Grade cortada
   const [gradeRows, setGradeRows] = useState<GradeRecRow[]>([]);
@@ -255,7 +256,7 @@ const RecebimentoPage = () => {
     const candidatos = modelosDb.filter((m: any) => (m.referencia || "").trim().toLowerCase() === refTrim);
     const foundModelo = candidatos.find((m: any) => !!m.imagem_url) || candidatos[0];
     setModelo(foundModelo?.descricao || oc.modelo_ref || "");
-    setRefImage(foundModelo?.imagem_url || null);
+    setRefImage(foundModelo?.imagem_url || null); setRefImageCostas((foundModelo as any)?.imagem_costas_url || null);
     setGradeRows([]);
     setSearchOpen(false);
     setIsLoaded(true);
@@ -328,7 +329,7 @@ const RecebimentoPage = () => {
     setReferencia(""); setOrdemCorte(""); setCliente(""); setModelo("");
     setOficina(""); setDataEnvio(""); setDataRecebimento("");
     setObservacoes(""); setStatusKanban(""); setQtdTotalRecebida("");
-    setGradeRows([]); setRefImage(null); setIsLoaded(false);
+    setGradeRows([]); setRefImage(null); setRefImageCostas(null); setIsLoaded(false);
   };
 
   const handlePrint = useCallback(() => { window.print(); }, []);
@@ -685,9 +686,10 @@ const RecebimentoPage = () => {
                 <h3 className="text-xs font-bold tracking-wide text-center">IMAGEM REF.</h3>
               </div>
               <CardContent className="p-2 flex-1 flex flex-col items-center justify-center">
-                {refImage ? (
-                  <div className="w-full h-full min-h-[200px]">
-                    <img src={refImage} alt="Referência do modelo" className="w-full h-full object-contain rounded" />
+                {refImage || refImageCostas ? (
+                  <div className={`w-full h-full min-h-[200px] grid ${refImageCostas ? "grid-cols-2" : "grid-cols-1"} gap-2`}>
+                    {refImage && <img src={refImage} alt="Frente" className="w-full h-full object-contain rounded" />}
+                    {refImageCostas && <img src={refImageCostas} alt="Costas" className="w-full h-full object-contain rounded" />}
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-2 text-muted-foreground py-8">

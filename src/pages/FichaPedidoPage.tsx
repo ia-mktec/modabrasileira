@@ -42,6 +42,7 @@ interface ModeloData {
   forro_tecido2_quantidade: number | null;
   forro_tecido2_consumo_peca: number | null;
   imagem_url: string | null;
+  imagem_costas_url: string | null;
   arquivo_modelagem_url: string | null;
   foto_cliente_1_url: string | null;
   foto_cliente_2_url: string | null;
@@ -234,9 +235,16 @@ export default function FichaPedidoPage() {
       {/* Imagem + Aviamentos/Serviços */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-4">
-          <Card className="flex items-center justify-center min-h-[280px] overflow-hidden">
-            {modelo?.imagem_url ? (
-              <img src={modelo.imagem_url} alt="Modelo" className="w-full h-full object-contain p-2 max-h-[400px]" />
+          <Card className="flex items-stretch justify-center min-h-[280px] overflow-hidden">
+            {modelo?.imagem_url || modelo?.imagem_costas_url ? (
+              <div className={`grid ${modelo?.imagem_costas_url ? "grid-cols-2" : "grid-cols-1"} gap-2 w-full`}>
+                {modelo?.imagem_url && (
+                  <img src={modelo.imagem_url} alt="Modelo - Frente" className="w-full h-full object-contain p-2 max-h-[400px]" />
+                )}
+                {modelo?.imagem_costas_url && (
+                  <img src={modelo.imagem_costas_url} alt="Modelo - Costas" className="w-full h-full object-contain p-2 max-h-[400px]" />
+                )}
+              </div>
             ) : (
               <div className="text-center text-muted-foreground space-y-2 py-8">
                 <Shirt className="w-16 h-16 mx-auto opacity-30" />
