@@ -1135,7 +1135,7 @@ const CortePage = () => {
                                 className={`${yellowInput} h-8 text-xs flex-1 cursor-pointer`}
                                 placeholder="Selecione"
                                 onClick={() => {
-                                  if (!selectedTecidoId) {
+                                  if (!tecido) {
                                     toast({ title: "Selecione o tecido", description: "É necessário selecionar o tecido antes de escolher a cor.", variant: "destructive" });
                                     return;
                                   }
@@ -1149,7 +1149,7 @@ const CortePage = () => {
                                 size="icon"
                                 className="h-8 w-8 shrink-0"
                                 onClick={() => {
-                                  if (!selectedTecidoId) {
+                                  if (!tecido) {
                                     toast({ title: "Selecione o tecido", description: "É necessário selecionar o tecido antes de escolher a cor.", variant: "destructive" });
                                     return;
                                   }
