@@ -144,6 +144,46 @@ const ExpedicaoPage = () => {
   const [registros, setRegistros] = useState<RegistroExpedicao[]>([]);
   const [loadingRegistros, setLoadingRegistros] = useState(false);
 
+  // Devolução pela oficina
+  const { roles } = useAuth();
+  const canRegistrarDevolucao = roles.includes("dev") || roles.includes("expedicao");
+  const [devolverTarget, setDevolverTarget] = useState<RegistroExpedicao | null>(null);
+  const [devolverMotivo, setDevolverMotivo] = useState("");
+  const [devolverData, setDevolverData] = useState(() => new Date().toISOString().slice(0, 10));
+  const [devolverSaving, setDevolverSaving] = useState(false);
+
+  const abrirDevolucao = (r: RegistroExpedicao) => {
+    setDevolverTarget(r);
+    setDevolverMotivo("");
+    setDevolverData(new Date().toISOString().slice(0, 10));
+  };
+
+  const confirmarDevolucao = async () => {
+    if (!devolverTarget) return;
+    if (!devolverMotivo.trim()) {
+      toast({ title: "Motivo obrigatório", description: "Informe o motivo da devolução.", variant: "destructive" });
+      return;
+    }
+    setDevolverSaving(true);
+    const obsAnterior = (devolverTarget.observacoes || "").trim();
+    const nota = `[DEVOLUÇÃO DA OFICINA em ${formatDateBR(devolverData)}] ${devolverMotivo.trim()}`;
+    const novasObs = obsAnterior ? `${obsAnterior}\n${nota}` : nota;
+    const { error } = await supabase
+      .from("expedicao")
+      .update({ status: "devolvido", observacoes: novasObs })
+      .eq("id", devolverTarget.id);
+    setDevolverSaving(false);
+    if (error) {
+      toast({ title: "Erro ao registrar devolução", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Devolução registrada", description: "A OC voltou a ficar disponível para nova expedição." });
+    // Atualiza linha localmente
+    setRegistros((prev) => prev.map((x) => x.id === devolverTarget.id ? { ...x, status: "devolvido", observacoes: novasObs } : x));
+    setDevolverTarget(null);
+  };
+
+
   useEffect(() => {
     if (viewMode !== "historico") return;
     let cancelled = false;
