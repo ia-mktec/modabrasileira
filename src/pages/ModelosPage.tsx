@@ -541,6 +541,7 @@ const ModelosPage = () => {
     arquivo_modelagem_url: modelagemUrl || null,
     status: statusKanban === "concluido" ? "ativo" : statusKanban === "pendente" ? "desenvolvimento" : "ativo",
     imagem_url: modelImage || null,
+    imagem_costas_url: modelImageCostas || null,
     observacoes: observacoes || null,
     tamanhos_grade: JSON.stringify(gradeTamanhos),
     qtde_rolos: parseInt(qtdeRolos) || 0,
