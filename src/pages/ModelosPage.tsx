@@ -568,6 +568,7 @@ const ModelosPage = () => {
     forro_tecido2_consumo_peca: parseFloat(forroConsumoPeca) || 0,
     arquivo_modelagem_url: modelagemUrl || null,
     imagem_url: modelImage || null,
+    imagem_costas_url: modelImageCostas || null,
     tamanhos_grade: JSON.stringify(gradeTamanhos),
     qtde_rolos: parseInt(qtdeRolos) || 0,
     corte: corte || null,
