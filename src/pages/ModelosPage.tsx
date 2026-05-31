@@ -1023,36 +1023,65 @@ const ModelosPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-4 print:gap-2 print:items-start">
         {/* Image column */}
         <div className="space-y-4">
-          <Card className="flex items-center justify-center min-h-[280px] print:min-h-[980px] overflow-hidden">
-            <input
-              ref={imageInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageSelect}
-              className="hidden"
-            />
-            {modelImage ? (
-              <div className="relative w-full h-full min-h-[280px] print:min-h-[980px]">
-                <img src={modelImage} alt="Modelo" className="w-full h-full object-contain p-2 print:p-0" />
+          <div className="grid grid-cols-2 gap-2">
+            <Card className="flex items-center justify-center min-h-[280px] print:min-h-[980px] overflow-hidden">
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageSelect}
+                className="hidden"
+              />
+              {modelImage ? (
+                <div className="relative w-full h-full min-h-[280px] print:min-h-[980px]">
+                  <img src={modelImage} alt="Modelo - Frente" className="w-full h-full object-contain p-2 print:p-0" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="absolute bottom-2 right-2 text-xs print:hidden"
+                    onClick={() => imageInputRef.current?.click()}
+                  >
+                    Trocar Imagem
+                  </Button>
+                </div>
+              ) : (
+                <div className="text-center text-muted-foreground space-y-2">
+                  <Shirt className="w-16 h-16 mx-auto opacity-30" />
+                  <p className="text-sm">Imagem do Modelo (Frente)</p>
+                  <Button variant="outline" size="sm" className="text-xs" onClick={() => imageInputRef.current?.click()}>Upload Imagem</Button>
+                </div>
+              )}
+            </Card>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="absolute bottom-2 right-2 text-xs print:hidden"
-                  onClick={() => imageInputRef.current?.click()}
-                >
-                  Trocar Imagem
-                </Button>
-              </div>
-
-            ) : (
-              <div className="text-center text-muted-foreground space-y-2">
-                <Shirt className="w-16 h-16 mx-auto opacity-30" />
-                <p className="text-sm">Imagem do Modelo</p>
-                <Button variant="outline" size="sm" className="text-xs" onClick={() => imageInputRef.current?.click()}>Upload Imagem</Button>
-              </div>
-            )}
-          </Card>
+            <Card className="flex items-center justify-center min-h-[280px] print:min-h-[980px] overflow-hidden">
+              <input
+                ref={imageCostasInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageCostasSelect}
+                className="hidden"
+              />
+              {modelImageCostas ? (
+                <div className="relative w-full h-full min-h-[280px] print:min-h-[980px]">
+                  <img src={modelImageCostas} alt="Modelo - Costas" className="w-full h-full object-contain p-2 print:p-0" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="absolute bottom-2 right-2 text-xs print:hidden"
+                    onClick={() => imageCostasInputRef.current?.click()}
+                  >
+                    Trocar Imagem
+                  </Button>
+                </div>
+              ) : (
+                <div className="text-center text-muted-foreground space-y-2">
+                  <Shirt className="w-16 h-16 mx-auto opacity-30" />
+                  <p className="text-sm">Imagem do Modelo (Costas)</p>
+                  <Button variant="outline" size="sm" className="text-xs" onClick={() => imageCostasInputRef.current?.click()}>Upload Imagem</Button>
+                </div>
+              )}
+            </Card>
+          </div>
           {/* Arquivo Modelagem Aprovada */}
           <Card className="print:hidden">
             <CardContent className="p-4">
