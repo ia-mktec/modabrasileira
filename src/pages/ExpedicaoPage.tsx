@@ -748,6 +748,12 @@ const ExpedicaoPage = () => {
                     const oc = r.ordens_corte;
                     const pecas = totalPecasGrade(r.grade_expedicao);
                     const isConcluido = (r.status || "").toLowerCase() === "concluido";
+                    const isDevolvido = (r.status || "").toLowerCase() === "devolvido";
+                    const statusClass = isDevolvido
+                      ? "bg-[hsl(0_84%_50%/0.12)] text-[hsl(0,72%,45%)] border-[hsl(0_84%_50%/0.3)]"
+                      : isConcluido
+                        ? "bg-[hsl(142_71%_35%/0.15)] text-[hsl(142,71%,35%)] border-[hsl(142_71%_35%/0.3)]"
+                        : "bg-[hsl(38_92%_50%/0.15)] text-[hsl(38,92%,50%)] border-[hsl(38_92%_50%/0.3)]";
                     return (
                       <tr key={r.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                         <td className="py-2 px-4 font-mono">{formatDateBR(r.data_saida)}</td>
@@ -759,16 +765,25 @@ const ExpedicaoPage = () => {
                         <td className="py-2 px-4 text-center font-mono">{pecas}</td>
                         <td className="py-2 px-4 text-right font-mono">{Number(r.preco_peca || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
                         <td className="py-2 px-4 text-center">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${
-                            isConcluido
-                              ? "bg-[hsl(142_71%_35%/0.15)] text-[hsl(142,71%,35%)] border-[hsl(142_71%_35%/0.3)]"
-                              : "bg-[hsl(38_92%_50%/0.15)] text-[hsl(38,92%,50%)] border-[hsl(38_92%_50%/0.3)]"
-                          }`}>{statusLabel(r.status || "")}</span>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${statusClass}`}>{statusLabel(r.status || "")}</span>
                         </td>
                         <td className="py-2 px-4 text-center">
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => loadRegistroExpedicao(r)} title="Abrir registro">
-                            <Pencil className="w-3.5 h-3.5" />
-                          </Button>
+                          <div className="flex items-center justify-center gap-1">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => loadRegistroExpedicao(r)} title="Abrir registro">
+                              <Pencil className="w-3.5 h-3.5" />
+                            </Button>
+                            {canRegistrarDevolucao && !isDevolvido && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-[hsl(0,72%,45%)] hover:text-[hsl(0,72%,40%)] hover:bg-[hsl(0_84%_50%/0.1)]"
+                                onClick={() => abrirDevolucao(r)}
+                                title="Registrar devolução da oficina"
+                              >
+                                <RotateCcw className="w-3.5 h-3.5" />
+                              </Button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
