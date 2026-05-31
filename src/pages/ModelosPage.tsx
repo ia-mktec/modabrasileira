@@ -194,6 +194,7 @@ const ModelosPage = () => {
     setForroQtde(m.forro_tecido2_quantidade ? String(m.forro_tecido2_quantidade) : "");
     setForroConsumoPeca((m as any).forro_tecido2_consumo_peca ? String((m as any).forro_tecido2_consumo_peca) : "");
     setModelImage(m.imagem_url || null);
+    setModelImageCostas((m as any).imagem_costas_url || null);
     setObservacoes(m.observacoes || "");
     setQtdeRolos((m as any).qtde_rolos != null ? String((m as any).qtde_rolos) : "");
     setCorte((m as any).corte || "");
