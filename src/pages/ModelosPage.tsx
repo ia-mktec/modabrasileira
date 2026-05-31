@@ -145,7 +145,9 @@ const ModelosPage = () => {
   const [modelagemUrl, setModelagemUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const imageCostasInputRef = useRef<HTMLInputElement>(null);
   const [modelImage, setModelImage] = useState<string | null>(null);
+  const [modelImageCostas, setModelImageCostas] = useState<string | null>(null);
   const [currentModeloId, setCurrentModeloId] = useState<string | null>(null);
   const [editingPedidoNumero, setEditingPedidoNumero] = useState<string | null>(null);
   const location = useLocation();
