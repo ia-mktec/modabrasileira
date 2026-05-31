@@ -10,10 +10,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { useOrdensCorte, useExpedicao, useFornecedores, useModelos, useClientes } from "@/hooks/useSupabaseData";
-import { Search, Truck, Printer, PackageCheck, ImageOff, Send, CheckCircle, ArrowLeft, Pencil } from "lucide-react";
+import { Search, Truck, Printer, PackageCheck, ImageOff, Send, CheckCircle, ArrowLeft, Pencil, RotateCcw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { showSaving } from "@/lib/saving-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const TAMANHOS = ["PP", "P", "M", "G", "GG", "G1", "G2", "G3"];
 const TAM_KEYS: Record<string, string> = { PP: "pp", P: "p", M: "m", G: "g", GG: "gg", G1: "g1", G2: "g2", G3: "g3" };
@@ -139,6 +144,46 @@ const ExpedicaoPage = () => {
   const [registros, setRegistros] = useState<RegistroExpedicao[]>([]);
   const [loadingRegistros, setLoadingRegistros] = useState(false);
 
+  // Devolução pela oficina
+  const { roles } = useAuth();
+  const canRegistrarDevolucao = roles.includes("dev") || roles.includes("expedicao");
+  const [devolverTarget, setDevolverTarget] = useState<RegistroExpedicao | null>(null);
+  const [devolverMotivo, setDevolverMotivo] = useState("");
+  const [devolverData, setDevolverData] = useState(() => new Date().toISOString().slice(0, 10));
+  const [devolverSaving, setDevolverSaving] = useState(false);
+
+  const abrirDevolucao = (r: RegistroExpedicao) => {
+    setDevolverTarget(r);
+    setDevolverMotivo("");
+    setDevolverData(new Date().toISOString().slice(0, 10));
+  };
+
+  const confirmarDevolucao = async () => {
+    if (!devolverTarget) return;
+    if (!devolverMotivo.trim()) {
+      toast({ title: "Motivo obrigatório", description: "Informe o motivo da devolução.", variant: "destructive" });
+      return;
+    }
+    setDevolverSaving(true);
+    const obsAnterior = (devolverTarget.observacoes || "").trim();
+    const nota = `[DEVOLUÇÃO DA OFICINA em ${formatDateBR(devolverData)}] ${devolverMotivo.trim()}`;
+    const novasObs = obsAnterior ? `${obsAnterior}\n${nota}` : nota;
+    const { error } = await supabase
+      .from("expedicao")
+      .update({ status: "devolvido", observacoes: novasObs })
+      .eq("id", devolverTarget.id);
+    setDevolverSaving(false);
+    if (error) {
+      toast({ title: "Erro ao registrar devolução", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Devolução registrada", description: "A OC voltou a ficar disponível para nova expedição." });
+    // Atualiza linha localmente
+    setRegistros((prev) => prev.map((x) => x.id === devolverTarget.id ? { ...x, status: "devolvido", observacoes: novasObs } : x));
+    setDevolverTarget(null);
+  };
+
+
   useEffect(() => {
     if (viewMode !== "historico") return;
     let cancelled = false;
@@ -238,6 +283,7 @@ const ExpedicaoPage = () => {
       case "em_andamento":return "Em Andamento";
       case "concluido":return "Concluído";
       case "cancelado":return "Cancelado";
+      case "devolvido":return "Devolvido p/ oficina";
       default:return s;
     }
   };
@@ -662,6 +708,7 @@ const ExpedicaoPage = () => {
                     <SelectItem value="em_andamento">Em Andamento</SelectItem>
                     <SelectItem value="concluido">Concluído</SelectItem>
                     <SelectItem value="cancelado">Cancelado</SelectItem>
+                    <SelectItem value="devolvido">Devolvido p/ oficina</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -701,6 +748,12 @@ const ExpedicaoPage = () => {
                     const oc = r.ordens_corte;
                     const pecas = totalPecasGrade(r.grade_expedicao);
                     const isConcluido = (r.status || "").toLowerCase() === "concluido";
+                    const isDevolvido = (r.status || "").toLowerCase() === "devolvido";
+                    const statusClass = isDevolvido
+                      ? "bg-[hsl(0_84%_50%/0.12)] text-[hsl(0,72%,45%)] border-[hsl(0_84%_50%/0.3)]"
+                      : isConcluido
+                        ? "bg-[hsl(142_71%_35%/0.15)] text-[hsl(142,71%,35%)] border-[hsl(142_71%_35%/0.3)]"
+                        : "bg-[hsl(38_92%_50%/0.15)] text-[hsl(38,92%,50%)] border-[hsl(38_92%_50%/0.3)]";
                     return (
                       <tr key={r.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                         <td className="py-2 px-4 font-mono">{formatDateBR(r.data_saida)}</td>
@@ -712,16 +765,25 @@ const ExpedicaoPage = () => {
                         <td className="py-2 px-4 text-center font-mono">{pecas}</td>
                         <td className="py-2 px-4 text-right font-mono">{Number(r.preco_peca || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
                         <td className="py-2 px-4 text-center">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${
-                            isConcluido
-                              ? "bg-[hsl(142_71%_35%/0.15)] text-[hsl(142,71%,35%)] border-[hsl(142_71%_35%/0.3)]"
-                              : "bg-[hsl(38_92%_50%/0.15)] text-[hsl(38,92%,50%)] border-[hsl(38_92%_50%/0.3)]"
-                          }`}>{statusLabel(r.status || "")}</span>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${statusClass}`}>{statusLabel(r.status || "")}</span>
                         </td>
                         <td className="py-2 px-4 text-center">
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => loadRegistroExpedicao(r)} title="Abrir registro">
-                            <Pencil className="w-3.5 h-3.5" />
-                          </Button>
+                          <div className="flex items-center justify-center gap-1">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => loadRegistroExpedicao(r)} title="Abrir registro">
+                              <Pencil className="w-3.5 h-3.5" />
+                            </Button>
+                            {canRegistrarDevolucao && !isDevolvido && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-[hsl(0,72%,45%)] hover:text-[hsl(0,72%,40%)] hover:bg-[hsl(0_84%_50%/0.1)]"
+                                onClick={() => abrirDevolucao(r)}
+                                title="Registrar devolução da oficina"
+                              >
+                                <RotateCcw className="w-3.5 h-3.5" />
+                              </Button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -747,6 +809,44 @@ const ExpedicaoPage = () => {
         <div className="text-xs text-muted-foreground text-right">
           {registros.length} registro(s){registros.length >= 2000 ? " (limite atingido — refine os filtros)" : ""}
         </div>
+
+        <AlertDialog open={!!devolverTarget} onOpenChange={(o) => { if (!o) setDevolverTarget(null); }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Registrar devolução da oficina</AlertDialogTitle>
+              <AlertDialogDescription>
+                A expedição será marcada como <strong>Devolvido p/ oficina</strong> e a OC{" "}
+                <span className="font-mono">{devolverTarget?.ordens_corte?.numero || ""}</span> voltará a ficar
+                disponível para uma nova expedição. O registro permanece no histórico para rastreabilidade.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="space-y-3 py-2">
+              <div className="space-y-1">
+                <Label className="text-xs">Data da devolução</Label>
+                <Input type="date" value={devolverData} onChange={(e) => setDevolverData(e.target.value)} className="h-9" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Motivo da devolução *</Label>
+                <Textarea
+                  value={devolverMotivo}
+                  onChange={(e) => setDevolverMotivo(e.target.value)}
+                  placeholder="Ex.: oficina sem capacidade, peças incompletas, problema de qualidade..."
+                  className="min-h-[90px]"
+                />
+              </div>
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={devolverSaving}>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={devolverSaving || !devolverMotivo.trim()}
+                onClick={(e) => { e.preventDefault(); confirmarDevolucao(); }}
+                className="bg-[hsl(0,72%,45%)] hover:bg-[hsl(0,72%,40%)] text-[hsl(0,0%,100%)]"
+              >
+                {devolverSaving ? "Salvando..." : "Confirmar devolução"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     );
   }
