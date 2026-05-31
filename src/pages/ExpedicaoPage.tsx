@@ -10,10 +10,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { useOrdensCorte, useExpedicao, useFornecedores, useModelos, useClientes } from "@/hooks/useSupabaseData";
-import { Search, Truck, Printer, PackageCheck, ImageOff, Send, CheckCircle, ArrowLeft, Pencil } from "lucide-react";
+import { Search, Truck, Printer, PackageCheck, ImageOff, Send, CheckCircle, ArrowLeft, Pencil, RotateCcw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { showSaving } from "@/lib/saving-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const TAMANHOS = ["PP", "P", "M", "G", "GG", "G1", "G2", "G3"];
 const TAM_KEYS: Record<string, string> = { PP: "pp", P: "p", M: "m", G: "g", GG: "gg", G1: "g1", G2: "g2", G3: "g3" };
