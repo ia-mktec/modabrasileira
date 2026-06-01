@@ -184,7 +184,7 @@ const FichaZiperPage = () => {
               .map((z: any) => {
                 const tamanho = z.tamanho ? String(z.tamanho).trim() : "";
                 const tamanhoFormatado = tamanho && /cm|mm|m$/i.test(tamanho) ? tamanho : tamanho ? `${tamanho}cm` : null;
-                const partes = [z.tipo, z.descricao_item, tamanhoFormatado]
+                const partes = [z.descricao_item, tamanhoFormatado]
                   .filter((p: any) => p && String(p).trim());
                 return partes.join(" - ");
               })
