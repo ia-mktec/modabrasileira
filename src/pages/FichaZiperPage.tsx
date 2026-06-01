@@ -184,7 +184,7 @@ const FichaZiperPage = () => {
               .map((z: any) => {
                 const tamanho = z.tamanho ? String(z.tamanho).trim() : "";
                 const tamanhoFormatado = tamanho && /cm|mm|m$/i.test(tamanho) ? tamanho : tamanho ? `${tamanho}cm` : null;
-                const partes = [z.tipo, z.descricao_item, tamanhoFormatado]
+                const partes = [z.descricao_item, tamanhoFormatado]
                   .filter((p: any) => p && String(p).trim());
                 return partes.join(" - ");
               })
@@ -422,7 +422,13 @@ const FichaZiperPage = () => {
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-bold uppercase">Descrição Zíper</Label>
-                  <Input value={descricaoZiper} readOnly className={readOnlyInput} placeholder="-" />
+                  <textarea
+                    value={descricaoZiper}
+                    readOnly
+                    rows={2}
+                    className={`${readOnlyInput} flex w-full rounded-md border px-3 py-2 text-sm resize-none whitespace-pre-wrap break-words`}
+                    placeholder="-"
+                  />
                 </div>
               </div>
             </CardContent>
