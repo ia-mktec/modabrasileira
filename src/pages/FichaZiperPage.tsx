@@ -422,7 +422,13 @@ const FichaZiperPage = () => {
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-bold uppercase">Descrição Zíper</Label>
-                  <Input value={descricaoZiper} readOnly className={readOnlyInput} placeholder="-" />
+                  <textarea
+                    value={descricaoZiper}
+                    readOnly
+                    rows={2}
+                    className={`${readOnlyInput} flex w-full rounded-md border px-3 py-2 text-sm resize-none whitespace-pre-wrap break-words`}
+                    placeholder="-"
+                  />
                 </div>
               </div>
             </CardContent>
