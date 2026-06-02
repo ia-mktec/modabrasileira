@@ -577,7 +577,19 @@ const ExpedicaoPage = () => {
       });
     }
 
-    if (gradeData.length === 0) {
+    // Quando estamos editando um registro existente e o usuário não digitou novas
+    // quantidades na grade, preservamos a grade original (senão a função de salvar
+    // deletaria as linhas existentes ao não receber nenhuma).
+    let gradeForSave = gradeData;
+    if (editingExpedicaoId && gradeData.length === 0) {
+      gradeForSave = editingExpedicaoGrade.map((g: any) => ({
+        cor: g.cor,
+        pp_prod: g.pp_prod || 0, p_prod: g.p_prod || 0, m_prod: g.m_prod || 0, g_prod: g.g_prod || 0,
+        gg_prod: g.gg_prod || 0, g1_prod: g.g1_prod || 0, g2_prod: g.g2_prod || 0, g3_prod: g.g3_prod || 0,
+        pp_exp: g.pp_exp || 0, p_exp: g.p_exp || 0, m_exp: g.m_exp || 0, g_exp: g.g_exp || 0,
+        gg_exp: g.gg_exp || 0, g1_exp: g.g1_exp || 0, g2_exp: g.g2_exp || 0, g3_exp: g.g3_exp || 0,
+      }));
+    } else if (!editingExpedicaoId && gradeData.length === 0) {
       toast({ title: "Nenhuma quantidade informada", description: "Informe a quantidade a enviar nesta saída parcial.", variant: "destructive" });
       return;
     }
@@ -585,15 +597,21 @@ const ExpedicaoPage = () => {
     const dismissSaving = showSaving();
     let result;
     try {
+      // Quando editando um registro devolvido e o usuário envia novas quantidades,
+      // o status volta para o selecionado no kanban (em_andamento/pendente/concluido).
+      // Caso contrário, preservamos o status original.
+      const statusFinal = editingExpedicaoId
+        ? (statusKanban || editingExpedicaoStatus || "pendente")
+        : (statusKanban || "pendente");
       result = await salvarExpedicao({
         ordem_corte_id: currentOrdemCorteId,
         data_saida: dataSaida || null,
         oficina_nome: oficina || null,
-        
+
         preco_peca: parseFloat(preco) || 0,
         observacoes: observacoes || null,
-        status: statusKanban || "pendente",
-      }, gradeData);
+        status: statusFinal,
+      }, gradeForSave, editingExpedicaoId || undefined);
     } finally {
       dismissSaving();
     }
