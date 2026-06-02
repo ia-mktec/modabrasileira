@@ -962,6 +962,27 @@ const ExpedicaoPage = () => {
         <h1 className="text-xl md:text-2xl font-bold tracking-wide font-mono">EXPEDIÇÃO — SAÍDA DE OFICINA</h1>
       </div>
 
+      {editingExpedicaoId && (
+        <div className={`rounded-md border px-4 py-2 text-xs flex items-center justify-between gap-3 ${
+          editingExpedicaoStatus === "devolvido"
+            ? "bg-[hsl(0_84%_50%/0.08)] border-[hsl(0_84%_50%/0.35)] text-[hsl(0,72%,35%)]"
+            : "bg-[hsl(38_92%_50%/0.10)] border-[hsl(38_92%_50%/0.35)] text-[hsl(38,92%,30%)]"
+        }`}>
+          <div>
+            <strong>
+              {editingExpedicaoStatus === "devolvido"
+                ? "Registro DEVOLVIDO pela oficina — em edição"
+                : "Editando registro de expedição existente"}
+            </strong>
+            <span className="ml-2 opacity-80">
+              {editingExpedicaoStatus === "devolvido"
+                ? "Ajuste os dados (preço/peça, data, oficina, grade) e salve para registrar o novo envio. Ao salvar, o status do registro será atualizado conforme o kanban."
+                : "As alterações irão atualizar este registro (não criam duplicata)."}
+            </span>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row gap-4">
         {/* Action Panel */}
         <div className="flex flex-row md:flex-col gap-2 md:gap-3 md:w-40 shrink-0 print:hidden overflow-x-auto pb-2 md:pb-0">
