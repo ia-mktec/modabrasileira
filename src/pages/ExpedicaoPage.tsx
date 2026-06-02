@@ -265,15 +265,36 @@ const ExpedicaoPage = () => {
     (grades || []).reduce((s, g: any) =>
       s + (g.pp_exp||0)+(g.p_exp||0)+(g.m_exp||0)+(g.g_exp||0)+(g.gg_exp||0)+(g.g1_exp||0)+(g.g2_exp||0)+(g.g3_exp||0), 0);
 
-  const loadRegistroExpedicao = (r: RegistroExpedicao) => {
+  const loadRegistroExpedicao = async (r: RegistroExpedicao) => {
     const oc = ordensCorteDb.find((o: any) => o.id === r.ordem_corte_id);
     if (!oc) {
       toast({ title: "Ordem não encontrada", description: "A ordem de corte vinculada a esta expedição não está disponível.", variant: "destructive" });
       return;
     }
     setViewMode("ficha");
-    loadOrdem(oc);
+    await loadOrdem(oc);
+    // Carrega o registro de expedição existente para edição (atualiza, não duplica)
+    const { data: exp, error } = await supabase
+      .from("expedicao")
+      .select("id,data_saida,oficina_nome,preco_peca,observacoes,status,grade_expedicao(*)")
+      .eq("id", r.id)
+      .maybeSingle();
+    if (error || !exp) {
+      toast({ title: "Erro ao abrir registro", description: error?.message || "Registro não encontrado.", variant: "destructive" });
+      return;
+    }
+    setEditingExpedicaoId(exp.id);
+    setEditingExpedicaoStatus((exp.status as string) || null);
+    setEditingExpedicaoGrade((exp as any).grade_expedicao || []);
+    setDataSaida((exp.data_saida as string) || "");
+    setOficina((exp.oficina_nome as string) || "");
+    setPreco(exp.preco_peca != null ? String(exp.preco_peca) : "");
+    setObservacoes((exp.observacoes as string) || "");
+    // Status devolvido não existe no select de kanban; mantém vazio nesse caso
+    const st = (exp.status as string) || "";
+    setStatusKanban(st === "devolvido" ? "" : st);
   };
+
 
   const filteredOrdens = ordensCorteDb.filter(
     (oc: any) =>
