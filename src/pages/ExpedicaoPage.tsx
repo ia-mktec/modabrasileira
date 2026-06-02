@@ -152,6 +152,11 @@ const ExpedicaoPage = () => {
   const [devolverData, setDevolverData] = useState(() => new Date().toISOString().slice(0, 10));
   const [devolverSaving, setDevolverSaving] = useState(false);
 
+  // Edição de um registro de expedição existente (vindo do histórico)
+  const [editingExpedicaoId, setEditingExpedicaoId] = useState<string | null>(null);
+  const [editingExpedicaoStatus, setEditingExpedicaoStatus] = useState<string | null>(null);
+  const [editingExpedicaoGrade, setEditingExpedicaoGrade] = useState<any[]>([]);
+
   const abrirDevolucao = (r: RegistroExpedicao) => {
     setDevolverTarget(r);
     setDevolverMotivo("");
@@ -260,15 +265,36 @@ const ExpedicaoPage = () => {
     (grades || []).reduce((s, g: any) =>
       s + (g.pp_exp||0)+(g.p_exp||0)+(g.m_exp||0)+(g.g_exp||0)+(g.gg_exp||0)+(g.g1_exp||0)+(g.g2_exp||0)+(g.g3_exp||0), 0);
 
-  const loadRegistroExpedicao = (r: RegistroExpedicao) => {
+  const loadRegistroExpedicao = async (r: RegistroExpedicao) => {
     const oc = ordensCorteDb.find((o: any) => o.id === r.ordem_corte_id);
     if (!oc) {
       toast({ title: "Ordem não encontrada", description: "A ordem de corte vinculada a esta expedição não está disponível.", variant: "destructive" });
       return;
     }
     setViewMode("ficha");
-    loadOrdem(oc);
+    await loadOrdem(oc);
+    // Carrega o registro de expedição existente para edição (atualiza, não duplica)
+    const { data: exp, error } = await supabase
+      .from("expedicao")
+      .select("id,data_saida,oficina_nome,preco_peca,observacoes,status,grade_expedicao(*)")
+      .eq("id", r.id)
+      .maybeSingle();
+    if (error || !exp) {
+      toast({ title: "Erro ao abrir registro", description: error?.message || "Registro não encontrado.", variant: "destructive" });
+      return;
+    }
+    setEditingExpedicaoId(exp.id);
+    setEditingExpedicaoStatus((exp.status as string) || null);
+    setEditingExpedicaoGrade((exp as any).grade_expedicao || []);
+    setDataSaida((exp.data_saida as string) || "");
+    setOficina((exp.oficina_nome as string) || "");
+    setPreco(exp.preco_peca != null ? String(exp.preco_peca) : "");
+    setObservacoes((exp.observacoes as string) || "");
+    // Status devolvido não existe no select de kanban; mantém vazio nesse caso
+    const st = (exp.status as string) || "";
+    setStatusKanban(st === "devolvido" ? "" : st);
   };
+
 
   const filteredOrdens = ordensCorteDb.filter(
     (oc: any) =>
@@ -326,6 +352,9 @@ const ExpedicaoPage = () => {
     setObsModelo((foundModelo as any)?.observacoes || "");
     setObsCorte(oc.observacoes || "");
     setStatusKanban("");
+    setEditingExpedicaoId(null);
+    setEditingExpedicaoStatus(null);
+    setEditingExpedicaoGrade([]);
     setGradeRows([]);
     setAviamentosExp([]);
     setGradacaoRows([]);
@@ -548,7 +577,19 @@ const ExpedicaoPage = () => {
       });
     }
 
-    if (gradeData.length === 0) {
+    // Quando estamos editando um registro existente e o usuário não digitou novas
+    // quantidades na grade, preservamos a grade original (senão a função de salvar
+    // deletaria as linhas existentes ao não receber nenhuma).
+    let gradeForSave = gradeData;
+    if (editingExpedicaoId && gradeData.length === 0) {
+      gradeForSave = editingExpedicaoGrade.map((g: any) => ({
+        cor: g.cor,
+        pp_prod: g.pp_prod || 0, p_prod: g.p_prod || 0, m_prod: g.m_prod || 0, g_prod: g.g_prod || 0,
+        gg_prod: g.gg_prod || 0, g1_prod: g.g1_prod || 0, g2_prod: g.g2_prod || 0, g3_prod: g.g3_prod || 0,
+        pp_exp: g.pp_exp || 0, p_exp: g.p_exp || 0, m_exp: g.m_exp || 0, g_exp: g.g_exp || 0,
+        gg_exp: g.gg_exp || 0, g1_exp: g.g1_exp || 0, g2_exp: g.g2_exp || 0, g3_exp: g.g3_exp || 0,
+      }));
+    } else if (!editingExpedicaoId && gradeData.length === 0) {
       toast({ title: "Nenhuma quantidade informada", description: "Informe a quantidade a enviar nesta saída parcial.", variant: "destructive" });
       return;
     }
@@ -556,15 +597,21 @@ const ExpedicaoPage = () => {
     const dismissSaving = showSaving();
     let result;
     try {
+      // Quando editando um registro devolvido e o usuário envia novas quantidades,
+      // o status volta para o selecionado no kanban (em_andamento/pendente/concluido).
+      // Caso contrário, preservamos o status original.
+      const statusFinal = editingExpedicaoId
+        ? (statusKanban || editingExpedicaoStatus || "pendente")
+        : (statusKanban || "pendente");
       result = await salvarExpedicao({
         ordem_corte_id: currentOrdemCorteId,
         data_saida: dataSaida || null,
         oficina_nome: oficina || null,
-        
+
         preco_peca: parseFloat(preco) || 0,
         observacoes: observacoes || null,
-        status: statusKanban || "pendente",
-      }, gradeData);
+        status: statusFinal,
+      }, gradeForSave, editingExpedicaoId || undefined);
     } finally {
       dismissSaving();
     }
@@ -914,6 +961,27 @@ const ExpedicaoPage = () => {
       <div className="bg-[hsl(217,71%,25%)] text-[hsl(0,0%,100%)] rounded-t-lg px-6 py-3 text-center">
         <h1 className="text-xl md:text-2xl font-bold tracking-wide font-mono">EXPEDIÇÃO — SAÍDA DE OFICINA</h1>
       </div>
+
+      {editingExpedicaoId && (
+        <div className={`rounded-md border px-4 py-2 text-xs flex items-center justify-between gap-3 ${
+          editingExpedicaoStatus === "devolvido"
+            ? "bg-[hsl(0_84%_50%/0.08)] border-[hsl(0_84%_50%/0.35)] text-[hsl(0,72%,35%)]"
+            : "bg-[hsl(38_92%_50%/0.10)] border-[hsl(38_92%_50%/0.35)] text-[hsl(38,92%,30%)]"
+        }`}>
+          <div>
+            <strong>
+              {editingExpedicaoStatus === "devolvido"
+                ? "Registro DEVOLVIDO pela oficina — em edição"
+                : "Editando registro de expedição existente"}
+            </strong>
+            <span className="ml-2 opacity-80">
+              {editingExpedicaoStatus === "devolvido"
+                ? "Ajuste os dados (preço/peça, data, oficina, grade) e salve para registrar o novo envio. Ao salvar, o status do registro será atualizado conforme o kanban."
+                : "As alterações irão atualizar este registro (não criam duplicata)."}
+            </span>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-col md:flex-row gap-4">
         {/* Action Panel */}
