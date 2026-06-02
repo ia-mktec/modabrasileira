@@ -152,6 +152,11 @@ const ExpedicaoPage = () => {
   const [devolverData, setDevolverData] = useState(() => new Date().toISOString().slice(0, 10));
   const [devolverSaving, setDevolverSaving] = useState(false);
 
+  // Edição de um registro de expedição existente (vindo do histórico)
+  const [editingExpedicaoId, setEditingExpedicaoId] = useState<string | null>(null);
+  const [editingExpedicaoStatus, setEditingExpedicaoStatus] = useState<string | null>(null);
+  const [editingExpedicaoGrade, setEditingExpedicaoGrade] = useState<any[]>([]);
+
   const abrirDevolucao = (r: RegistroExpedicao) => {
     setDevolverTarget(r);
     setDevolverMotivo("");
