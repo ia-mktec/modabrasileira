@@ -404,9 +404,16 @@ const RelatorioProducaoPage = () => {
       recebimento: [],
       acabamento: [],
     };
+    const limite45 = Date.now() - 45 * 24 * 60 * 60 * 1000;
     pedidosFiltrados.forEach((p) => {
       const c = colByPedido[p.numero_pedido];
-      if (c) g[c].push(p);
+      if (!c) return;
+      if (c === "corte" && p.data_pedido) {
+        const t = new Date(p.data_pedido).getTime();
+        if (!isNaN(t) && t < limite45) return;
+      }
+      g[c].push(p);
+
     });
     return g;
   }, [pedidosFiltrados, colByPedido]);
