@@ -14,27 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      _oc_update_staging: {
-        Row: {
-          entrega: string | null
-          envio: string | null
-          numero: string
-          recebimento: string | null
-        }
-        Insert: {
-          entrega?: string | null
-          envio?: string | null
-          numero: string
-          recebimento?: string | null
-        }
-        Update: {
-          entrega?: string | null
-          envio?: string | null
-          numero?: string
-          recebimento?: string | null
-        }
-        Relationships: []
-      }
       aviamentos: {
         Row: {
           codigo: string | null
