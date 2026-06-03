@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS public._oc_update_staging;
