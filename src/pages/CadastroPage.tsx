@@ -33,16 +33,16 @@ import { supabase } from "@/integrations/supabase/client";
 
 // Local lookup data (not persisted to DB - simple dropdown options)
 
-import { cadastroCores as initialCores } from "@/lib/cadastro-cores";
+import { useCadastroCores } from "@/hooks/useCadastroCores";
 
 const CadastroPage = () => {
   const { fornecedores, loading: loadingForn, salvarFornecedor, deletarFornecedor } = useFornecedores();
   const { clientes, loading: loadingCli, salvarCliente } = useClientes();
+  const { cores, addCor, updateCor } = useCadastroCores();
 
   const [search, setSearch] = useState("");
   const [searchClientes, setSearchClientes] = useState("");
   const [modelos, setModelos] = useState<{ id: string; nome: string }[]>([]);
-  const [cores, setCores] = useState(initialCores);
 
   useEffect(() => {
     (async () => {
@@ -101,11 +101,15 @@ const CadastroPage = () => {
     toast({ title: "Cliente salvo com sucesso" });
   };
 
-  const handleAddCor = () => {
+  const handleAddCor = async () => {
     if (!novaCorNome.trim()) return;
-    const maxCod = Math.max(...cores.map(c => parseInt(c.cod) || 0));
-    const novoCod = String(maxCod + 1).padStart(3, "0");
-    setCores(prev => [...prev, { id: `c-${Date.now()}`, cor: novaCorNome.trim(), cod: novoCod, hex: novaCorHex }]);
+    try {
+      await addCor(novaCorNome.trim(), novaCorHex);
+      toast({ title: "Cor cadastrada com sucesso" });
+    } catch (e: any) {
+      toast({ title: "Erro ao cadastrar cor", description: e.message, variant: "destructive" });
+      return;
+    }
     setNovaCorNome("");
     setNovaCorHex("#ffffff");
     setNovaCorOpen(false);
@@ -361,7 +365,7 @@ const CadastroPage = () => {
                     {cores.map((c) => (
                       <tr key={c.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                         <td className="py-2 px-3 text-center">
-                          <input type="color" value={c.hex} onChange={(e) => setCores(prev => prev.map(item => item.id === c.id ? { ...item, hex: e.target.value } : item))} className="w-8 h-8 cursor-pointer border border-border rounded" />
+                          <input type="color" value={c.hex} onChange={(e) => updateCor(c.id, { hex: e.target.value })} className="w-8 h-8 cursor-pointer border border-border rounded" />
                         </td>
                         <td className="py-3 px-4 font-medium">
                           <div className="flex items-center gap-2">
@@ -374,7 +378,7 @@ const CadastroPage = () => {
                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
                             const novaCor = prompt("Editar cor:", c.cor);
                             if (novaCor?.trim()) {
-                              setCores(prev => prev.map(item => item.id === c.id ? { ...item, cor: novaCor.trim() } : item));
+                              updateCor(c.id, { cor: novaCor.trim() });
                             }
                           }}>
                             <Pencil className="w-4 h-4" />
