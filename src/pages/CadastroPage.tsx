@@ -33,16 +33,16 @@ import { supabase } from "@/integrations/supabase/client";
 
 // Local lookup data (not persisted to DB - simple dropdown options)
 
-import { cadastroCores as initialCores } from "@/lib/cadastro-cores";
+import { useCadastroCores } from "@/hooks/useCadastroCores";
 
 const CadastroPage = () => {
   const { fornecedores, loading: loadingForn, salvarFornecedor, deletarFornecedor } = useFornecedores();
   const { clientes, loading: loadingCli, salvarCliente } = useClientes();
+  const { cores, addCor, updateCor } = useCadastroCores();
 
   const [search, setSearch] = useState("");
   const [searchClientes, setSearchClientes] = useState("");
   const [modelos, setModelos] = useState<{ id: string; nome: string }[]>([]);
-  const [cores, setCores] = useState(initialCores);
 
   useEffect(() => {
     (async () => {
