@@ -378,7 +378,7 @@ const CadastroPage = () => {
                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
                             const novaCor = prompt("Editar cor:", c.cor);
                             if (novaCor?.trim()) {
-                              setCores(prev => prev.map(item => item.id === c.id ? { ...item, cor: novaCor.trim() } : item));
+                              updateCor(c.id, { cor: novaCor.trim() });
                             }
                           }}>
                             <Pencil className="w-4 h-4" />
