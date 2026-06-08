@@ -65,6 +65,8 @@ const TecidosPage = () => {
   const { clientes } = useClientes();
   const { clientes: clienteOptions, tecidos: tecidoOptions } = useEntityOptions();
   const { registrarMovimentacao } = useEstoqueMovimentacoes();
+  const { cores: cadastroCoresDb } = useCadastroCores();
+  const cadastroCores = cadastroCoresDb.length ? cadastroCoresDb : fallbackCadastroCores;
   const [viewMode, setViewMode] = useState<ViewMode>("ficha");
 
   // Ficha state
