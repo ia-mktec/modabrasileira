@@ -101,11 +101,15 @@ const CadastroPage = () => {
     toast({ title: "Cliente salvo com sucesso" });
   };
 
-  const handleAddCor = () => {
+  const handleAddCor = async () => {
     if (!novaCorNome.trim()) return;
-    const maxCod = Math.max(...cores.map(c => parseInt(c.cod) || 0));
-    const novoCod = String(maxCod + 1).padStart(3, "0");
-    setCores(prev => [...prev, { id: `c-${Date.now()}`, cor: novaCorNome.trim(), cod: novoCod, hex: novaCorHex }]);
+    try {
+      await addCor(novaCorNome.trim(), novaCorHex);
+      toast({ title: "Cor cadastrada com sucesso" });
+    } catch (e: any) {
+      toast({ title: "Erro ao cadastrar cor", description: e.message, variant: "destructive" });
+      return;
+    }
     setNovaCorNome("");
     setNovaCorHex("#ffffff");
     setNovaCorOpen(false);
