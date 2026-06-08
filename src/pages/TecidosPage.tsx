@@ -29,7 +29,8 @@ const cadastroModelos = [
   { id: "10", nome: "Shorts-Saia" }, { id: "11", nome: "Camisa" }, { id: "12", nome: "Cropped" },
 ];
 
-import { cadastroCores } from "@/lib/cadastro-cores";
+import { cadastroCores as fallbackCadastroCores } from "@/lib/cadastro-cores";
+import { useCadastroCores } from "@/hooks/useCadastroCores";
 
 import { Plus, Trash2, Printer, Search, CheckCircle, ArrowLeft, Pencil, FileText } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
