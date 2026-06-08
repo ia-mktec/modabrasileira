@@ -365,7 +365,7 @@ const CadastroPage = () => {
                     {cores.map((c) => (
                       <tr key={c.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                         <td className="py-2 px-3 text-center">
-                          <input type="color" value={c.hex} onChange={(e) => setCores(prev => prev.map(item => item.id === c.id ? { ...item, hex: e.target.value } : item))} className="w-8 h-8 cursor-pointer border border-border rounded" />
+                          <input type="color" value={c.hex} onChange={(e) => updateCor(c.id, { hex: e.target.value })} className="w-8 h-8 cursor-pointer border border-border rounded" />
                         </td>
                         <td className="py-3 px-4 font-medium">
                           <div className="flex items-center gap-2">
