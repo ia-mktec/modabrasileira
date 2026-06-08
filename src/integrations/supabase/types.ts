@@ -139,6 +139,33 @@ export type Database = {
         }
         Relationships: []
       }
+      cadastro_cores: {
+        Row: {
+          cod: string
+          cor: string
+          created_at: string
+          hex: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          cod: string
+          cor: string
+          created_at?: string
+          hex?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          cod?: string
+          cor?: string
+          created_at?: string
+          hex?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       clientes: {
         Row: {
           cidade: string | null
