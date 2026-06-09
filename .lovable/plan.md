@@ -1,56 +1,55 @@
-# Plano: Auditoria do Dashboard + Exportação
+# Plano: ajustes no Dashboard
 
-## Objetivo
-Permitir que qualquer número do Dashboard seja auditado linha-a-linha, via:
-1. Filtro de período (data inicial / data final) aplicado aos KPIs e gráficos.
-2. Botão **"Exportar dados"** que gera uma planilha XLSX com uma aba por indicador, contendo as linhas que compõem cada número.
+Mudanças apenas em `src/pages/Dashboard.tsx` (e `src/lib/dashboard-audit.ts` para refletir os novos KPIs na auditoria exportada).
 
-## Mudanças na UI (`src/pages/Dashboard.tsx`)
+## 1. KPIs (cards do topo)
 
-### Filtro de data
-- Adicionar dois `DatePicker` (Início / Fim) no `PageHeader`, com presets rápidos: "Mês atual", "Últimos 30 dias", "Últimos 6 meses", "Tudo".
-- Default: **mês atual** (mantém comportamento atual de "Produção do Mês").
-- Filtro aplicado a:
-  - **Produção do Mês** → vira "Produção no Período" (soma `quantidade_pecas` de OCs concluídas com `data_corte` no intervalo).
-  - **Peças Expedidas** → soma das grades de expedição cujas OCs foram expedidas no intervalo (`expedicao.created_at` ou `data_expedicao`).
-  - **Ordens em Aberto** → expedidas no intervalo sem recebimento.
-  - **Produção por Mês** (gráfico) → respeita o intervalo (ou últimos N meses dentro dele).
-  - **Status das Ordens** (pizza) e **Últimas Ordens** → respeitam o intervalo.
-- **Tecido em Estoque** e **Aviamentos Cadastrados** ignoram o filtro (são snapshots atuais) — exibir badge "snapshot" nesses cards.
+Remover **Aviamentos Cadastrados**. Reordenar para:
 
-### Botão "Exportar dados"
-- Posicionado no `PageHeader` ao lado dos filtros.
-- Ao clicar: gera XLSX no browser via `xlsx` (SheetJS) e dispara download `auditoria-dashboard_{inicio}_{fim}.xlsx`.
+| Card | Regra |
+|---|---|
+| **Quantidade de Pedidos no Período** (novo) | `count(*)` em `modelo_pedidos` com `data_pedido` dentro do intervalo |
+| **Produção Cortada no Período** (novo) | Soma de `quantidade_pecas` em `ordens_corte` com `status='concluido'` e `data_corte` no intervalo (é o que hoje é chamado de "Produção no Período") |
+| **Produção no Período** (redefinido) | Soma de peças **finalizadas** = OCs cuja etapa atual é **Acabamento concluído** ou **Entregue ao cliente**. Critério: somar `quantidade_pecas` das OCs em que existe `recebimento.status='concluido'` **ou** registro em `entrega_cliente`, considerando a data do evento que finalizou (data do recebimento concluído ou `data_entrega`) dentro do intervalo. Quando ambos existirem, prevalece a data mais recente (entrega). |
+| **Tecido em Estoque** | Mantém (snapshot) |
+| **Ordens em Aberto** | Mantém (expedidas sem recebimento, no período) |
+| **Peças Expedidas** | Mantém |
 
-## Conteúdo da planilha de auditoria
+## 2. Etapas no fluxo (`getEtapa`) — corrigir "Últimas Ordens de Corte" e pizza
 
-| Aba | Conteúdo | Colunas |
-|---|---|---|
-| **Resumo** | Valores consolidados de cada KPI + período auditado | Indicador, Valor, Fonte, Fórmula |
-| **Produção no Período** | OCs concluídas no intervalo | Nº OC, Modelo, Tecido, Cor, Qtd Peças, Data Corte, Status |
-| **Peças Expedidas** | Grades de expedição no intervalo | Nº OC, Modelo, Cliente, PP, P, M, G, GG, G1, G2, G3, Total, Data Expedição |
-| **Ordens em Aberto** | Expedidas sem recebimento | Nº OC, Modelo, Cliente, Data Expedição, Dias em Aberto |
-| **Status das Ordens** | Todas as OCs com etapa calculada | Nº OC, Modelo, Cliente, Data Corte, Etapa (Corte/Expedição/Oficina/Acabamento/Entregue) |
-| **Tecido em Estoque** | Snapshot atual | Tecido, Cor, Estoque (kg), Estoque (mt — se aplicável) |
-| **Aviamentos** | Snapshot atual | Código, Descrição, Tipo, Estoque |
+Hoje qualquer OC com linha em `expedicao` já vira "Expedição"/"Oficina". Falta distinguir o estado real. Nova precedência (do mais avançado pro mais inicial):
 
-Cada aba inclui no rodapé a **fórmula/regra exata** usada (ex.: `SUM(quantidade_pecas) WHERE status='concluido' AND data_corte BETWEEN X AND Y`).
+1. **Entregue ao cliente** — existe registro em `entrega_cliente` para a OC.
+2. **Acabamento** — existe `recebimento` com `status='concluido'` (peças voltaram da oficina e foram aprovadas no acabamento) e ainda não foi entregue.
+3. **Recebimento** — existe `recebimento` com `status` diferente de `concluido` (em conferência/parcial).
+4. **Oficina de Costura** — existe `expedicao` com `status='concluido'` (saiu para a oficina) e ainda não há recebimento.
+5. **Expedição** — existe `expedicao` com `status` diferente de `concluido` (em preparação para sair).
+6. **Corte concluído** — OC com `status='concluido'` sem expedição.
+7. **Corte** — demais casos (em andamento).
 
-## Detalhes técnicos
-- Adicionar dependência **`xlsx`** (SheetJS) — leve, roda 100% client-side.
-- Reusar `fetchAllRows` (em `src/lib/fetch-all-rows.ts`) para garantir que >1000 linhas sejam puxadas.
-- Buscar dados extras necessários para auditoria sob demanda (ao clicar exportar), não no load inicial — mantém Dashboard rápido. Reaproveitar caches já em `state` quando possível.
-- Coluna "mt" do card "Tecido em Estoque" continua puxando `estoque_kg` (comportamento atual preservado); a aba de auditoria deixa explícito que o campo é `kg`.
-- Tipagem: criar helper `buildAuditWorkbook(filters, datasets)` em novo arquivo `src/lib/dashboard-audit.ts` para isolar a lógica de montagem do XLSX.
+Isto faz a OC 26743, que tem expedição registrada mas ainda não saiu, aparecer corretamente como **Expedição** em vez de pular para Oficina.
 
-## Arquivos
-- **Editar**: `src/pages/Dashboard.tsx` (filtros, botão, refilter dos memos)
-- **Criar**: `src/lib/dashboard-audit.ts` (montagem XLSX)
-- **Instalar**: `xlsx`
+Adicionar set auxiliar `expedicaoConcluidaSet` (já existe como `oficinaSet`) e novo `recebimentoConcluidoSet` derivado de `recebimento.status`.
+
+A pizza **Status das Ordens** e a tabela **Últimas Ordens de Corte** passam a usar essa mesma função, então ambas refletem a etapa real.
+
+## 3. Buscar dados adicionais
+
+- Já buscamos `recebimento` e `entrega_cliente`. Adicionar fetch de `modelo_pedidos` (campos: `numero_pedido, data_pedido, created_at`) para o novo KPI de pedidos no período.
+- Passar a usar `recebimento.status` (já vem no select; só não estava sendo lido).
+
+## 4. Auditoria (`src/lib/dashboard-audit.ts`)
+
+- Substituir aba **Produção no Período** por duas abas:
+  - **Produção Cortada no Período** — OCs cortadas (regra atual).
+  - **Produção Finalizada no Período** — OCs com acabamento concluído ou entregues, mostrando a data de finalização usada.
+- Nova aba **Pedidos no Período** — lista de `modelo_pedidos` filtrados por `data_pedido`.
+- Remover aba **Aviamentos** (card foi excluído). Manter snapshot de Tecidos.
+- Atualizar aba **Status das Ordens** para usar a nova precedência (com a etapa "Recebimento" como categoria adicional).
+- Atualizar **Resumo** com os novos KPIs e fórmulas.
 
 ## Fora de escopo
-- Corrigir o label "mt" vs `estoque_kg` (apenas documentar na auditoria).
-- Nova página de auditoria interna.
-- Permissões diferenciadas para o botão (qualquer um que vê o Dashboard pode exportar).
 
-Confirme para eu implementar — ou diga se quer ajustar período default, abas adicionais, ou trocar o XLSX por CSV.
+- Não mexer em layout/estilo dos cards além da remoção/adição.
+- Não alterar gráfico "Produção por Mês" (continua baseado em `data_corte` de OCs concluídas — é a visão histórica de corte).
+- Não tocar em permissões nem em outras telas.
