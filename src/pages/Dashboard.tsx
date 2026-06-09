@@ -20,9 +20,8 @@ import { toast } from "@/hooks/use-toast";
 
 const ETAPA_COLORS: Record<string, string> = {
   "Corte": "hsl(38 92% 50%)",
-  "Corte concluído": "hsl(45 93% 47%)",
   "Expedição": "hsl(217 71% 55%)",
-  "Oficina de Costura": "hsl(280 65% 50%)",
+  "Oficina": "hsl(280 65% 50%)",
   "Recebimento": "hsl(199 89% 48%)",
   "Acabamento": "hsl(262 60% 55%)",
   "Entregue": "hsl(142 71% 35%)",
