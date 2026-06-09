@@ -25,32 +25,35 @@ import {
   ClipboardList,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { canAccessRoute, canEditRoute } from "@/lib/permissions";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 const navItems = [
-  { to: "/", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/tecidos", icon: Layers, label: "Tecidos" },
-  { to: "/estoque-tecidos", icon: Warehouse, label: "Estoque Tecidos" },
-  { to: "/modelos", icon: Shirt, label: "Modelos" },
-  { to: "/pedidos", icon: ClipboardList, label: "Pedidos" },
-  { to: "/corte", icon: Scissors, label: "Corte" },
-  { to: "/expedicao", icon: TruckIcon, label: "Expedição" },
-  { to: "/recebimento", icon: PackageCheck, label: "Recebimento" },
-  { to: "/entrega-cliente", icon: HandCoins, label: "Acabamento" },
-  { to: "/relatorio-clientes", icon: BarChart3, label: "Relatório Clientes" },
-  { to: "/relatorio-producao", icon: Factory, label: "Fluxo de Produção" },
-  { to: "/cash-flow", icon: DollarSign, label: "Cash Flow" },
-  { to: "/cadastro", icon: Users, label: "Cadastro" },
-  { to: "/aviamentos", icon: Package, label: "Aviamentos" },
+  { to: "/", icon: LayoutDashboard, labelKey: "sidebar.dashboard" },
+  { to: "/tecidos", icon: Layers, labelKey: "sidebar.tecidos" },
+  { to: "/estoque-tecidos", icon: Warehouse, labelKey: "sidebar.estoqueTecidos" },
+  { to: "/modelos", icon: Shirt, labelKey: "sidebar.modelos" },
+  { to: "/pedidos", icon: ClipboardList, labelKey: "sidebar.pedidos" },
+  { to: "/corte", icon: Scissors, labelKey: "sidebar.corte" },
+  { to: "/expedicao", icon: TruckIcon, labelKey: "sidebar.expedicao" },
+  { to: "/recebimento", icon: PackageCheck, labelKey: "sidebar.recebimento" },
+  { to: "/entrega-cliente", icon: HandCoins, labelKey: "sidebar.acabamento" },
+  { to: "/relatorio-clientes", icon: BarChart3, labelKey: "sidebar.relatorioClientes" },
+  { to: "/relatorio-producao", icon: Factory, labelKey: "sidebar.fluxoProducao" },
+  { to: "/cash-flow", icon: DollarSign, labelKey: "sidebar.cashFlow" },
+  { to: "/cadastro", icon: Users, labelKey: "sidebar.cadastro" },
+  { to: "/aviamentos", icon: Package, labelKey: "sidebar.aviamentos" },
 ];
 
 function SidebarContent({ collapsed, setCollapsed, onNavigate }: { collapsed: boolean; setCollapsed?: (v: boolean) => void; onNavigate?: () => void }) {
   const { roles, signOut, user, isDev } = useAuth();
+  const { t } = useTranslation();
 
   const accessibleItems = navItems.filter((item) => canAccessRoute(item.to, roles));
 
@@ -64,7 +67,7 @@ function SidebarContent({ collapsed, setCollapsed, onNavigate }: { collapsed: bo
         {!collapsed && (
           <div className="overflow-hidden">
             <h1 className="text-sm font-bold text-[hsl(var(--sidebar-primary-foreground))] tracking-wide">
-              Moda Brasileira
+              {t("sidebar.appName")}
             </h1>
             <p className="text-[10px] text-[hsl(var(--sidebar-foreground))] opacity-60">
               {user?.email}
@@ -73,10 +76,16 @@ function SidebarContent({ collapsed, setCollapsed, onNavigate }: { collapsed: bo
         )}
       </div>
 
+      {/* Language switcher */}
+      <div className="px-2 pt-2 border-b border-[hsl(var(--sidebar-border))] pb-2">
+        <LanguageSwitcher collapsed={collapsed} />
+      </div>
+
       {/* Navigation */}
       <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto overflow-x-hidden">
         {accessibleItems.map((item) => {
           const isEditMode = canEditRoute(item.to, roles);
+          const label = t(item.labelKey);
           const link = (
             <NavLink
               key={item.to}
@@ -96,7 +105,7 @@ function SidebarContent({ collapsed, setCollapsed, onNavigate }: { collapsed: bo
             >
               <item.icon className="w-5 h-5 shrink-0" />
               {!collapsed && (
-                <span className="flex-1 truncate">{item.label}</span>
+                <span className="flex-1 truncate">{label}</span>
               )}
               {!collapsed && (
                 isEditMode ? (
@@ -115,7 +124,7 @@ function SidebarContent({ collapsed, setCollapsed, onNavigate }: { collapsed: bo
                   <div>{link}</div>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                  {item.label} {isEditMode ? "(edição)" : "(visualização)"}
+                  {label} {isEditMode ? t("common.editMode") : t("common.viewMode")}
                 </TooltipContent>
               </Tooltip>
             );
@@ -157,7 +166,7 @@ function SidebarContent({ collapsed, setCollapsed, onNavigate }: { collapsed: bo
             }
           >
             <ShieldCheck className="w-5 h-5 shrink-0" />
-            {!collapsed && <span>Gerenciar Usuários</span>}
+            {!collapsed && <span>{t("sidebar.gerenciarUsuarios")}</span>}
           </NavLink>
         )}
         <button
@@ -169,7 +178,7 @@ function SidebarContent({ collapsed, setCollapsed, onNavigate }: { collapsed: bo
           )}
         >
           <LogOut className="w-5 h-5 shrink-0" />
-          {!collapsed && <span>Sair</span>}
+          {!collapsed && <span>{t("sidebar.signOut")}</span>}
         </button>
       </div>
     </div>

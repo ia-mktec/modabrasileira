@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 const statusStyles: Record<string, string> = {
   disponivel: "bg-[hsl(142_71%_35%/0.15)] text-[hsl(142,71%,35%)] border-[hsl(142_71%_35%/0.3)]",
@@ -17,29 +18,14 @@ const statusStyles: Record<string, string> = {
   entregue: "bg-[hsl(142_71%_35%/0.15)] text-[hsl(142,71%,35%)] border-[hsl(142_71%_35%/0.3)]",
 };
 
-const statusLabels: Record<string, string> = {
-  disponivel: "Disponível",
-  baixo: "Estoque Baixo",
-  indisponivel: "Indisponível",
-  ativo: "Ativo",
-  inativo: "Inativo",
-  desenvolvimento: "Em Desenvolvimento",
-  pendente: "Modelos - Pedido",
-  em_andamento: "Em Andamento",
-  concluido: "Concluído",
-  cancelado: "Cancelado",
-  em_corte: "Corte",
-  em_producao: "Em Produção",
-  recebido: "Recebimento",
-  entregue: "Acabamento",
-};
-
 interface StatusBadgeProps {
   status: string;
   className?: string;
 }
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
+  const { t } = useTranslation();
+  const label = t(`status.${status}`, { defaultValue: status });
   return (
     <span
       className={cn(
@@ -48,7 +34,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
         className
       )}
     >
-      {statusLabels[status] || status}
+      {label}
     </span>
   );
 }
