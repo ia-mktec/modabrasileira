@@ -476,11 +476,11 @@ const Dashboard = () => {
                     const etapa = getEtapa(oc);
                     return (
                     <tr key={oc.id} className="border-b last:border-0">
-                      <td className="py-2.5 font-mono text-xs">{oc.numero}</td>
-                      <td className="py-2.5">{oc.modelo_ref || "—"}</td>
-                      <td className="py-2.5">{oc.tecido_nome || "—"}</td>
-                      <td className="py-2.5 text-right">{(oc.quantidade_pecas || 0).toLocaleString("pt-BR")}</td>
-                      <td className="py-2.5">{formatDateBR(oc.data_corte)}</td>
+                      <td className="py-2.5 pr-6 font-mono text-xs">{oc.numero}</td>
+                      <td className="py-2.5 pr-6">{oc.modelo_ref || "—"}</td>
+                      <td className="py-2.5 pr-6">{oc.tecido_nome || "—"}</td>
+                      <td className="py-2.5 pr-8 text-right">{(oc.quantidade_pecas || 0).toLocaleString("pt-BR")}</td>
+                      <td className="py-2.5 pr-6">{formatDateBR(oc.data_corte)}</td>
                       <td className="py-2.5">
                         <span
                           className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium"
