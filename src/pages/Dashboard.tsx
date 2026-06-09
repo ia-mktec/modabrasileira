@@ -1,41 +1,43 @@
 import { useEffect, useMemo, useState } from "react";
-import { formatDateBR } from "@/lib/utils";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { CalendarIcon, Download } from "lucide-react";
+import { formatDateBR, cn } from "@/lib/utils";
 import { PageLoading } from "@/components/shared/PageLoading";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { StatusBadge } from "@/components/shared/StatusBadge";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   Cell, PieChart, Pie,
 } from "recharts";
 import { Scissors, Layers, TrendingUp, Package, Truck } from "lucide-react";
-
-const STATUS_COLORS: Record<string, string> = {
-  pendente: "hsl(38 92% 50%)",
-  em_andamento: "hsl(217 71% 55%)",
-  concluido: "hsl(142 71% 35%)",
-  cancelado: "hsl(0 72% 51%)",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  pendente: "Pendente",
-  em_andamento: "Em Andamento",
-  concluido: "Concluído",
-  cancelado: "Cancelado",
-};
+import { buildAuditWorkbook } from "@/lib/dashboard-audit";
+import { toast } from "@/hooks/use-toast";
 
 const Dashboard = () => {
   const [ordens, setOrdens] = useState<any[]>([]);
-  const [tecidoEstoque, setTecidoEstoque] = useState(0);
-  const [pecasExpedidas, setPecasExpedidas] = useState(0);
-  const [aviamentosCount, setAviamentosCount] = useState(0);
-  const [ordensAbertas, setOrdensAbertas] = useState(0);
+  const [tecidos, setTecidos] = useState<any[]>([]);
+  const [aviamentos, setAviamentos] = useState<any[]>([]);
+  const [expedicoes, setExpedicoes] = useState<any[]>([]);
+  const [gradesExp, setGradesExp] = useState<any[]>([]);
+  const [recebimentos, setRecebimentos] = useState<any[]>([]);
+  const [entregas, setEntregas] = useState<any[]>([]);
   const [expedidasSet, setExpedidasSet] = useState<Set<string>>(new Set());
   const [oficinaSet, setOficinaSet] = useState<Set<string>>(new Set());
   const [recebidasSet, setRecebidasSet] = useState<Set<string>>(new Set());
   const [entreguesSet, setEntreguesSet] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+
+  // Filtro de período — default: mês atual
+  const today = new Date();
+  const [dataInicio, setDataInicio] = useState<Date | null>(
+    new Date(today.getFullYear(), today.getMonth(), 1),
+  );
+  const [dataFim, setDataFim] = useState<Date | null>(today);
 
   useEffect(() => {
     const fetchAll = async <T,>(table: string, columns: string, order?: { col: string; asc: boolean }): Promise<T[]> => {
@@ -55,35 +57,36 @@ const Dashboard = () => {
     };
 
     (async () => {
-      const [oc, tec, expGrade, av, expIds, recIds, entIds] = await Promise.all([
+      const [oc, tec, expGrade, av, expRows, recRows, entRows] = await Promise.all([
         fetchAll<any>("ordens_corte", "id,numero,modelo_ref,tecido_nome,quantidade_pecas,data_corte,status", { col: "data_corte", asc: false }),
-        fetchAll<any>("tecidos", "estoque_kg"),
-        fetchAll<any>("grade_expedicao", "pp_exp,p_exp,m_exp,g_exp,gg_exp,g1_exp,g2_exp,g3_exp"),
-        supabase.from("aviamentos").select("id", { count: "exact", head: true }),
-        fetchAll<any>("expedicao", "ordem_corte_id,status"),
-        fetchAll<any>("recebimento", "ordem_corte_id"),
-        fetchAll<any>("entrega_cliente", "ordem_corte_id"),
+        fetchAll<any>("tecidos", "id,nome,composicao,cor,estoque_kg,status"),
+        fetchAll<any>("grade_expedicao", "expedicao_id,cor,pp_exp,p_exp,m_exp,g_exp,gg_exp,g1_exp,g2_exp,g3_exp"),
+        fetchAll<any>("aviamentos", "id,codigo,tipo,descricao,tamanho,cor,preco_un"),
+        fetchAll<any>("expedicao", "id,ordem_corte_id,data_saida,oficina_nome,preco_peca,status,created_at"),
+        fetchAll<any>("recebimento", "id,ordem_corte_id,data_recebimento,oficina_nome,total_sem_defeitos,defeitos"),
+        fetchAll<any>("entrega_cliente", "id,ordem_corte_id,data_entrega,qtd_entregue,cliente_id"),
       ]);
       setOrdens(oc || []);
-      setTecidoEstoque((tec || []).reduce((s, t: any) => s + Number(t.estoque_kg || 0), 0));
-      setPecasExpedidas((expGrade || []).reduce((s, g: any) =>
-        s + (g.pp_exp||0)+(g.p_exp||0)+(g.m_exp||0)+(g.g_exp||0)+(g.gg_exp||0)+(g.g1_exp||0)+(g.g2_exp||0)+(g.g3_exp||0), 0));
-      setAviamentosCount(av.count || 0);
+      setTecidos(tec || []);
+      setGradesExp(expGrade || []);
+      setAviamentos(av || []);
+      setExpedicoes(expRows || []);
+      setRecebimentos(recRows || []);
+      setEntregas(entRows || []);
 
-      const expedidas = new Set<string>((expIds || []).map((e: any) => e.ordem_corte_id).filter(Boolean));
+      const expedidas = new Set<string>((expRows || []).map((e: any) => e.ordem_corte_id).filter(Boolean));
       const oficina = new Set<string>(
-        (expIds || [])
+        (expRows || [])
           .filter((e: any) => e.status === "concluido")
           .map((e: any) => e.ordem_corte_id)
           .filter(Boolean)
       );
-      const recebidas = new Set<string>((recIds || []).map((r: any) => r.ordem_corte_id).filter(Boolean));
-      const entregues = new Set<string>((entIds || []).map((e: any) => e.ordem_corte_id).filter(Boolean));
+      const recebidas = new Set<string>((recRows || []).map((r: any) => r.ordem_corte_id).filter(Boolean));
+      const entregues = new Set<string>((entRows || []).map((e: any) => e.ordem_corte_id).filter(Boolean));
       setExpedidasSet(expedidas);
       setOficinaSet(oficina);
       setRecebidasSet(recebidas);
       setEntreguesSet(entregues);
-      setOrdensAbertas([...expedidas].filter((id) => !recebidas.has(id)).length);
 
       setLoading(false);
     })();
@@ -97,18 +100,60 @@ const Dashboard = () => {
     return { label: "Corte", color: "hsl(38 92% 50%)" };
   };
 
-  const now = new Date();
-  const mesAtual = now.getMonth();
-  const anoAtual = now.getFullYear();
+  const inPeriodo = (dateStr: string | null | undefined) => {
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    if (dataInicio && d < dataInicio) return false;
+    if (dataFim) {
+      const f = new Date(dataFim);
+      f.setHours(23, 59, 59, 999);
+      if (d > f) return false;
+    }
+    return true;
+  };
 
-  const producaoMes = useMemo(() =>
-    ordens.filter((o) => {
-      if (!o.data_corte) return false;
-      const d = new Date(o.data_corte);
-      return d.getMonth() === mesAtual && d.getFullYear() === anoAtual && o.status === "concluido";
-    }).reduce((s, o) => s + (o.quantidade_pecas || 0), 0),
-  [ordens, mesAtual, anoAtual]);
+  const tecidoEstoque = useMemo(
+    () => tecidos.reduce((s, t) => s + Number(t.estoque_kg || 0), 0),
+    [tecidos],
+  );
 
+  const producaoPeriodo = useMemo(
+    () =>
+      ordens
+        .filter((o) => o.status === "concluido" && inPeriodo(o.data_corte))
+        .reduce((s, o) => s + (o.quantidade_pecas || 0), 0),
+    [ordens, dataInicio, dataFim],
+  );
+
+  const expedicoesPeriodo = useMemo(
+    () => expedicoes.filter((e) => inPeriodo(e.data_saida || e.created_at)),
+    [expedicoes, dataInicio, dataFim],
+  );
+
+  const pecasExpedidasPeriodo = useMemo(() => {
+    const ids = new Set(expedicoesPeriodo.map((e) => e.id));
+    return gradesExp
+      .filter((g) => ids.has(g.expedicao_id))
+      .reduce(
+        (s, g) =>
+          s + (g.pp_exp || 0) + (g.p_exp || 0) + (g.m_exp || 0) + (g.g_exp || 0) +
+          (g.gg_exp || 0) + (g.g1_exp || 0) + (g.g2_exp || 0) + (g.g3_exp || 0),
+        0,
+      );
+  }, [gradesExp, expedicoesPeriodo]);
+
+  const ordensAbertasPeriodo = useMemo(
+    () =>
+      expedicoesPeriodo.filter(
+        (e) => e.ordem_corte_id && !recebidasSet.has(e.ordem_corte_id),
+      ).length,
+    [expedicoesPeriodo, recebidasSet],
+  );
+
+  const ordensPeriodo = useMemo(
+    () => ordens.filter((o) => inPeriodo(o.data_corte)),
+    [ordens, dataInicio, dataFim],
+  );
 
   const statusProducao = useMemo(() => {
     const etapas = [
@@ -119,11 +164,11 @@ const Dashboard = () => {
       { key: "Entregue", color: "hsl(142 71% 35%)" },
     ];
     const counts: Record<string, number> = { Corte: 0, "Expedição": 0, "Oficina de Costura": 0, Acabamento: 0, Entregue: 0 };
-    ordens.forEach((o) => {
+    ordensPeriodo.forEach((o) => {
       const e = getEtapa(o.id).label;
       counts[e] = (counts[e] || 0) + 1;
     });
-    const total = ordens.length || 1;
+    const total = ordensPeriodo.length || 1;
     return etapas
       .map((e) => ({
         name: e.key,
@@ -131,13 +176,14 @@ const Dashboard = () => {
         fill: e.color,
       }))
       .filter((e) => e.value > 0);
-  }, [ordens, expedidasSet, oficinaSet, recebidasSet, entreguesSet]);
+  }, [ordensPeriodo, expedidasSet, oficinaSet, recebidasSet, entreguesSet]);
 
   const producaoMensal = useMemo(() => {
-    // Janela fixa: últimos 6 meses incluindo o atual, em ordem crescente
+    // Últimos 6 meses até dataFim (ou hoje)
+    const ref = dataFim || new Date();
     const meses: { y: number; m: number; key: string }[] = [];
     for (let i = 5; i >= 0; i--) {
-      const d = new Date(anoAtual, mesAtual - i, 1);
+      const d = new Date(ref.getFullYear(), ref.getMonth() - i, 1);
       meses.push({
         y: d.getFullYear(),
         m: d.getMonth(),
@@ -155,50 +201,119 @@ const Dashboard = () => {
       const label = new Date(y, m, 1).toLocaleDateString("pt-BR", { month: "short", year: "2-digit" });
       return { mes: label.replace(".", ""), pecas: buckets[key] || 0 };
     });
-  }, [ordens, mesAtual, anoAtual]);
+  }, [ordens, dataFim]);
 
-  const ultimasOrdens = ordens.slice(0, 6);
+  const ultimasOrdens = ordensPeriodo.slice(0, 6);
 
   const kpiCards = [
     {
-      title: "Produção do Mês",
-      value: producaoMes.toLocaleString("pt-BR"),
+      title: "Produção no Período",
+      value: producaoPeriodo.toLocaleString("pt-BR"),
       subtitle: "Peças concluídas",
       icon: TrendingUp,
     },
     {
       title: "Tecido em Estoque",
       value: `${tecidoEstoque.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} mt`,
-      subtitle: "Total disponível",
+      subtitle: "Snapshot atual",
       icon: Layers,
     },
     {
       title: "Ordens em Aberto",
-      value: ordensAbertas.toString(),
+      value: ordensAbertasPeriodo.toString(),
       subtitle: "Expedidas sem recebimento",
       icon: Scissors,
     },
     {
       title: "Peças Expedidas",
-      value: pecasExpedidas.toLocaleString("pt-BR"),
-      subtitle: "Total acumulado",
+      value: pecasExpedidasPeriodo.toLocaleString("pt-BR"),
+      subtitle: "No período selecionado",
       icon: Truck,
     },
     {
       title: "Aviamentos Cadastrados",
-      value: aviamentosCount.toString(),
-      subtitle: "Itens no catálogo",
+      value: aviamentos.length.toString(),
+      subtitle: "Snapshot atual",
       icon: Package,
     },
   ];
+
+  const aplicarPreset = (preset: "mes" | "30d" | "6m" | "tudo") => {
+    const hoje = new Date();
+    if (preset === "mes") {
+      setDataInicio(new Date(hoje.getFullYear(), hoje.getMonth(), 1));
+      setDataFim(hoje);
+    } else if (preset === "30d") {
+      const ini = new Date();
+      ini.setDate(ini.getDate() - 30);
+      setDataInicio(ini);
+      setDataFim(hoje);
+    } else if (preset === "6m") {
+      setDataInicio(new Date(hoje.getFullYear(), hoje.getMonth() - 5, 1));
+      setDataFim(hoje);
+    } else {
+      setDataInicio(null);
+      setDataFim(null);
+    }
+  };
+
+  const handleExport = () => {
+    try {
+      buildAuditWorkbook(
+        { inicio: dataInicio, fim: dataFim },
+        {
+          ordens,
+          expedicoes,
+          gradesExp,
+          recebimentos,
+          entregas,
+          tecidos,
+          aviamentos,
+          expedidasSet,
+          oficinaSet,
+          recebidasSet,
+          entreguesSet,
+        },
+      );
+      toast({ title: "Auditoria exportada", description: "Planilha XLSX baixada com sucesso." });
+    } catch (e: any) {
+      toast({ title: "Erro ao exportar", description: e?.message || "Falha desconhecida", variant: "destructive" });
+    }
+  };
 
   if (loading) {
     return <PageLoading message="Carregando dashboard..." />;
   }
 
+  const DateBtn = ({ value, onChange, placeholder }: { value: Date | null; onChange: (d: Date | null) => void; placeholder: string }) => (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" className={cn("justify-start text-left font-normal", !value && "text-muted-foreground")}>
+          <CalendarIcon className="mr-1" />
+          {value ? format(value, "dd/MM/yyyy", { locale: ptBR }) : placeholder}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar mode="single" selected={value || undefined} onSelect={(d) => onChange(d || null)} initialFocus className="p-3 pointer-events-auto" />
+      </PopoverContent>
+    </Popover>
+  );
+
   return (
     <div className="p-6 space-y-6">
-      <PageHeader title="Dashboard" description="Visão geral da produção MKTEC Flow" />
+      <PageHeader title="Dashboard" description="Visão geral da produção MKTEC Flow">
+        <div className="flex flex-wrap items-center gap-2">
+          <DateBtn value={dataInicio} onChange={setDataInicio} placeholder="Início" />
+          <DateBtn value={dataFim} onChange={setDataFim} placeholder="Fim" />
+          <Button size="sm" variant="ghost" onClick={() => aplicarPreset("mes")}>Mês</Button>
+          <Button size="sm" variant="ghost" onClick={() => aplicarPreset("30d")}>30d</Button>
+          <Button size="sm" variant="ghost" onClick={() => aplicarPreset("6m")}>6m</Button>
+          <Button size="sm" variant="ghost" onClick={() => aplicarPreset("tudo")}>Tudo</Button>
+          <Button size="sm" onClick={handleExport}>
+            <Download /> Exportar dados
+          </Button>
+        </div>
+      </PageHeader>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {kpiCards.map((kpi) => (
@@ -243,7 +358,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             {statusProducao.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-8 text-center">Sem ordens cadastradas.</p>
+              <p className="text-sm text-muted-foreground py-8 text-center">Sem ordens no período.</p>
             ) : (
               <>
                 <ResponsiveContainer width="100%" height={200}>
@@ -276,7 +391,7 @@ const Dashboard = () => {
         </CardHeader>
         <CardContent>
           {ultimasOrdens.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">Nenhuma ordem cadastrada.</p>
+            <p className="text-sm text-muted-foreground py-8 text-center">Nenhuma ordem no período.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
