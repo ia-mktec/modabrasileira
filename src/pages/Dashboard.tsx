@@ -115,9 +115,8 @@ const Dashboard = () => {
     if (entreguesSet.has(id)) label = "Entregue";
     else if (recebimentoConcluidoSet.has(id)) label = "Acabamento";
     else if (recebidasSet.has(id)) label = "Recebimento";
-    else if (expedicaoConcluidaSet.has(id)) label = "Oficina de Costura";
+    else if (expedicaoConcluidaSet.has(id)) label = "Oficina";
     else if (expedidasSet.has(id)) label = "Expedição";
-    else if (oc.status === "concluido") label = "Corte concluído";
     else label = "Corte";
     return { label, color: ETAPA_COLORS[label] };
   };
