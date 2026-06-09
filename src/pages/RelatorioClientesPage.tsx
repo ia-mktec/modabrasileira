@@ -207,32 +207,32 @@ const RelatorioClientesPage = () => {
   };
 
   if (loading) {
-    return <PageLoading message="Carregando relatório..." />;
+    return <PageLoading message={t("reports.clientes.loading")} />;
   }
 
   return (
     <div className="p-4 md:p-6 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <PageHeader title="Relatório de Clientes" description="Acompanhamento de produção por cliente" />
+        <PageHeader title={t("reports.clientes.title")} description={t("reports.clientes.description")} />
         <div className="flex items-center gap-2 flex-wrap">
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
                 <Filter className="w-4 h-4" />
-                {isAllSelected ? "Todos os Clientes" : `${selectedClientes.length} selecionado(s)`}
+                {isAllSelected ? t("reports.clientes.filtros.todosClientes") : t("reports.clientes.filtros.selecionados", { count: selectedClientes.length })}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-64 p-3" align="end">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Filtrar Clientes</span>
+                  <span className="text-sm font-medium">{t("reports.clientes.filtros.filtrarClientes")}</span>
                   {!isAllSelected && (
-                    <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => setSelectedClientes([])}>Limpar</Button>
+                    <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => setSelectedClientes([])}>{t("reports.clientes.filtros.limpar")}</Button>
                   )}
                 </div>
                 <div className="space-y-2 max-h-72 overflow-y-auto">
                   {allClienteNames.length === 0 && (
-                    <p className="text-xs text-muted-foreground">Nenhum cliente no período.</p>
+                    <p className="text-xs text-muted-foreground">{t("reports.clientes.filtros.nenhumCliente")}</p>
                   )}
                   {allClienteNames.map((name) => (
                     <label key={name} className="flex items-center gap-2 cursor-pointer text-sm hover:text-primary transition-colors">
@@ -250,11 +250,11 @@ const RelatorioClientesPage = () => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="1m">Último mês</SelectItem>
-              <SelectItem value="3m">Últimos 3 meses</SelectItem>
-              <SelectItem value="6m">Últimos 6 meses</SelectItem>
-              <SelectItem value="12m">Último ano</SelectItem>
-              <SelectItem value="all">Todo período</SelectItem>
+              <SelectItem value="1m">{t("reports.clientes.filtros.periodos.1m")}</SelectItem>
+              <SelectItem value="3m">{t("reports.clientes.filtros.periodos.3m")}</SelectItem>
+              <SelectItem value="6m">{t("reports.clientes.filtros.periodos.6m")}</SelectItem>
+              <SelectItem value="12m">{t("reports.clientes.filtros.periodos.12m")}</SelectItem>
+              <SelectItem value="all">{t("reports.clientes.filtros.periodos.all")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -272,21 +272,21 @@ const RelatorioClientesPage = () => {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard title="Clientes Ativos" value={loading ? "—" : String(clientesAtivos)} subtitle={`${clientes.length} cadastrados`} icon={Users} />
-        <KpiCard title="Ordens de Corte" value={loading ? "—" : String(totalOrdens)} subtitle="no período" icon={ShoppingBag} />
-        <KpiCard title="Peças Produzidas" value={loading ? "—" : totalPecas.toLocaleString("pt-BR")} subtitle="no período" icon={PackageCheck} />
-        <KpiCard title="Modelos Únicos" value={loading ? "—" : String(modelosUnicos)} subtitle="referências usadas" icon={TrendingUp} />
+        <KpiCard title={t("reports.clientes.kpi.clientesAtivos")} value={loading ? "—" : String(clientesAtivos)} subtitle={t("reports.clientes.kpi.cadastrados", { count: clientes.length })} icon={Users} />
+        <KpiCard title={t("reports.clientes.kpi.ordens")} value={loading ? "—" : String(totalOrdens)} subtitle={t("reports.clientes.kpi.noPeriodo")} icon={ShoppingBag} />
+        <KpiCard title={t("reports.clientes.kpi.pecas")} value={loading ? "—" : totalPecas.toLocaleString("pt-BR")} subtitle={t("reports.clientes.kpi.noPeriodo")} icon={PackageCheck} />
+        <KpiCard title={t("reports.clientes.kpi.modelos")} value={loading ? "—" : String(modelosUnicos)} subtitle={t("reports.clientes.kpi.referencias")} icon={TrendingUp} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">Peças por Cliente</CardTitle>
+            <CardTitle className="text-sm font-semibold">{t("reports.clientes.charts.pecasPorCliente")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[280px]">
               {pedidosPorCliente.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-sm text-muted-foreground">Sem dados.</div>
+                <div className="h-full flex items-center justify-center text-sm text-muted-foreground">{t("reports.clientes.charts.semDados")}</div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={pedidosPorCliente.slice(0, 10)} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -294,7 +294,7 @@ const RelatorioClientesPage = () => {
                     <XAxis dataKey="cliente" tick={{ fontSize: 11 }} interval={0} angle={-15} textAnchor="end" height={60} />
                     <YAxis tick={{ fontSize: 11 }} />
                     <Tooltip formatter={(v: number) => v.toLocaleString("pt-BR")} />
-                    <Bar dataKey="pecas" name="Peças" fill="hsl(217, 71%, 55%)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="pecas" name={t("reports.clientes.charts.pecas")} fill="hsl(217, 71%, 55%)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -304,16 +304,16 @@ const RelatorioClientesPage = () => {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">Status das Ordens</CardTitle>
+            <CardTitle className="text-sm font-semibold">{t("reports.clientes.charts.statusOrdens")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[280px]">
               {statusPedidos.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-sm text-muted-foreground">Sem dados.</div>
+                <div className="h-full flex items-center justify-center text-sm text-muted-foreground">{t("reports.clientes.charts.semDados")}</div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={statusPedidos} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3} dataKey="value">
+                    <Pie data={statusPedidos.map((s) => ({ ...s, name: t(`reports.clientes.etapas.${s.name}`, { defaultValue: s.name }) }))} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3} dataKey="value">
                       {statusPedidos.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
                     </Pie>
                     <Tooltip formatter={(v: number) => `${v}%`} />
@@ -329,12 +329,12 @@ const RelatorioClientesPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">Evolução Mensal — Peças</CardTitle>
+            <CardTitle className="text-sm font-semibold">{t("reports.clientes.charts.evolucaoMensal")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[280px]">
               {evolucaoMensal.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-sm text-muted-foreground">Sem dados.</div>
+                <div className="h-full flex items-center justify-center text-sm text-muted-foreground">{t("reports.clientes.charts.semDados")}</div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={evolucaoMensal} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -348,7 +348,7 @@ const RelatorioClientesPage = () => {
                     <XAxis dataKey="mes" tick={{ fontSize: 11 }} />
                     <YAxis tick={{ fontSize: 11 }} />
                     <Tooltip formatter={(v: number) => v.toLocaleString("pt-BR")} />
-                    <Area type="monotone" dataKey="pecas" name="Peças" stroke="hsl(217, 71%, 55%)" fill="url(#gradPecas)" strokeWidth={2} />
+                    <Area type="monotone" dataKey="pecas" name={t("reports.clientes.charts.pecas")} stroke="hsl(217, 71%, 55%)" fill="url(#gradPecas)" strokeWidth={2} />
                   </AreaChart>
                 </ResponsiveContainer>
               )}
@@ -358,19 +358,19 @@ const RelatorioClientesPage = () => {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">Top Modelos por Peças</CardTitle>
+            <CardTitle className="text-sm font-semibold">{t("reports.clientes.charts.topModelos")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[280px] overflow-y-auto">
               {topModelos.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-sm text-muted-foreground">Sem dados.</div>
+                <div className="h-full flex items-center justify-center text-sm text-muted-foreground">{t("reports.clientes.charts.semDados")}</div>
               ) : (
                 <table className="w-full text-sm">
                   <thead className="sticky top-0 bg-card">
                     <tr className="border-b text-muted-foreground">
-                      <th className="text-left py-2 font-medium">Referência</th>
-                      <th className="text-right py-2 font-medium">Ordens</th>
-                      <th className="text-right py-2 font-medium">Peças</th>
+                      <th className="text-left py-2 font-medium">{t("reports.clientes.table.referencia")}</th>
+                      <th className="text-right py-2 font-medium">{t("reports.clientes.table.ordens")}</th>
+                      <th className="text-right py-2 font-medium">{t("reports.clientes.table.pecas")}</th>
                     </tr>
                   </thead>
                   <tbody>
