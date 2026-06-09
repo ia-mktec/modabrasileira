@@ -1,55 +1,73 @@
-# Plano: ajustes no Dashboard
+## Plano: Tradução PT / EN / 中文 em todo o sistema
 
-Mudanças apenas em `src/pages/Dashboard.tsx` (e `src/lib/dashboard-audit.ts` para refletir os novos KPIs na auditoria exportada).
+### 1. Biblioteca e configuração
+- Adicionar `react-i18next` + `i18next` + `i18next-browser-languagedetector`.
+- Criar `src/i18n/index.ts` inicializando com:
+  - Idiomas: `pt` (padrão / fallback), `en`, `zh`.
+  - Detecção via `localStorage` (`i18nextLng`), fallback para `pt`.
+  - `interpolation.escapeValue: false`.
+- Importar `src/i18n/index.ts` em `src/main.tsx` antes do `<App />`.
 
-## 1. KPIs (cards do topo)
+### 2. Estrutura de arquivos de tradução
+```text
+src/i18n/
+  index.ts
+  locales/
+    pt.json      # textos originais (fonte da verdade)
+    en.json      # inglês
+    zh.json      # chinês simplificado
+```
+Organização por namespaces dentro do JSON:
+```text
+common.*       # botões, ações, status genéricos, datas, vazio
+auth.*         # login, esqueci senha, reset
+sidebar.*      # itens do menu lateral
+dashboard.*    # KPIs, gráficos, etapas (Corte, Expedição, Oficina, Recebimento, Acabamento, Entregue)
+pedidos.*      # listagem, ficha, histórico, kanban
+modelos.*      # cadastro de modelos, aviamentos, gradação
+corte.*        # ordens de corte
+expedicao.*    # expedição
+recebimento.*  # recebimento
+entrega.*      # entrega ao cliente
+estoque.*      # tecidos e aviamentos
+cadastros.*    # cadastros gerais, usuários
+reports.*      # relatórios de produção e clientes
+toasts.*       # mensagens de sucesso/erro
+errors.*       # mensagens de erro e validação
+```
 
-Remover **Aviamentos Cadastrados**. Reordenar para:
+### 3. Seletor de idioma
+- Novo componente `src/components/layout/LanguageSwitcher.tsx`:
+  - Dropdown compacto com `PT` / `EN` / `中文` e ícone `Languages` (lucide-react).
+  - Em modo `collapsed` da sidebar, mostra apenas o ícone com tooltip.
+  - Altera `i18n.language` e persiste em `localStorage`.
+- Inserir no topo da `src/components/layout/AppSidebar.tsx`, logo abaixo do logo.
 
-| Card | Regra |
-|---|---|
-| **Quantidade de Pedidos no Período** (novo) | `count(*)` em `modelo_pedidos` com `data_pedido` dentro do intervalo |
-| **Produção Cortada no Período** (novo) | Soma de `quantidade_pecas` em `ordens_corte` com `status='concluido'` e `data_corte` no intervalo (é o que hoje é chamado de "Produção no Período") |
-| **Produção no Período** (redefinido) | Soma de peças **finalizadas** = OCs cuja etapa atual é **Acabamento concluído** ou **Entregue ao cliente**. Critério: somar `quantidade_pecas` das OCs em que existe `recebimento.status='concluido'` **ou** registro em `entrega_cliente`, considerando a data do evento que finalizou (data do recebimento concluído ou `data_entrega`) dentro do intervalo. Quando ambos existirem, prevalece a data mais recente (entrega). |
-| **Tecido em Estoque** | Mantém (snapshot) |
-| **Ordens em Aberto** | Mantém (expedidas sem recebimento, no período) |
-| **Peças Expedidas** | Mantém |
+### 4. Telas a refatorar (substituir strings por `t("...")`)
+Toda a UI. Páginas:
+- `src/pages/`: `LoginPage`, `ForgotPasswordPage`, `ResetPasswordPage`, `Dashboard`, `PedidosPage`, `FichaPedidoPage`, `PedidoImpressaoPage`, `ModelosPage`, `CortePage`, `ExpedicaoPage`, `RecebimentoPage`, `EntregaClientePage`, `EstoqueTecidosPage`, `TecidosPage`, `AviamentosPage`, `CadastroPage`, `GerenciarUsuariosPage`, `RelatorioProducaoPage`, `RelatorioClientesPage`, `FluxoCaixaPage`, `FichaZiperPage`, `NotFound`.
+- Componentes em `src/components/layout/*` e `src/components/shared/*` (`PageHeader`, `StatusBadge`, `ViewOnlyBanner`, `PedidoHistoricoDialog`, `PedidoTimeline`, etc.).
+- Toasts (`saving-toast`, mensagens espalhadas).
+- `StatusBadge`: mapear `statusLabels` para chaves de tradução em vez de strings PT.
 
-## 2. Etapas no fluxo (`getEtapa`) — corrigir "Últimas Ordens de Corte" e pizza
+### 5. Itens fora de escopo (permanecem como estão)
+- Conteúdo gerado pelo usuário no banco (nomes de clientes, modelos, observações, números de pedido).
+- Planilha de auditoria exportada em `src/lib/dashboard-audit.ts` (relatório técnico em PT).
+- Configurações do Supabase, e-mails transacionais e templates de auth.
+- Etapas internas em código (`status_kanban`, valores em enum) seguem em PT; apenas os rótulos exibidos são traduzidos.
 
-Hoje qualquer OC com linha em `expedicao` já vira "Expedição"/"Oficina". Falta distinguir o estado real. Nova precedência (do mais avançado pro mais inicial):
+### 6. Convenções de tradução
+- Chinês: simplificado (`zh-CN`).
+- Datas/números: manter `formatDateBR` por enquanto (o usuário pode pedir localização de datas depois).
+- Termos do setor têxtil: respeitar a memória de Terminologia já existente para PT; EN e ZH usarão equivalentes padrão do setor (ex.: "Cutting Order", "裁剪单").
 
-1. **Entregue ao cliente** — existe registro em `entrega_cliente` para a OC.
-2. **Acabamento** — existe `recebimento` com `status='concluido'` (peças voltaram da oficina e foram aprovadas no acabamento) e ainda não foi entregue.
-3. **Recebimento** — existe `recebimento` com `status` diferente de `concluido` (em conferência/parcial).
-4. **Oficina de Costura** — existe `expedicao` com `status='concluido'` (saiu para a oficina) e ainda não há recebimento.
-5. **Expedição** — existe `expedicao` com `status` diferente de `concluido` (em preparação para sair).
-6. **Corte concluído** — OC com `status='concluido'` sem expedição.
-7. **Corte** — demais casos (em andamento).
+### 7. Validação
+- Alternar idioma e verificar visualmente:
+  - Sidebar, Dashboard, Pedidos (lista + ficha), Corte, Expedição, Recebimento, Entrega, Estoque, Cadastros, Relatórios, Login.
+- Verificar que a escolha persiste após recarregar.
+- Conferir que não há chaves faltando (i18next mostra a chave em vez do texto).
+- Build sem erros TypeScript.
 
-Isto faz a OC 26743, que tem expedição registrada mas ainda não saiu, aparecer corretamente como **Expedição** em vez de pular para Oficina.
-
-Adicionar set auxiliar `expedicaoConcluidaSet` (já existe como `oficinaSet`) e novo `recebimentoConcluidoSet` derivado de `recebimento.status`.
-
-A pizza **Status das Ordens** e a tabela **Últimas Ordens de Corte** passam a usar essa mesma função, então ambas refletem a etapa real.
-
-## 3. Buscar dados adicionais
-
-- Já buscamos `recebimento` e `entrega_cliente`. Adicionar fetch de `modelo_pedidos` (campos: `numero_pedido, data_pedido, created_at`) para o novo KPI de pedidos no período.
-- Passar a usar `recebimento.status` (já vem no select; só não estava sendo lido).
-
-## 4. Auditoria (`src/lib/dashboard-audit.ts`)
-
-- Substituir aba **Produção no Período** por duas abas:
-  - **Produção Cortada no Período** — OCs cortadas (regra atual).
-  - **Produção Finalizada no Período** — OCs com acabamento concluído ou entregues, mostrando a data de finalização usada.
-- Nova aba **Pedidos no Período** — lista de `modelo_pedidos` filtrados por `data_pedido`.
-- Remover aba **Aviamentos** (card foi excluído). Manter snapshot de Tecidos.
-- Atualizar aba **Status das Ordens** para usar a nova precedência (com a etapa "Recebimento" como categoria adicional).
-- Atualizar **Resumo** com os novos KPIs e fórmulas.
-
-## Fora de escopo
-
-- Não mexer em layout/estilo dos cards além da remoção/adição.
-- Não alterar gráfico "Produção por Mês" (continua baseado em `data_corte` de OCs concluídas — é a visão histórica de corte).
-- Não tocar em permissões nem em outras telas.
+### Observações
+- Refatoração ampla — muitos arquivos serão tocados, mas só para trocar strings por `t("chave")`. Nenhuma lógica de negócio muda.
+- Traduções iniciais serão geradas pela IA; ajustes finos de terminologia podem ser feitos depois editando os JSONs.
