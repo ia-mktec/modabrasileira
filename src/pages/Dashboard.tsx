@@ -119,6 +119,8 @@ const Dashboard = () => {
     else if (recebidasSet.has(id)) label = "Recebimento";
     else if (expedicaoConcluidaSet.has(id)) label = "Oficina";
     else if (expedidasSet.has(id)) label = "Expedição";
+    // Alinha com o Kanban: OC concluída (mesmo sem registro em expedicao) já é "Expedição"
+    else if (oc.status === "concluido") label = "Expedição";
     else label = "Corte";
     return { label, color: ETAPA_COLORS[label] };
   };
