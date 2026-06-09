@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { PageLoading } from "@/components/shared/PageLoading";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,19 +14,6 @@ import {
   PieChart, Pie, Cell, Legend, AreaChart, Area,
 } from "recharts";
 import { Users, ShoppingBag, PackageCheck, Filter, X, TrendingUp, ArrowUpRight } from "lucide-react";
-
-const STATUS_COLORS: Record<string, string> = {
-  pendente: "hsl(38, 92%, 50%)",
-  em_andamento: "hsl(217, 71%, 55%)",
-  concluido: "hsl(142, 71%, 35%)",
-  cancelado: "hsl(0, 72%, 51%)",
-};
-const STATUS_LABELS: Record<string, string> = {
-  pendente: "Pendente",
-  em_andamento: "Em Andamento",
-  concluido: "Concluído",
-  cancelado: "Cancelado",
-};
 
 function KpiCard({ title, value, subtitle, icon: Icon }: {
   title: string; value: string; subtitle: string; icon: React.ElementType;
@@ -56,6 +44,7 @@ function monthsBack(n: number) {
 }
 
 const RelatorioClientesPage = () => {
+  const { t } = useTranslation();
   const [periodo, setPeriodo] = useState("6m");
   const [selectedClientes, setSelectedClientes] = useState<string[]>([]);
   const [clientes, setClientes] = useState<any[]>([]);
