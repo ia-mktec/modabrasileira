@@ -259,29 +259,12 @@ const Dashboard = () => {
   const ultimasOrdens = ordensPeriodo.slice(0, 6);
 
   const kpiCards = [
+    // Primeira linha
     {
       title: "Quantidade de Pedidos no Período",
       value: pedidosPeriodoCount.toLocaleString("pt-BR"),
       subtitle: "Pedidos registrados",
       icon: FileText,
-    },
-    {
-      title: "Produção Cortada no Período",
-      value: producaoCortadaPeriodo.toLocaleString("pt-BR"),
-      subtitle: "Peças cortadas (corte concluído)",
-      icon: Scissors,
-    },
-    {
-      title: "Produção no Período",
-      value: producaoFinalizadaPeriodo.toLocaleString("pt-BR"),
-      subtitle: "Peças finalizadas (acabamento + entregues)",
-      icon: CheckCircle2,
-    },
-    {
-      title: "Tecido em Estoque",
-      value: `${tecidoEstoque.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} mt`,
-      subtitle: "Snapshot atual",
-      icon: Layers,
     },
     {
       title: "Ordens em Aberto",
@@ -290,10 +273,29 @@ const Dashboard = () => {
       icon: TrendingUp,
     },
     {
+      title: "Tecido em Estoque",
+      value: `${tecidoEstoque.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} mt`,
+      subtitle: "Snapshot atual",
+      icon: Layers,
+    },
+    // Segunda linha
+    {
+      title: "Produção Cortada no Período",
+      value: producaoCortadaPeriodo.toLocaleString("pt-BR"),
+      subtitle: "Peças cortadas (corte concluído)",
+      icon: Scissors,
+    },
+    {
       title: "Peças Expedidas",
       value: pecasExpedidasPeriodo.toLocaleString("pt-BR"),
       subtitle: "No período selecionado",
       icon: Truck,
+    },
+    {
+      title: "Produção no Período",
+      value: producaoFinalizadaPeriodo.toLocaleString("pt-BR"),
+      subtitle: "Peças finalizadas (acabamento + entregues)",
+      icon: CheckCircle2,
     },
   ];
 
