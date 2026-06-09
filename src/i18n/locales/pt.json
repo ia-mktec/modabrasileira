@@ -141,5 +141,90 @@
       "etapa": "Etapa",
       "semOrdens": "Nenhuma ordem no período."
     }
+  },
+  "reports": {
+    "producao": {
+      "title": "Fluxo de Produção",
+      "description": "Kanban de pedidos derivado dos status de Pedido, Corte, Expedição, Recebimento e Entrega",
+      "loading": "Carregando produção...",
+      "metrics": {
+        "total": "Total de Pedidos",
+        "ativos": "Em Fluxo",
+        "ativosHint": "visíveis no kanban",
+        "acabamento": "Em Acabamento",
+        "concluidos": "Concluídos",
+        "concluidosHint": "entregues ao cliente"
+      },
+      "filters": {
+        "cliente": "Cliente",
+        "todosClientes": "Todos os clientes",
+        "ordemCorte": "Ordem de Corte",
+        "buscarOC": "Buscar por nº da OC...",
+        "limpar": "Limpar"
+      },
+      "columns": {
+        "modelos_pedido": "Modelos - Pedido",
+        "corte": "Corte",
+        "producao": "Expedição",
+        "oficina_costura": "Oficina de Costura",
+        "recebimento": "Recebimento",
+        "acabamento": "Acabamento"
+      },
+      "card": {
+        "ocPrefix": "OC:",
+        "abrirFicha": "Abrir ficha do pedido",
+        "verTimeline": "Ver linha do tempo"
+      },
+      "empty": "Nenhum pedido"
+    },
+    "clientes": {
+      "title": "Relatório de Clientes",
+      "description": "Acompanhamento de produção por cliente",
+      "loading": "Carregando relatório...",
+      "filtros": {
+        "todosClientes": "Todos os Clientes",
+        "selecionados": "{{count}} selecionado(s)",
+        "filtrarClientes": "Filtrar Clientes",
+        "limpar": "Limpar",
+        "nenhumCliente": "Nenhum cliente no período.",
+        "semCadastro": "Sem cadastro",
+        "semCliente": "Sem cliente",
+        "periodos": {
+          "1m": "Último mês",
+          "3m": "Últimos 3 meses",
+          "6m": "Últimos 6 meses",
+          "12m": "Último ano",
+          "all": "Todo período"
+        }
+      },
+      "kpi": {
+        "clientesAtivos": "Clientes Ativos",
+        "cadastrados": "{{count}} cadastrados",
+        "ordens": "Ordens de Corte",
+        "noPeriodo": "no período",
+        "pecas": "Peças Produzidas",
+        "modelos": "Modelos Únicos",
+        "referencias": "referências usadas"
+      },
+      "charts": {
+        "pecasPorCliente": "Peças por Cliente",
+        "statusOrdens": "Status das Ordens",
+        "evolucaoMensal": "Evolução Mensal — Peças",
+        "topModelos": "Top Modelos por Peças",
+        "semDados": "Sem dados.",
+        "pecas": "Peças"
+      },
+      "etapas": {
+        "Corte": "Corte",
+        "Produção": "Produção",
+        "Acabamento": "Acabamento",
+        "Entregue": "Entregue"
+      },
+      "table": {
+        "referencia": "Referência",
+        "ordens": "Ordens",
+        "pecas": "Peças"
+      }
+    }
   }
 }
