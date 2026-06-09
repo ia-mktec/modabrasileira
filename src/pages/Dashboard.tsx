@@ -17,6 +17,7 @@ import {
 import { Scissors, Layers, TrendingUp, Truck, FileText, CheckCircle2 } from "lucide-react";
 import { buildAuditWorkbook } from "@/lib/dashboard-audit";
 import { toast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 const ETAPA_COLORS: Record<string, string> = {
   "Corte": "hsl(38 92% 50%)",
@@ -28,6 +29,7 @@ const ETAPA_COLORS: Record<string, string> = {
 };
 
 const Dashboard = () => {
+  const { t } = useTranslation();
   const [ordens, setOrdens] = useState<any[]>([]);
   const [tecidos, setTecidos] = useState<any[]>([]);
   const [pedidos, setPedidos] = useState<any[]>([]);
@@ -261,40 +263,40 @@ const Dashboard = () => {
   const kpiCards = [
     // Primeira linha
     {
-      title: "Quantidade de Pedidos no Período",
+      title: t("dashboard.kpi.pedidosPeriodo"),
       value: pedidosPeriodoCount.toLocaleString("pt-BR"),
-      subtitle: "Pedidos registrados",
+      subtitle: t("dashboard.kpi.pedidosPeriodoSub"),
       icon: FileText,
     },
     {
-      title: "Ordens em Aberto",
+      title: t("dashboard.kpi.ordensAbertas"),
       value: ordensAbertasPeriodo.toString(),
-      subtitle: "Expedidas sem recebimento",
+      subtitle: t("dashboard.kpi.ordensAbertasSub"),
       icon: TrendingUp,
     },
     {
-      title: "Tecido em Estoque",
+      title: t("dashboard.kpi.tecidoEstoque"),
       value: `${tecidoEstoque.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} mt`,
-      subtitle: "Snapshot atual",
+      subtitle: t("dashboard.kpi.tecidoEstoqueSub"),
       icon: Layers,
     },
     // Segunda linha
     {
-      title: "Produção Cortada no Período",
+      title: t("dashboard.kpi.producaoCortada"),
       value: producaoCortadaPeriodo.toLocaleString("pt-BR"),
-      subtitle: "Peças cortadas (corte concluído)",
+      subtitle: t("dashboard.kpi.producaoCortadaSub"),
       icon: Scissors,
     },
     {
-      title: "Peças Expedidas",
+      title: t("dashboard.kpi.pecasExpedidas"),
       value: pecasExpedidasPeriodo.toLocaleString("pt-BR"),
-      subtitle: "No período selecionado",
+      subtitle: t("dashboard.kpi.pecasExpedidasSub"),
       icon: Truck,
     },
     {
-      title: "Produção no Período",
+      title: t("dashboard.kpi.producaoPeriodo"),
       value: producaoFinalizadaPeriodo.toLocaleString("pt-BR"),
-      subtitle: "Peças finalizadas (acabamento + entregues)",
+      subtitle: t("dashboard.kpi.producaoPeriodoSub"),
       icon: CheckCircle2,
     },
   ];
@@ -337,14 +339,14 @@ const Dashboard = () => {
           entreguesSet,
         },
       );
-      toast({ title: "Auditoria exportada", description: "Planilha XLSX baixada com sucesso." });
+      toast({ title: t("dashboard.exportSuccess"), description: t("dashboard.exportSuccessDescription") });
     } catch (e: any) {
-      toast({ title: "Erro ao exportar", description: e?.message || "Falha desconhecida", variant: "destructive" });
+      toast({ title: t("dashboard.exportError"), description: e?.message || t("dashboard.exportErrorUnknown"), variant: "destructive" });
     }
   };
 
   if (loading) {
-    return <PageLoading message="Carregando dashboard..." />;
+    return <PageLoading message={t("dashboard.loading")} />;
   }
 
   const DateBtn = ({ value, onChange, placeholder }: { value: Date | null; onChange: (d: Date | null) => void; placeholder: string }) => (
@@ -363,16 +365,16 @@ const Dashboard = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <PageHeader title="Dashboard" description="Visão geral da produção MKTEC Flow">
+      <PageHeader title={t("dashboard.title")} description={t("dashboard.description")}>
         <div className="flex flex-wrap items-center gap-2">
-          <DateBtn value={dataInicio} onChange={setDataInicio} placeholder="Início" />
-          <DateBtn value={dataFim} onChange={setDataFim} placeholder="Fim" />
-          <Button size="sm" variant="ghost" onClick={() => aplicarPreset("mes")}>Mês</Button>
-          <Button size="sm" variant="ghost" onClick={() => aplicarPreset("30d")}>30d</Button>
-          <Button size="sm" variant="ghost" onClick={() => aplicarPreset("6m")}>6m</Button>
-          <Button size="sm" variant="ghost" onClick={() => aplicarPreset("tudo")}>Tudo</Button>
+          <DateBtn value={dataInicio} onChange={setDataInicio} placeholder={t("common.start")} />
+          <DateBtn value={dataFim} onChange={setDataFim} placeholder={t("common.end")} />
+          <Button size="sm" variant="ghost" onClick={() => aplicarPreset("mes")}>{t("dashboard.presets.mes")}</Button>
+          <Button size="sm" variant="ghost" onClick={() => aplicarPreset("30d")}>{t("dashboard.presets.30d")}</Button>
+          <Button size="sm" variant="ghost" onClick={() => aplicarPreset("6m")}>{t("dashboard.presets.6m")}</Button>
+          <Button size="sm" variant="ghost" onClick={() => aplicarPreset("tudo")}>{t("dashboard.presets.tudo")}</Button>
           <Button size="sm" onClick={handleExport}>
-            <Download /> Exportar dados
+            <Download /> {t("common.export")}
           </Button>
         </div>
       </PageHeader>
@@ -395,11 +397,11 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-base">Produção por Mês (concluídas)</CardTitle>
+            <CardTitle className="text-base">{t("dashboard.chart.producaoMensal")}</CardTitle>
           </CardHeader>
           <CardContent>
             {producaoMensal.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-8 text-center">Sem dados de produção concluída.</p>
+              <p className="text-sm text-muted-foreground py-8 text-center">{t("dashboard.chart.semDados")}</p>
             ) : (
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={producaoMensal}>
@@ -407,7 +409,7 @@ const Dashboard = () => {
                   <XAxis dataKey="mes" fontSize={12} />
                   <YAxis fontSize={12} />
                   <Tooltip formatter={(v: number) => v.toLocaleString("pt-BR")} />
-                  <Bar dataKey="pecas" fill="hsl(217 71% 55%)" radius={[4, 4, 0, 0]} name="Peças" />
+                  <Bar dataKey="pecas" fill="hsl(217 71% 55%)" radius={[4, 4, 0, 0]} name={t("dashboard.chart.pecas")} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -416,11 +418,11 @@ const Dashboard = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Status das Ordens</CardTitle>
+            <CardTitle className="text-base">{t("dashboard.chart.statusOrdens")}</CardTitle>
           </CardHeader>
           <CardContent>
             {statusProducao.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-8 text-center">Sem ordens no período.</p>
+              <p className="text-sm text-muted-foreground py-8 text-center">{t("dashboard.chart.semOrdens")}</p>
             ) : (
               <>
                 <ResponsiveContainer width="100%" height={200}>
@@ -437,7 +439,7 @@ const Dashboard = () => {
                   {statusProducao.map((item) => (
                     <div key={item.name} className="flex items-center gap-2 text-xs">
                       <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.fill }} />
-                      <span className="text-muted-foreground">{item.name} ({item.value}%)</span>
+                      <span className="text-muted-foreground">{t(`dashboard.etapa.${item.name}`, { defaultValue: item.name })} ({item.value}%)</span>
                     </div>
                   ))}
                 </div>
@@ -449,22 +451,22 @@ const Dashboard = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Últimas Ordens de Corte</CardTitle>
+          <CardTitle className="text-base">{t("dashboard.ultimasOrdens")}</CardTitle>
         </CardHeader>
         <CardContent>
           {ultimasOrdens.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">Nenhuma ordem no período.</p>
+            <p className="text-sm text-muted-foreground py-8 text-center">{t("dashboard.table.semOrdens")}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b text-muted-foreground">
-                    <th className="text-left py-2 font-medium">Nº</th>
-                    <th className="text-left py-2 font-medium">Modelo</th>
-                    <th className="text-left py-2 font-medium">Tecido</th>
-                    <th className="text-right py-2 font-medium">Qtd</th>
-                    <th className="text-left py-2 font-medium">Data</th>
-                    <th className="text-left py-2 font-medium">Etapa</th>
+                    <th className="text-left py-2 font-medium">{t("dashboard.table.numero")}</th>
+                    <th className="text-left py-2 font-medium">{t("dashboard.table.modelo")}</th>
+                    <th className="text-left py-2 font-medium">{t("dashboard.table.tecido")}</th>
+                    <th className="text-right py-2 font-medium">{t("dashboard.table.quantidade")}</th>
+                    <th className="text-left py-2 font-medium">{t("dashboard.table.data")}</th>
+                    <th className="text-left py-2 font-medium">{t("dashboard.table.etapa")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -483,7 +485,7 @@ const Dashboard = () => {
                           style={{ backgroundColor: `${etapa.color}1f`, color: etapa.color }}
                         >
                           <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: etapa.color }} />
-                          {etapa.label}
+                          {t(`dashboard.etapa.${etapa.label}`, { defaultValue: etapa.label })}
                         </span>
                       </td>
                     </tr>
