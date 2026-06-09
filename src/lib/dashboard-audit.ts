@@ -248,7 +248,7 @@ export function buildAuditWorkbook(filters: AuditFilters, ds: AuditDatasets) {
     wsStatus,
     [
       [],
-      ["Regra:", "Precedência: Entregue > Acabamento (recebimento concluído) > Recebimento > Oficina de Costura (expedição concluída) > Expedição > Corte concluído > Corte. Filtro: data_corte ∈ período"],
+      ["Regra:", "Precedência (igual ao Kanban): Entregue > Acabamento (recebimento concluído) > Recebimento > Oficina (expedição concluída) > Expedição > Corte. Filtro: data_corte ∈ período"],
       ["Período:", periodo],
     ],
     { origin: -1 },
