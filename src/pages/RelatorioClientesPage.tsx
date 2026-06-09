@@ -107,31 +107,31 @@ const RelatorioClientesPage = () => {
   const allClienteNames = useMemo(() => {
     const set = new Set<string>();
     ordensPeriodo.forEach((o) => {
-      const name = clienteById.get(o.cliente_id) || (o.cliente_id ? "Sem cadastro" : "Sem cliente");
+      const name = clienteById.get(o.cliente_id) || (o.cliente_id ? t("reports.clientes.filtros.semCadastro") : t("reports.clientes.filtros.semCliente"));
       set.add(name);
     });
     return Array.from(set).sort();
-  }, [ordensPeriodo, clienteById]);
+  }, [ordensPeriodo, clienteById, t]);
 
   const isAllSelected = selectedClientes.length === 0;
   const activeFilter = isAllSelected ? allClienteNames : selectedClientes;
 
   const ordensFiltradas = useMemo(() => ordensPeriodo.filter((o) => {
-    const name = clienteById.get(o.cliente_id) || (o.cliente_id ? "Sem cadastro" : "Sem cliente");
+    const name = clienteById.get(o.cliente_id) || (o.cliente_id ? t("reports.clientes.filtros.semCadastro") : t("reports.clientes.filtros.semCliente"));
     return activeFilter.includes(name);
-  }), [ordensPeriodo, activeFilter, clienteById]);
+  }), [ordensPeriodo, activeFilter, clienteById, t]);
 
   const pedidosPorCliente = useMemo(() => {
     const map = new Map<string, { cliente: string; ordens: number; pecas: number }>();
     ordensFiltradas.forEach((o) => {
-      const name = clienteById.get(o.cliente_id) || (o.cliente_id ? "Sem cadastro" : "Sem cliente");
+      const name = clienteById.get(o.cliente_id) || (o.cliente_id ? t("reports.clientes.filtros.semCadastro") : t("reports.clientes.filtros.semCliente"));
       const cur = map.get(name) || { cliente: name, ordens: 0, pecas: 0 };
       cur.ordens += 1;
       cur.pecas += o.quantidade_pecas || 0;
       map.set(name, cur);
     });
     return Array.from(map.values()).sort((a, b) => b.pecas - a.pecas);
-  }, [ordensFiltradas, clienteById]);
+  }, [ordensFiltradas, clienteById, t]);
 
   const statusPedidos = useMemo(() => {
     const etapas = [
