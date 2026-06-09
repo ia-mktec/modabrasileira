@@ -463,11 +463,11 @@ const Dashboard = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b text-muted-foreground">
-                    <th className="text-left py-2 font-medium">{t("dashboard.table.numero")}</th>
-                    <th className="text-left py-2 font-medium">{t("dashboard.table.modelo")}</th>
-                    <th className="text-left py-2 font-medium">{t("dashboard.table.tecido")}</th>
-                    <th className="text-right py-2 font-medium">{t("dashboard.table.quantidade")}</th>
-                    <th className="text-left py-2 font-medium">{t("dashboard.table.data")}</th>
+                    <th className="text-left py-2 pr-6 font-medium">{t("dashboard.table.numero")}</th>
+                    <th className="text-left py-2 pr-6 font-medium">{t("dashboard.table.modelo")}</th>
+                    <th className="text-left py-2 pr-6 font-medium">{t("dashboard.table.tecido")}</th>
+                    <th className="text-right py-2 pr-8 font-medium">{t("dashboard.table.quantidade")}</th>
+                    <th className="text-left py-2 pr-6 font-medium">{t("dashboard.table.data")}</th>
                     <th className="text-left py-2 font-medium">{t("dashboard.table.etapa")}</th>
                   </tr>
                 </thead>
@@ -476,11 +476,11 @@ const Dashboard = () => {
                     const etapa = getEtapa(oc);
                     return (
                     <tr key={oc.id} className="border-b last:border-0">
-                      <td className="py-2.5 font-mono text-xs">{oc.numero}</td>
-                      <td className="py-2.5">{oc.modelo_ref || "—"}</td>
-                      <td className="py-2.5">{oc.tecido_nome || "—"}</td>
-                      <td className="py-2.5 text-right">{(oc.quantidade_pecas || 0).toLocaleString("pt-BR")}</td>
-                      <td className="py-2.5">{formatDateBR(oc.data_corte)}</td>
+                      <td className="py-2.5 pr-6 font-mono text-xs">{oc.numero}</td>
+                      <td className="py-2.5 pr-6">{oc.modelo_ref || "—"}</td>
+                      <td className="py-2.5 pr-6">{oc.tecido_nome || "—"}</td>
+                      <td className="py-2.5 pr-8 text-right">{(oc.quantidade_pecas || 0).toLocaleString("pt-BR")}</td>
+                      <td className="py-2.5 pr-6">{formatDateBR(oc.data_corte)}</td>
                       <td className="py-2.5">
                         <span
                           className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium"
