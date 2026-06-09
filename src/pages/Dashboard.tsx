@@ -214,7 +214,7 @@ const Dashboard = () => {
 
   const statusProducao = useMemo(() => {
     const ordemEtapas = [
-      "Corte", "Corte concluído", "Expedição", "Oficina de Costura",
+      "Corte", "Expedição", "Oficina",
       "Recebimento", "Acabamento", "Entregue",
     ];
     const counts: Record<string, number> = {};
