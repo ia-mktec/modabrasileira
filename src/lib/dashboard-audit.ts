@@ -39,9 +39,8 @@ const etapaLabel = (oc: any, ds: AuditDatasets): string => {
   if (ds.entreguesSet.has(id)) return "Entregue";
   if (ds.recebimentoConcluidoSet.has(id)) return "Acabamento";
   if (ds.recebidasSet.has(id)) return "Recebimento";
-  if (ds.expedicaoConcluidaSet.has(id)) return "Oficina de Costura";
+  if (ds.expedicaoConcluidaSet.has(id)) return "Oficina";
   if (ds.expedidasSet.has(id)) return "Expedição";
-  if (oc.status === "concluido") return "Corte concluído";
   return "Corte";
 };
 
@@ -249,7 +248,7 @@ export function buildAuditWorkbook(filters: AuditFilters, ds: AuditDatasets) {
     wsStatus,
     [
       [],
-      ["Regra:", "Precedência: Entregue > Acabamento (recebimento concluído) > Recebimento > Oficina de Costura (expedição concluída) > Expedição > Corte concluído > Corte. Filtro: data_corte ∈ período"],
+      ["Regra:", "Precedência (igual ao Kanban): Entregue > Acabamento (recebimento concluído) > Recebimento > Oficina (expedição concluída) > Expedição > Corte. Filtro: data_corte ∈ período"],
       ["Período:", periodo],
     ],
     { origin: -1 },

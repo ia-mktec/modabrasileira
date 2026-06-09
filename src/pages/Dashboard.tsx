@@ -20,9 +20,8 @@ import { toast } from "@/hooks/use-toast";
 
 const ETAPA_COLORS: Record<string, string> = {
   "Corte": "hsl(38 92% 50%)",
-  "Corte concluído": "hsl(45 93% 47%)",
   "Expedição": "hsl(217 71% 55%)",
-  "Oficina de Costura": "hsl(280 65% 50%)",
+  "Oficina": "hsl(280 65% 50%)",
   "Recebimento": "hsl(199 89% 48%)",
   "Acabamento": "hsl(262 60% 55%)",
   "Entregue": "hsl(142 71% 35%)",
@@ -116,9 +115,8 @@ const Dashboard = () => {
     if (entreguesSet.has(id)) label = "Entregue";
     else if (recebimentoConcluidoSet.has(id)) label = "Acabamento";
     else if (recebidasSet.has(id)) label = "Recebimento";
-    else if (expedicaoConcluidaSet.has(id)) label = "Oficina de Costura";
+    else if (expedicaoConcluidaSet.has(id)) label = "Oficina";
     else if (expedidasSet.has(id)) label = "Expedição";
-    else if (oc.status === "concluido") label = "Corte concluído";
     else label = "Corte";
     return { label, color: ETAPA_COLORS[label] };
   };
@@ -216,7 +214,7 @@ const Dashboard = () => {
 
   const statusProducao = useMemo(() => {
     const ordemEtapas = [
-      "Corte", "Corte concluído", "Expedição", "Oficina de Costura",
+      "Corte", "Expedição", "Oficina",
       "Recebimento", "Acabamento", "Entregue",
     ];
     const counts: Record<string, number> = {};
@@ -261,29 +259,12 @@ const Dashboard = () => {
   const ultimasOrdens = ordensPeriodo.slice(0, 6);
 
   const kpiCards = [
+    // Primeira linha
     {
       title: "Quantidade de Pedidos no Período",
       value: pedidosPeriodoCount.toLocaleString("pt-BR"),
       subtitle: "Pedidos registrados",
       icon: FileText,
-    },
-    {
-      title: "Produção Cortada no Período",
-      value: producaoCortadaPeriodo.toLocaleString("pt-BR"),
-      subtitle: "Peças cortadas (corte concluído)",
-      icon: Scissors,
-    },
-    {
-      title: "Produção no Período",
-      value: producaoFinalizadaPeriodo.toLocaleString("pt-BR"),
-      subtitle: "Peças finalizadas (acabamento + entregues)",
-      icon: CheckCircle2,
-    },
-    {
-      title: "Tecido em Estoque",
-      value: `${tecidoEstoque.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} mt`,
-      subtitle: "Snapshot atual",
-      icon: Layers,
     },
     {
       title: "Ordens em Aberto",
@@ -292,10 +273,29 @@ const Dashboard = () => {
       icon: TrendingUp,
     },
     {
+      title: "Tecido em Estoque",
+      value: `${tecidoEstoque.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} mt`,
+      subtitle: "Snapshot atual",
+      icon: Layers,
+    },
+    // Segunda linha
+    {
+      title: "Produção Cortada no Período",
+      value: producaoCortadaPeriodo.toLocaleString("pt-BR"),
+      subtitle: "Peças cortadas (corte concluído)",
+      icon: Scissors,
+    },
+    {
       title: "Peças Expedidas",
       value: pecasExpedidasPeriodo.toLocaleString("pt-BR"),
       subtitle: "No período selecionado",
       icon: Truck,
+    },
+    {
+      title: "Produção no Período",
+      value: producaoFinalizadaPeriodo.toLocaleString("pt-BR"),
+      subtitle: "Peças finalizadas (acabamento + entregues)",
+      icon: CheckCircle2,
     },
   ];
 
