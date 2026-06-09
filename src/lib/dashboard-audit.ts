@@ -12,10 +12,11 @@ export type AuditDatasets = {
   recebimentos: any[]; // recebimento
   entregas: any[]; // entrega_cliente
   tecidos: any[]; // tecidos
-  aviamentos: any[]; // aviamentos
+  pedidos: any[]; // modelo_pedidos
   expedidasSet: Set<string>;
-  oficinaSet: Set<string>;
+  expedicaoConcluidaSet: Set<string>;
   recebidasSet: Set<string>;
+  recebimentoConcluidoSet: Set<string>;
   entreguesSet: Set<string>;
 };
 
@@ -33,11 +34,14 @@ const inRange = (dateStr: string | null | undefined, ini: Date | null, fim: Date
   return true;
 };
 
-const etapaLabel = (ocId: string, ds: AuditDatasets) => {
-  if (ds.entreguesSet.has(ocId)) return "Entregue";
-  if (ds.recebidasSet.has(ocId)) return "Acabamento";
-  if (ds.oficinaSet.has(ocId)) return "Oficina de Costura";
-  if (ds.expedidasSet.has(ocId)) return "Expedição";
+const etapaLabel = (oc: any, ds: AuditDatasets): string => {
+  const id = oc.id;
+  if (ds.entreguesSet.has(id)) return "Entregue";
+  if (ds.recebimentoConcluidoSet.has(id)) return "Acabamento";
+  if (ds.recebidasSet.has(id)) return "Recebimento";
+  if (ds.expedicaoConcluidaSet.has(id)) return "Oficina de Costura";
+  if (ds.expedidasSet.has(id)) return "Expedição";
+  if (oc.status === "concluido") return "Corte concluído";
   return "Corte";
 };
 
@@ -45,33 +49,114 @@ export function buildAuditWorkbook(filters: AuditFilters, ds: AuditDatasets) {
   const { inicio, fim } = filters;
   const periodo = `${fmtDate(inicio)} a ${fmtDate(fim)}`;
   const wb = XLSX.utils.book_new();
+  const ocMap = new Map(ds.ordens.map((o) => [o.id, o]));
 
-  // --- Produção no Período ---
-  const producao = ds.ordens.filter(
+  // --- Produção Cortada no Período ---
+  const cortadas = ds.ordens.filter(
     (o) => o.status === "concluido" && inRange(o.data_corte, inicio, fim),
   );
-  const producaoTotal = producao.reduce((s, o) => s + (o.quantidade_pecas || 0), 0);
-  const wsProd = XLSX.utils.json_to_sheet(
-    producao.map((o) => ({
+  const cortadasTotal = cortadas.reduce((s, o) => s + (o.quantidade_pecas || 0), 0);
+  const wsCort = XLSX.utils.json_to_sheet(
+    cortadas.map((o) => ({
       "Nº OC": o.numero,
       Modelo: o.modelo_ref || "",
       Tecido: o.tecido_nome || "",
       "Qtd Peças": o.quantidade_pecas || 0,
       "Data Corte": o.data_corte || "",
-      Status: o.status || "",
     })),
   );
   XLSX.utils.sheet_add_aoa(
-    wsProd,
+    wsCort,
     [
       [],
-      ["Regra:", "SUM(quantidade_pecas) WHERE status='concluido' AND data_corte ∈ período"],
+      ["Regra:", "SUM(quantidade_pecas) WHERE ordens_corte.status='concluido' AND data_corte ∈ período"],
       ["Período:", periodo],
-      ["Total:", producaoTotal],
+      ["Total:", cortadasTotal],
     ],
     { origin: -1 },
   );
-  XLSX.utils.book_append_sheet(wb, wsProd, "Produção no Período");
+  XLSX.utils.book_append_sheet(wb, wsCort, "Produção Cortada");
+
+  // --- Produção Finalizada no Período (Acabamento concluído ou Entregue) ---
+  // Mapear última data de finalização por OC
+  const recConcluidoData = new Map<string, string>();
+  ds.recebimentos.forEach((r) => {
+    if (r.status === "concluido" && r.ordem_corte_id) {
+      const cur = recConcluidoData.get(r.ordem_corte_id);
+      const d = r.data_recebimento || r.created_at;
+      if (d && (!cur || new Date(d) > new Date(cur))) recConcluidoData.set(r.ordem_corte_id, d);
+    }
+  });
+  const entregaData = new Map<string, string>();
+  ds.entregas.forEach((e) => {
+    if (!e.ordem_corte_id) return;
+    const cur = entregaData.get(e.ordem_corte_id);
+    const d = e.data_entrega || e.created_at;
+    if (d && (!cur || new Date(d) > new Date(cur))) entregaData.set(e.ordem_corte_id, d);
+  });
+  const finalizadas: any[] = [];
+  ds.ordens.forEach((o) => {
+    const dEnt = entregaData.get(o.id);
+    const dRec = recConcluidoData.get(o.id);
+    // Data de finalização = mais recente entre entrega e recebimento concluído
+    let dataFin: string | undefined;
+    let evento = "";
+    if (dEnt && (!dRec || new Date(dEnt) >= new Date(dRec))) {
+      dataFin = dEnt;
+      evento = "Entregue";
+    } else if (dRec) {
+      dataFin = dRec;
+      evento = "Acabamento";
+    }
+    if (dataFin && inRange(dataFin, inicio, fim)) {
+      finalizadas.push({
+        "Nº OC": o.numero,
+        Modelo: o.modelo_ref || "",
+        Tecido: o.tecido_nome || "",
+        "Qtd Peças": o.quantidade_pecas || 0,
+        "Data Finalização": dataFin,
+        Evento: evento,
+      });
+    }
+  });
+  const finalizadasTotal = finalizadas.reduce((s, l) => s + (l["Qtd Peças"] || 0), 0);
+  const wsFin = XLSX.utils.json_to_sheet(finalizadas);
+  XLSX.utils.sheet_add_aoa(
+    wsFin,
+    [
+      [],
+      ["Regra:", "SUM(quantidade_pecas) das OCs com recebimento.status='concluido' OU entrega_cliente, considerando a data mais recente do evento ∈ período"],
+      ["Período:", periodo],
+      ["Total:", finalizadasTotal],
+    ],
+    { origin: -1 },
+  );
+  XLSX.utils.book_append_sheet(wb, wsFin, "Produção Finalizada");
+
+  // --- Pedidos no Período ---
+  const pedidosPeriodo = ds.pedidos.filter((p) => inRange(p.data_pedido, inicio, fim));
+  const wsPed = XLSX.utils.json_to_sheet(
+    pedidosPeriodo.map((p) => ({
+      "Nº Pedido": p.numero_pedido,
+      Cliente: p.cliente || "",
+      Modelo: p.modelo_ref || "",
+      Tecido: p.tecido || "",
+      Cor: p.cor || "",
+      "Data Pedido": p.data_pedido || "",
+      Status: p.status_kanban || "",
+    })),
+  );
+  XLSX.utils.sheet_add_aoa(
+    wsPed,
+    [
+      [],
+      ["Regra:", "COUNT(*) FROM modelo_pedidos WHERE data_pedido ∈ período"],
+      ["Período:", periodo],
+      ["Total:", pedidosPeriodo.length],
+    ],
+    { origin: -1 },
+  );
+  XLSX.utils.book_append_sheet(wb, wsPed, "Pedidos no Período");
 
   // --- Peças Expedidas ---
   const expFiltradas = ds.expedicoes.filter((e) =>
@@ -79,7 +164,6 @@ export function buildAuditWorkbook(filters: AuditFilters, ds: AuditDatasets) {
   );
   const expIds = new Set(expFiltradas.map((e) => e.id));
   const ocByExpId = new Map(expFiltradas.map((e) => [e.id, e.ordem_corte_id]));
-  const ocMap = new Map(ds.ordens.map((o) => [o.id, o]));
   const linhasExp = ds.gradesExp
     .filter((g) => expIds.has(g.expedicao_id))
     .map((g) => {
@@ -157,7 +241,7 @@ export function buildAuditWorkbook(filters: AuditFilters, ds: AuditDatasets) {
       Modelo: o.modelo_ref || "",
       Tecido: o.tecido_nome || "",
       "Data Corte": o.data_corte || "",
-      Etapa: etapaLabel(o.id, ds),
+      Etapa: etapaLabel(o, ds),
       "Status OC": o.status || "",
     })),
   );
@@ -165,7 +249,7 @@ export function buildAuditWorkbook(filters: AuditFilters, ds: AuditDatasets) {
     wsStatus,
     [
       [],
-      ["Regra:", "Precedência: Entregue > Acabamento > Oficina > Expedição > Corte. Filtro: data_corte ∈ período"],
+      ["Regra:", "Precedência: Entregue > Acabamento (recebimento concluído) > Recebimento > Oficina de Costura (expedição concluída) > Expedição > Corte concluído > Corte. Filtro: data_corte ∈ período"],
       ["Período:", periodo],
     ],
     { origin: -1 },
@@ -195,38 +279,27 @@ export function buildAuditWorkbook(filters: AuditFilters, ds: AuditDatasets) {
   );
   XLSX.utils.book_append_sheet(wb, wsTec, "Tecido em Estoque");
 
-  // --- Aviamentos ---
-  const wsAv = XLSX.utils.json_to_sheet(
-    ds.aviamentos.map((a) => ({
-      Código: a.codigo || "",
-      Tipo: a.tipo || "",
-      Descrição: a.descricao || "",
-      Tamanho: a.tamanho || "",
-      Cor: a.cor || "",
-      "Preço Un.": Number(a.preco_un || 0),
-    })),
-  );
-  XLSX.utils.sheet_add_aoa(
-    wsAv,
-    [
-      [],
-      ["Regra:", "COUNT(*) de aviamentos cadastrados"],
-      ["Snapshot em:", fmtDate(new Date())],
-      ["Total:", ds.aviamentos.length],
-    ],
-    { origin: -1 },
-  );
-  XLSX.utils.book_append_sheet(wb, wsAv, "Aviamentos");
-
   // --- Resumo (primeira aba) ---
   const resumo = [
     ["Indicador", "Valor", "Fonte", "Fórmula / Regra"],
     ["Período auditado", periodo, "—", "Filtros de data aplicados no Dashboard"],
     [
-      "Produção no Período (peças)",
-      producaoTotal,
+      "Pedidos no Período",
+      pedidosPeriodo.length,
+      "modelo_pedidos",
+      "COUNT(*) WHERE data_pedido ∈ período",
+    ],
+    [
+      "Produção Cortada (peças)",
+      cortadasTotal,
       "ordens_corte",
       "SUM(quantidade_pecas) WHERE status='concluido' AND data_corte ∈ período",
+    ],
+    [
+      "Produção Finalizada (peças)",
+      finalizadasTotal,
+      "recebimento + entrega_cliente",
+      "SUM(quantidade_pecas) das OCs com acabamento concluído ou entregues no período (data mais recente do evento)",
     ],
     [
       "Peças Expedidas",
@@ -246,15 +319,9 @@ export function buildAuditWorkbook(filters: AuditFilters, ds: AuditDatasets) {
       "tecidos",
       "SUM(estoque_kg) — snapshot atual (ignora filtro de data)",
     ],
-    [
-      "Aviamentos Cadastrados",
-      ds.aviamentos.length,
-      "aviamentos",
-      "COUNT(*) — snapshot atual (ignora filtro de data)",
-    ],
   ];
   const wsResumo = XLSX.utils.aoa_to_sheet(resumo);
-  wsResumo["!cols"] = [{ wch: 32 }, { wch: 14 }, { wch: 28 }, { wch: 70 }];
+  wsResumo["!cols"] = [{ wch: 32 }, { wch: 14 }, { wch: 32 }, { wch: 80 }];
   XLSX.utils.book_append_sheet(wb, wsResumo, "Resumo");
 
   // Mover Resumo para primeira posição

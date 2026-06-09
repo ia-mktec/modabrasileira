@@ -14,21 +14,32 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   Cell, PieChart, Pie,
 } from "recharts";
-import { Scissors, Layers, TrendingUp, Package, Truck } from "lucide-react";
+import { Scissors, Layers, TrendingUp, Truck, FileText, CheckCircle2 } from "lucide-react";
 import { buildAuditWorkbook } from "@/lib/dashboard-audit";
 import { toast } from "@/hooks/use-toast";
+
+const ETAPA_COLORS: Record<string, string> = {
+  "Corte": "hsl(38 92% 50%)",
+  "Corte concluído": "hsl(45 93% 47%)",
+  "Expedição": "hsl(217 71% 55%)",
+  "Oficina de Costura": "hsl(280 65% 50%)",
+  "Recebimento": "hsl(199 89% 48%)",
+  "Acabamento": "hsl(262 60% 55%)",
+  "Entregue": "hsl(142 71% 35%)",
+};
 
 const Dashboard = () => {
   const [ordens, setOrdens] = useState<any[]>([]);
   const [tecidos, setTecidos] = useState<any[]>([]);
-  const [aviamentos, setAviamentos] = useState<any[]>([]);
+  const [pedidos, setPedidos] = useState<any[]>([]);
   const [expedicoes, setExpedicoes] = useState<any[]>([]);
   const [gradesExp, setGradesExp] = useState<any[]>([]);
   const [recebimentos, setRecebimentos] = useState<any[]>([]);
   const [entregas, setEntregas] = useState<any[]>([]);
   const [expedidasSet, setExpedidasSet] = useState<Set<string>>(new Set());
-  const [oficinaSet, setOficinaSet] = useState<Set<string>>(new Set());
+  const [expedicaoConcluidaSet, setExpedicaoConcluidaSet] = useState<Set<string>>(new Set());
   const [recebidasSet, setRecebidasSet] = useState<Set<string>>(new Set());
+  const [recebimentoConcluidoSet, setRecebimentoConcluidoSet] = useState<Set<string>>(new Set());
   const [entreguesSet, setEntreguesSet] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
@@ -57,47 +68,59 @@ const Dashboard = () => {
     };
 
     (async () => {
-      const [oc, tec, expGrade, av, expRows, recRows, entRows] = await Promise.all([
+      const [oc, tec, expGrade, ped, expRows, recRows, entRows] = await Promise.all([
         fetchAll<any>("ordens_corte", "id,numero,modelo_ref,tecido_nome,quantidade_pecas,data_corte,status", { col: "data_corte", asc: false }),
         fetchAll<any>("tecidos", "id,nome,composicao,cor,estoque_kg,status"),
         fetchAll<any>("grade_expedicao", "expedicao_id,cor,pp_exp,p_exp,m_exp,g_exp,gg_exp,g1_exp,g2_exp,g3_exp"),
-        fetchAll<any>("aviamentos", "id,codigo,tipo,descricao,tamanho,cor,preco_un"),
+        fetchAll<any>("modelo_pedidos", "numero_pedido,cliente,modelo_ref,tecido,cor,data_pedido,status_kanban,created_at"),
         fetchAll<any>("expedicao", "id,ordem_corte_id,data_saida,oficina_nome,preco_peca,status,created_at"),
-        fetchAll<any>("recebimento", "id,ordem_corte_id,data_recebimento,oficina_nome,total_sem_defeitos,defeitos"),
-        fetchAll<any>("entrega_cliente", "id,ordem_corte_id,data_entrega,qtd_entregue,cliente_id"),
+        fetchAll<any>("recebimento", "id,ordem_corte_id,data_recebimento,oficina_nome,total_sem_defeitos,defeitos,status,created_at"),
+        fetchAll<any>("entrega_cliente", "id,ordem_corte_id,data_entrega,qtd_entregue,cliente_id,created_at"),
       ]);
       setOrdens(oc || []);
       setTecidos(tec || []);
       setGradesExp(expGrade || []);
-      setAviamentos(av || []);
+      setPedidos(ped || []);
       setExpedicoes(expRows || []);
       setRecebimentos(recRows || []);
       setEntregas(entRows || []);
 
       const expedidas = new Set<string>((expRows || []).map((e: any) => e.ordem_corte_id).filter(Boolean));
-      const oficina = new Set<string>(
+      const expConcluidas = new Set<string>(
         (expRows || [])
           .filter((e: any) => e.status === "concluido")
           .map((e: any) => e.ordem_corte_id)
           .filter(Boolean)
       );
       const recebidas = new Set<string>((recRows || []).map((r: any) => r.ordem_corte_id).filter(Boolean));
+      const recConcluidos = new Set<string>(
+        (recRows || [])
+          .filter((r: any) => r.status === "concluido")
+          .map((r: any) => r.ordem_corte_id)
+          .filter(Boolean)
+      );
       const entregues = new Set<string>((entRows || []).map((e: any) => e.ordem_corte_id).filter(Boolean));
       setExpedidasSet(expedidas);
-      setOficinaSet(oficina);
+      setExpedicaoConcluidaSet(expConcluidas);
       setRecebidasSet(recebidas);
+      setRecebimentoConcluidoSet(recConcluidos);
       setEntreguesSet(entregues);
 
       setLoading(false);
     })();
   }, []);
 
-  const getEtapa = (ocId: string): { label: string; color: string } => {
-    if (entreguesSet.has(ocId)) return { label: "Entregue", color: "hsl(142 71% 35%)" };
-    if (recebidasSet.has(ocId)) return { label: "Acabamento", color: "hsl(262 60% 55%)" };
-    if (oficinaSet.has(ocId)) return { label: "Oficina de Costura", color: "hsl(280 65% 50%)" };
-    if (expedidasSet.has(ocId)) return { label: "Expedição", color: "hsl(217 71% 55%)" };
-    return { label: "Corte", color: "hsl(38 92% 50%)" };
+  const getEtapa = (oc: any): { label: string; color: string } => {
+    const id = oc.id;
+    let label: string;
+    if (entreguesSet.has(id)) label = "Entregue";
+    else if (recebimentoConcluidoSet.has(id)) label = "Acabamento";
+    else if (recebidasSet.has(id)) label = "Recebimento";
+    else if (expedicaoConcluidaSet.has(id)) label = "Oficina de Costura";
+    else if (expedidasSet.has(id)) label = "Expedição";
+    else if (oc.status === "concluido") label = "Corte concluído";
+    else label = "Corte";
+    return { label, color: ETAPA_COLORS[label] };
   };
 
   const inPeriodo = (dateStr: string | null | undefined) => {
@@ -117,12 +140,48 @@ const Dashboard = () => {
     [tecidos],
   );
 
-  const producaoPeriodo = useMemo(
+  // Produção Cortada no Período: OCs com status='concluido' e data_corte no período
+  const producaoCortadaPeriodo = useMemo(
     () =>
       ordens
         .filter((o) => o.status === "concluido" && inPeriodo(o.data_corte))
         .reduce((s, o) => s + (o.quantidade_pecas || 0), 0),
     [ordens, dataInicio, dataFim],
+  );
+
+  // Produção Finalizada (peças que concluíram acabamento ou foram entregues no período)
+  const producaoFinalizadaPeriodo = useMemo(() => {
+    // mapa: ocId -> última data de recebimento concluído
+    const recMap = new Map<string, string>();
+    recebimentos.forEach((r) => {
+      if (r.status === "concluido" && r.ordem_corte_id) {
+        const d = r.data_recebimento || r.created_at;
+        const cur = recMap.get(r.ordem_corte_id);
+        if (d && (!cur || new Date(d) > new Date(cur))) recMap.set(r.ordem_corte_id, d);
+      }
+    });
+    const entMap = new Map<string, string>();
+    entregas.forEach((e) => {
+      if (!e.ordem_corte_id) return;
+      const d = e.data_entrega || e.created_at;
+      const cur = entMap.get(e.ordem_corte_id);
+      if (d && (!cur || new Date(d) > new Date(cur))) entMap.set(e.ordem_corte_id, d);
+    });
+    let total = 0;
+    ordens.forEach((o) => {
+      const dE = entMap.get(o.id);
+      const dR = recMap.get(o.id);
+      let dFin: string | undefined;
+      if (dE && (!dR || new Date(dE) >= new Date(dR))) dFin = dE;
+      else if (dR) dFin = dR;
+      if (dFin && inPeriodo(dFin)) total += (o.quantidade_pecas || 0);
+    });
+    return total;
+  }, [ordens, recebimentos, entregas, dataInicio, dataFim]);
+
+  const pedidosPeriodoCount = useMemo(
+    () => pedidos.filter((p) => inPeriodo(p.data_pedido)).length,
+    [pedidos, dataInicio, dataFim],
   );
 
   const expedicoesPeriodo = useMemo(
@@ -156,30 +215,26 @@ const Dashboard = () => {
   );
 
   const statusProducao = useMemo(() => {
-    const etapas = [
-      { key: "Corte", color: "hsl(38 92% 50%)" },
-      { key: "Expedição", color: "hsl(217 71% 55%)" },
-      { key: "Oficina de Costura", color: "hsl(280 65% 50%)" },
-      { key: "Acabamento", color: "hsl(262 60% 55%)" },
-      { key: "Entregue", color: "hsl(142 71% 35%)" },
+    const ordemEtapas = [
+      "Corte", "Corte concluído", "Expedição", "Oficina de Costura",
+      "Recebimento", "Acabamento", "Entregue",
     ];
-    const counts: Record<string, number> = { Corte: 0, "Expedição": 0, "Oficina de Costura": 0, Acabamento: 0, Entregue: 0 };
+    const counts: Record<string, number> = {};
     ordensPeriodo.forEach((o) => {
-      const e = getEtapa(o.id).label;
+      const e = getEtapa(o).label;
       counts[e] = (counts[e] || 0) + 1;
     });
     const total = ordensPeriodo.length || 1;
-    return etapas
-      .map((e) => ({
-        name: e.key,
-        value: Math.round((counts[e.key] / total) * 100),
-        fill: e.color,
-      }))
-      .filter((e) => e.value > 0);
-  }, [ordensPeriodo, expedidasSet, oficinaSet, recebidasSet, entreguesSet]);
+    return ordemEtapas
+      .filter((k) => counts[k])
+      .map((k) => ({
+        name: k,
+        value: Math.round((counts[k] / total) * 100),
+        fill: ETAPA_COLORS[k],
+      }));
+  }, [ordensPeriodo, expedidasSet, expedicaoConcluidaSet, recebidasSet, recebimentoConcluidoSet, entreguesSet]);
 
   const producaoMensal = useMemo(() => {
-    // Últimos 6 meses até dataFim (ou hoje)
     const ref = dataFim || new Date();
     const meses: { y: number; m: number; key: string }[] = [];
     for (let i = 5; i >= 0; i--) {
@@ -207,10 +262,22 @@ const Dashboard = () => {
 
   const kpiCards = [
     {
+      title: "Quantidade de Pedidos no Período",
+      value: pedidosPeriodoCount.toLocaleString("pt-BR"),
+      subtitle: "Pedidos registrados",
+      icon: FileText,
+    },
+    {
+      title: "Produção Cortada no Período",
+      value: producaoCortadaPeriodo.toLocaleString("pt-BR"),
+      subtitle: "Peças cortadas (corte concluído)",
+      icon: Scissors,
+    },
+    {
       title: "Produção no Período",
-      value: producaoPeriodo.toLocaleString("pt-BR"),
-      subtitle: "Peças concluídas",
-      icon: TrendingUp,
+      value: producaoFinalizadaPeriodo.toLocaleString("pt-BR"),
+      subtitle: "Peças finalizadas (acabamento + entregues)",
+      icon: CheckCircle2,
     },
     {
       title: "Tecido em Estoque",
@@ -222,19 +289,13 @@ const Dashboard = () => {
       title: "Ordens em Aberto",
       value: ordensAbertasPeriodo.toString(),
       subtitle: "Expedidas sem recebimento",
-      icon: Scissors,
+      icon: TrendingUp,
     },
     {
       title: "Peças Expedidas",
       value: pecasExpedidasPeriodo.toLocaleString("pt-BR"),
       subtitle: "No período selecionado",
       icon: Truck,
-    },
-    {
-      title: "Aviamentos Cadastrados",
-      value: aviamentos.length.toString(),
-      subtitle: "Snapshot atual",
-      icon: Package,
     },
   ];
 
@@ -268,10 +329,11 @@ const Dashboard = () => {
           recebimentos,
           entregas,
           tecidos,
-          aviamentos,
+          pedidos,
           expedidasSet,
-          oficinaSet,
+          expedicaoConcluidaSet,
           recebidasSet,
+          recebimentoConcluidoSet,
           entreguesSet,
         },
       );
@@ -407,7 +469,7 @@ const Dashboard = () => {
                 </thead>
                 <tbody>
                   {ultimasOrdens.map((oc) => {
-                    const etapa = getEtapa(oc.id);
+                    const etapa = getEtapa(oc);
                     return (
                     <tr key={oc.id} className="border-b last:border-0">
                       <td className="py-2.5 font-mono text-xs">{oc.numero}</td>
