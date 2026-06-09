@@ -131,6 +131,15 @@
       "30d": "30d",
       "6m": "6m",
       "tudo": "All"
+    },
+    "table": {
+      "numero": "No.",
+      "modelo": "Style",
+      "tecido": "Fabric",
+      "quantidade": "Qty",
+      "data": "Date",
+      "etapa": "Stage",
+      "semOrdens": "No orders in period."
     }
   }
 }

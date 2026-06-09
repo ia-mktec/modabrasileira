@@ -131,6 +131,15 @@
       "30d": "30d",
       "6m": "6m",
       "tudo": "Tudo"
+    },
+    "table": {
+      "numero": "Nº",
+      "modelo": "Modelo",
+      "tecido": "Tecido",
+      "quantidade": "Qtd",
+      "data": "Data",
+      "etapa": "Etapa",
+      "semOrdens": "Nenhuma ordem no período."
     }
   }
 }

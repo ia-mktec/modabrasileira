@@ -131,6 +131,15 @@
       "30d": "30天",
       "6m": "6月",
       "tudo": "全部"
+    },
+    "table": {
+      "numero": "编号",
+      "modelo": "款式",
+      "tecido": "面料",
+      "quantidade": "数量",
+      "data": "日期",
+      "etapa": "阶段",
+      "semOrdens": "周期内无订单。"
     }
   }
 }
