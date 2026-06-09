@@ -463,11 +463,11 @@ const Dashboard = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b text-muted-foreground">
-                    <th className="text-left py-2 font-medium">{t("dashboard.table.numero")}</th>
-                    <th className="text-left py-2 font-medium">{t("dashboard.table.modelo")}</th>
-                    <th className="text-left py-2 font-medium">{t("dashboard.table.tecido")}</th>
-                    <th className="text-right py-2 font-medium">{t("dashboard.table.quantidade")}</th>
-                    <th className="text-left py-2 font-medium">{t("dashboard.table.data")}</th>
+                    <th className="text-left py-2 pr-6 font-medium">{t("dashboard.table.numero")}</th>
+                    <th className="text-left py-2 pr-6 font-medium">{t("dashboard.table.modelo")}</th>
+                    <th className="text-left py-2 pr-6 font-medium">{t("dashboard.table.tecido")}</th>
+                    <th className="text-right py-2 pr-8 font-medium">{t("dashboard.table.quantidade")}</th>
+                    <th className="text-left py-2 pr-6 font-medium">{t("dashboard.table.data")}</th>
                     <th className="text-left py-2 font-medium">{t("dashboard.table.etapa")}</th>
                   </tr>
                 </thead>
