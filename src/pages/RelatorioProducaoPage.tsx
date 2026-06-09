@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { PageLoading } from "@/components/shared/PageLoading";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,13 +52,13 @@ interface EntregaRow {
 
 type ColKey = "modelos_pedido" | "corte" | "producao" | "oficina_costura" | "recebimento" | "acabamento";
 
-const kanbanColumns: { key: ColKey; label: string; color: string }[] = [
-  { key: "modelos_pedido", label: "Modelos - Pedido", color: "hsl(38 92% 50%)" },
-  { key: "corte", label: "Corte", color: "hsl(217 71% 45%)" },
-  { key: "producao", label: "Expedição", color: "hsl(38 92% 50%)" },
-  { key: "oficina_costura", label: "Oficina de Costura", color: "hsl(280 65% 50%)" },
-  { key: "recebimento", label: "Recebimento", color: "hsl(199 89% 48%)" },
-  { key: "acabamento", label: "Acabamento", color: "hsl(142 71% 35%)" },
+const kanbanColumns: { key: ColKey; color: string }[] = [
+  { key: "modelos_pedido", color: "hsl(38 92% 50%)" },
+  { key: "corte", color: "hsl(217 71% 45%)" },
+  { key: "producao", color: "hsl(38 92% 50%)" },
+  { key: "oficina_costura", color: "hsl(280 65% 50%)" },
+  { key: "recebimento", color: "hsl(199 89% 48%)" },
+  { key: "acabamento", color: "hsl(142 71% 35%)" },
 ];
 
 const colBadgeStyles: Record<ColKey, string> = {
@@ -84,7 +85,8 @@ function PedidoCard({
   onOpenFicha: (n: string) => void;
   numeroOrdemCorte?: string | null;
 }) {
-  const colLabel = kanbanColumns.find((c) => c.key === col)?.label || "";
+  const { t } = useTranslation();
+  const colLabel = t(`reports.producao.columns.${col}`);
   return (
     <Card className="mb-3 hover:shadow-md transition-shadow">
       <CardContent className="p-3">
@@ -102,7 +104,7 @@ function PedidoCard({
           type="button"
           onClick={() => onOpenFicha(pedido.numero_pedido)}
           className="w-full aspect-square rounded-md border border-border bg-muted overflow-hidden flex items-center justify-center hover:ring-2 hover:ring-primary transition mb-2"
-          title="Abrir ficha do pedido"
+          title={t("reports.producao.card.abrirFicha")}
         >
           {imagemUrl ? (
             <img src={imagemUrl} alt={pedido.modelo_ref} className="w-full h-full object-cover" />
@@ -114,14 +116,14 @@ function PedidoCard({
           <div className="flex flex-col min-w-0">
             <span className="font-mono text-xs font-semibold text-primary truncate">{pedido.modelo_ref}</span>
             {numeroOrdemCorte && (
-              <span className="text-[10px] text-muted-foreground truncate">OC: {numeroOrdemCorte}</span>
+              <span className="text-[10px] text-muted-foreground truncate">{t("reports.producao.card.ocPrefix")} {numeroOrdemCorte}</span>
             )}
           </div>
           <button
             type="button"
             onClick={() => onOpenFicha(pedido.numero_pedido)}
             className="text-[11px] text-primary font-mono truncate hover:underline text-left block w-full"
-            title="Abrir ficha do pedido"
+            title={t("reports.producao.card.abrirFicha")}
           >
             {pedido.numero_pedido}
           </button>
@@ -135,7 +137,7 @@ function PedidoCard({
             type="button"
             onClick={() => onOpenTimeline(pedido.numero_pedido)}
             className="flex items-center gap-1 text-[11px] text-muted-foreground pt-1 border-t border-border w-full hover:text-foreground transition"
-            title="Ver linha do tempo"
+            title={t("reports.producao.card.verTimeline")}
           >
             <CalendarDays className="w-3 h-3" />
             {formatDateBR(pedido.data_pedido)}
@@ -181,6 +183,7 @@ const isConcluido = (s?: string | null) => {
 const isCancelado = (s?: string | null) => norm(s) === "cancelado";
 
 const RelatorioProducaoPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [pedidos, setPedidos] = useState<PedidoRow[]>([]);
   const [ordens, setOrdens] = useState<(OrdemCorteRow & { id: string })[]>([]);
@@ -433,33 +436,33 @@ const RelatorioProducaoPage = () => {
   };
 
   if (pedidos.length === 0 && ordens.length === 0) {
-    return <PageLoading message="Carregando produção..." />;
+    return <PageLoading message={t("reports.producao.loading")} />;
   }
 
   return (
     <div className="p-6 space-y-6">
       <PageHeader
-        title="Fluxo de Produção"
-        description="Kanban de pedidos derivado dos status de Pedido, Corte, Expedição, Recebimento e Entrega"
+        title={t("reports.producao.title")}
+        description={t("reports.producao.description")}
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <MetricCard icon={Package} label="Total de Pedidos" value={String(metrics.total)} />
-        <MetricCard icon={Activity} label="Em Fluxo" value={String(metrics.ativos)} hint="visíveis no kanban" />
-        <MetricCard icon={Clock} label="Em Acabamento" value={String(metrics.acabamento)} />
-        <MetricCard icon={TrendingUp} label="Concluídos" value={String(metrics.ocultos)} hint="entregues ao cliente" />
+        <MetricCard icon={Package} label={t("reports.producao.metrics.total")} value={String(metrics.total)} />
+        <MetricCard icon={Activity} label={t("reports.producao.metrics.ativos")} value={String(metrics.ativos)} hint={t("reports.producao.metrics.ativosHint")} />
+        <MetricCard icon={Clock} label={t("reports.producao.metrics.acabamento")} value={String(metrics.acabamento)} />
+        <MetricCard icon={TrendingUp} label={t("reports.producao.metrics.concluidos")} value={String(metrics.ocultos)} hint={t("reports.producao.metrics.concluidosHint")} />
       </div>
 
       <Card>
         <CardContent className="p-4 flex flex-wrap items-end gap-3">
           <div className="flex flex-col gap-1 min-w-[240px] flex-1 max-w-sm">
-            <label className="text-xs font-semibold text-muted-foreground">Cliente</label>
+            <label className="text-xs font-semibold text-muted-foreground">{t("reports.producao.filters.cliente")}</label>
             <Select value={filtroCliente} onValueChange={setFiltroCliente}>
               <SelectTrigger className="h-9">
-                <SelectValue placeholder="Todos os clientes" />
+                <SelectValue placeholder={t("reports.producao.filters.todosClientes")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__all__">Todos os clientes</SelectItem>
+                <SelectItem value="__all__">{t("reports.producao.filters.todosClientes")}</SelectItem>
                 {clientesOptions.map((c) => (
                   <SelectItem key={c} value={c}>{c}</SelectItem>
                 ))}
@@ -467,20 +470,20 @@ const RelatorioProducaoPage = () => {
             </Select>
           </div>
           <div className="flex flex-col gap-1 min-w-[200px] flex-1 max-w-sm">
-            <label className="text-xs font-semibold text-muted-foreground">Ordem de Corte</label>
+            <label className="text-xs font-semibold text-muted-foreground">{t("reports.producao.filters.ordemCorte")}</label>
             <div className="relative">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 value={filtroOC}
                 onChange={(e) => setFiltroOC(e.target.value)}
-                placeholder="Buscar por nº da OC..."
+                placeholder={t("reports.producao.filters.buscarOC")}
                 className="h-9 pl-8"
               />
             </div>
           </div>
           {(filtroCliente !== "__all__" || filtroOC) && (
             <Button variant="ghost" size="sm" onClick={() => { setFiltroCliente("__all__"); setFiltroOC(""); }}>
-              Limpar
+              {t("reports.producao.filters.limpar")}
             </Button>
           )}
         </CardContent>
@@ -491,7 +494,7 @@ const RelatorioProducaoPage = () => {
           <div key={col.key} className="flex flex-col">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: col.color }} />
-              <h3 className="text-sm font-semibold text-foreground">{col.label}</h3>
+              <h3 className="text-sm font-semibold text-foreground">{t(`reports.producao.columns.${col.key}`)}</h3>
               <Badge variant="secondary" className="ml-auto text-[10px] h-5">
                 {grouped[col.key].length}
               </Badge>
@@ -510,7 +513,7 @@ const RelatorioProducaoPage = () => {
                   />
                 ))
               ) : (
-                <p className="text-xs text-muted-foreground text-center py-6">Nenhum pedido</p>
+                <p className="text-xs text-muted-foreground text-center py-6">{t("reports.producao.empty")}</p>
               )}
             </div>
           </div>

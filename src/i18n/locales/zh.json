@@ -141,5 +141,90 @@
       "etapa": "阶段",
       "semOrdens": "周期内无订单。"
     }
+  },
+  "reports": {
+    "producao": {
+      "title": "生产流程",
+      "description": "基于订单、裁剪、发货、收货和交付状态的看板",
+      "loading": "正在加载生产数据...",
+      "metrics": {
+        "total": "订单总数",
+        "ativos": "进行中",
+        "ativosHint": "看板可见",
+        "acabamento": "后整理中",
+        "concluidos": "已完成",
+        "concluidosHint": "已交付客户"
+      },
+      "filters": {
+        "cliente": "客户",
+        "todosClientes": "所有客户",
+        "ordemCorte": "裁剪单",
+        "buscarOC": "按裁剪单号搜索...",
+        "limpar": "清除"
+      },
+      "columns": {
+        "modelos_pedido": "款式 - 订单",
+        "corte": "裁剪",
+        "producao": "发货",
+        "oficina_costura": "缝纫车间",
+        "recebimento": "收货",
+        "acabamento": "后整理"
+      },
+      "card": {
+        "ocPrefix": "裁剪单：",
+        "abrirFicha": "打开订单详情",
+        "verTimeline": "查看时间线"
+      },
+      "empty": "暂无订单"
+    },
+    "clientes": {
+      "title": "客户报表",
+      "description": "按客户跟踪生产",
+      "loading": "正在加载报表...",
+      "filtros": {
+        "todosClientes": "所有客户",
+        "selecionados": "已选 {{count}} 个",
+        "filtrarClientes": "筛选客户",
+        "limpar": "清除",
+        "nenhumCliente": "周期内无客户。",
+        "semCadastro": "未登记",
+        "semCliente": "无客户",
+        "periodos": {
+          "1m": "上个月",
+          "3m": "最近3个月",
+          "6m": "最近6个月",
+          "12m": "去年",
+          "all": "全部周期"
+        }
+      },
+      "kpi": {
+        "clientesAtivos": "活跃客户",
+        "cadastrados": "已登记 {{count}} 个",
+        "ordens": "裁剪单",
+        "noPeriodo": "周期内",
+        "pecas": "已生产件数",
+        "modelos": "款式数",
+        "referencias": "已使用款式"
+      },
+      "charts": {
+        "pecasPorCliente": "各客户件数",
+        "statusOrdens": "订单状态",
+        "evolucaoMensal": "月度趋势 — 件数",
+        "topModelos": "热销款式（按件数）",
+        "semDados": "暂无数据。",
+        "pecas": "件数"
+      },
+      "etapas": {
+        "Corte": "裁剪",
+        "Produção": "生产",
+        "Acabamento": "后整理",
+        "Entregue": "已交付"
+      },
+      "table": {
+        "referencia": "款号",
+        "ordens": "订单数",
+        "pecas": "件数"
+      }
+    }
   }
 }

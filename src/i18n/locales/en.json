@@ -141,5 +141,90 @@
       "etapa": "Stage",
       "semOrdens": "No orders in period."
     }
+  },
+  "reports": {
+    "producao": {
+      "title": "Production Flow",
+      "description": "Order kanban derived from Order, Cutting, Dispatch, Receiving and Delivery status",
+      "loading": "Loading production...",
+      "metrics": {
+        "total": "Total Orders",
+        "ativos": "In Flow",
+        "ativosHint": "visible on the kanban",
+        "acabamento": "In Finishing",
+        "concluidos": "Completed",
+        "concluidosHint": "delivered to customer"
+      },
+      "filters": {
+        "cliente": "Customer",
+        "todosClientes": "All customers",
+        "ordemCorte": "Cutting Order",
+        "buscarOC": "Search by CO number...",
+        "limpar": "Clear"
+      },
+      "columns": {
+        "modelos_pedido": "Styles - Order",
+        "corte": "Cutting",
+        "producao": "Dispatch",
+        "oficina_costura": "Sewing Workshop",
+        "recebimento": "Receiving",
+        "acabamento": "Finishing"
+      },
+      "card": {
+        "ocPrefix": "CO:",
+        "abrirFicha": "Open order sheet",
+        "verTimeline": "View timeline"
+      },
+      "empty": "No orders"
+    },
+    "clientes": {
+      "title": "Customer Report",
+      "description": "Production tracking by customer",
+      "loading": "Loading report...",
+      "filtros": {
+        "todosClientes": "All Customers",
+        "selecionados": "{{count}} selected",
+        "filtrarClientes": "Filter Customers",
+        "limpar": "Clear",
+        "nenhumCliente": "No customers in period.",
+        "semCadastro": "Not registered",
+        "semCliente": "No customer",
+        "periodos": {
+          "1m": "Last month",
+          "3m": "Last 3 months",
+          "6m": "Last 6 months",
+          "12m": "Last year",
+          "all": "All time"
+        }
+      },
+      "kpi": {
+        "clientesAtivos": "Active Customers",
+        "cadastrados": "{{count}} registered",
+        "ordens": "Cutting Orders",
+        "noPeriodo": "in period",
+        "pecas": "Pieces Produced",
+        "modelos": "Unique Styles",
+        "referencias": "references used"
+      },
+      "charts": {
+        "pecasPorCliente": "Pieces per Customer",
+        "statusOrdens": "Order Status",
+        "evolucaoMensal": "Monthly Evolution — Pieces",
+        "topModelos": "Top Styles by Pieces",
+        "semDados": "No data.",
+        "pecas": "Pieces"
+      },
+      "etapas": {
+        "Corte": "Cutting",
+        "Produção": "Production",
+        "Acabamento": "Finishing",
+        "Entregue": "Delivered"
+      },
+      "table": {
+        "referencia": "Reference",
+        "ordens": "Orders",
+        "pecas": "Pieces"
+      }
+    }
   }
 }
