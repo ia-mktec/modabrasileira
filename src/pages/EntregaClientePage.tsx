@@ -738,7 +738,6 @@ const EntregaClientePage = () => {
                   <table className="w-full text-xs border-collapse">
                     <thead>
                       <tr className="border-b">
-                        <th className="px-2 py-1.5 text-left font-semibold w-8">ID</th>
                         <th className="px-2 py-1.5 text-left font-semibold w-20">COR</th>
                         {TAMANHOS.map((t) =>
                       <th key={t} className="px-1 py-1.5 text-center font-semibold w-12">{t}</th>
