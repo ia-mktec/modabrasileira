@@ -40,6 +40,7 @@ const EntregaClientePage = () => {
   const { ordens: ordensCorteDb, loading: loadingOrdens, loadOrdemDetalhada } = useOrdensCorte();
   const { salvarEntrega } = useEntregaCliente();
   const { modelos: modelosDb, loading: loadingModelos } = useModelos();
+  const { clientes: clientesDb } = useClientes();
   const [currentOrdemCorteId, setCurrentOrdemCorteId] = useState<string | null>(null);
   // Consulta (read-only)
   const [ordemCorte, setOrdemCorte] = useState("");
