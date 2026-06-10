@@ -190,14 +190,61 @@ const EntregaClientePage = () => {
     setOrdemCorte(oc.numero);
     setNumeroPedido(oc.numero_pedido || "");
     setReferencia(oc.modelo_ref || "");
-    const foundModelo = modelosDb.find((m: any) => m.referencia === oc.modelo_ref);
-    setModeloNome(foundModelo?.descricao || "");
-    setCliente("");
+    const refTrim = (oc.modelo_ref || "").trim().toLowerCase();
+    const candidatos = modelosDb.filter((m: any) => (m.referencia || "").trim().toLowerCase() === refTrim);
+    const foundModelo = candidatos.find((m: any) => !!m.imagem_url) || candidatos[0];
+    setModeloNome(foundModelo?.descricao || oc.modelo_ref || "");
+
+    // Cliente: cliente_id da OC; fallback no modelo_pedidos por numero_pedido
+    let nomeCliente = "";
+    if (oc.cliente_id) {
+      const c = (clientesDb || []).find((x: any) => x.id === oc.cliente_id);
+      if (c) nomeCliente = c.razao_social || "";
+    }
+    if (!nomeCliente && oc.numero_pedido) {
+      const { data: pedido } = await supabase
+        .from("modelo_pedidos")
+        .select("cliente")
+        .eq("numero_pedido", oc.numero_pedido)
+        .maybeSingle();
+      if (pedido?.cliente) nomeCliente = pedido.cliente;
+    }
+    setCliente(nomeCliente);
+
     setDataCorte(oc.data_corte || "");
-    setOficina("");
-    setDataEnvio("");
+
+    // Oficina: prioriza recebimento mais recente, depois expedição
+    let nomeOficina = "";
+    let dataEnvioOC = "";
+    const { data: recRows } = await supabase
+      .from("recebimento")
+      .select("oficina_nome,data_recebimento,created_at")
+      .eq("ordem_corte_id", oc.id)
+      .order("created_at", { ascending: false })
+      .limit(1);
+    if (recRows && recRows[0]?.oficina_nome) nomeOficina = recRows[0].oficina_nome;
+    const { data: expRows } = await supabase
+      .from("expedicao")
+      .select("oficina_nome,data_saida,created_at")
+      .eq("ordem_corte_id", oc.id)
+      .order("created_at", { ascending: false })
+      .limit(1);
+    if (!nomeOficina && expRows && expRows[0]?.oficina_nome) nomeOficina = expRows[0].oficina_nome;
+    if (expRows && expRows[0]?.data_saida) dataEnvioOC = expRows[0].data_saida;
+    setOficina(nomeOficina);
+    setDataEnvio(dataEnvioOC || oc.data_corte || "");
+
     setDataEntrega(undefined);
-    setTempoProducao("");
+
+    // Tempo de produção: dias desde o corte até hoje
+    if (oc.data_corte) {
+      const dCorte = new Date(oc.data_corte);
+      const dias = differenceInDays(new Date(), dCorte);
+      setTempoProducao(dias >= 0 ? `${dias} dias` : "");
+    } else {
+      setTempoProducao("");
+    }
+
     setRefImage(foundModelo?.imagem_url || null); setRefImageCostas((foundModelo as any)?.imagem_costas_url || null);
     setGradeCortada([]);
     setGradeEntregue([]);
