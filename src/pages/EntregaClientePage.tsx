@@ -193,7 +193,12 @@ const EntregaClientePage = () => {
     const refTrim = (oc.modelo_ref || "").trim().toLowerCase();
     const candidatos = modelosDb.filter((m: any) => (m.referencia || "").trim().toLowerCase() === refTrim);
     const foundModelo = candidatos.find((m: any) => !!m.imagem_url) || candidatos[0];
-    setModeloNome(foundModelo?.descricao || oc.modelo_ref || "");
+    const pickModeloNome = (m: any): string => {
+      const candidates = [m?.modelo, m?.descricao].map((v) => (v ?? "").toString().trim());
+      const valido = candidates.find((v) => v && v !== "-" && v !== "—");
+      return valido || oc.modelo_ref || "";
+    };
+    setModeloNome(pickModeloNome(foundModelo));
 
     // Cliente: cliente_id da OC; fallback no modelo_pedidos por numero_pedido
     let nomeCliente = "";
