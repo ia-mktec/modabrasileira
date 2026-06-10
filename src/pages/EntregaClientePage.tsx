@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { useOrdensCorte, useEntregaCliente, useModelos } from "@/hooks/useSupabaseData";
+import { useOrdensCorte, useEntregaCliente, useModelos, useClientes } from "@/hooks/useSupabaseData";
 import { Search, Printer, PackageCheck, ImageOff, Send, CalendarIcon, CheckCircle, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { showSaving } from "@/lib/saving-toast";
