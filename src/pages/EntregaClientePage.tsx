@@ -749,7 +749,6 @@ const EntregaClientePage = () => {
                     <tbody>
                       {gradeCortada.map((row) =>
                     <tr key={row.id} className="border-b">
-                          <td className="px-2 py-1 text-center text-muted-foreground">{row.id}</td>
                           <td className="px-2 py-1 font-medium">{row.cor}</td>
                           {TAMANHOS.map((t) =>
                       <td key={t} className="px-1 py-1 text-center">
