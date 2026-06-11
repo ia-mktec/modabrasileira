@@ -158,8 +158,8 @@
       "filters": {
         "cliente": "Customer",
         "todosClientes": "All customers",
-        "ordemCorte": "Cutting Order",
-        "buscarOC": "Search by CO number...",
+        "ordemCorte": "Search order",
+        "buscarOC": "Order #, CO, model or customer...",
         "limpar": "Clear"
       },
       "columns": {

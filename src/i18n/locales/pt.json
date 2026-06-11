@@ -158,8 +158,8 @@
       "filters": {
         "cliente": "Cliente",
         "todosClientes": "Todos os clientes",
-        "ordemCorte": "Ordem de Corte",
-        "buscarOC": "Buscar por nº da OC...",
+        "ordemCorte": "Buscar pedido",
+        "buscarOC": "Nº pedido, OC, modelo ou cliente...",
         "limpar": "Limpar"
       },
       "columns": {
