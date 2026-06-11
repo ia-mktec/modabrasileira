@@ -387,12 +387,16 @@ const RelatorioProducaoPage = () => {
   }, [ordens]);
 
   const pedidosFiltrados = useMemo(() => {
-    const ocQuery = filtroOC.trim().toLowerCase();
+    const q = norm(filtroOC);
     return pedidos.filter((p) => {
       if (filtroCliente !== "__all__" && (p.cliente || "") !== filtroCliente) return false;
-      if (ocQuery) {
+      if (q) {
         const ocs = ocsByPedido[p.numero_pedido] || [];
-        if (!ocs.some((n) => n.toLowerCase().includes(ocQuery))) return false;
+        const matchOC = ocs.some((n) => norm(n).includes(q));
+        const matchPedido = norm(p.numero_pedido).includes(q);
+        const matchModelo = norm(p.modelo_ref).includes(q);
+        const matchCliente = norm(p.cliente).includes(q);
+        if (!matchOC && !matchPedido && !matchModelo && !matchCliente) return false;
       }
       return true;
     });
