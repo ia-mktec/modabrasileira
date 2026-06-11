@@ -82,35 +82,31 @@ export default function GerenciarUsuariosPage() {
   const [resetting, setResetting] = useState(false);
   const [savingCell, setSavingCell] = useState<string | null>(null);
 
-  const updatePermission = (route: string, role: AppRole, value: Permission | "none") => {
+  const updatePermission = async (route: string, role: AppRole, value: Permission | "none") => {
     if (role === "dev") return;
     const cellKey = `${route}__${role}`;
-    // Defer ALL state changes until after Radix Select portal has fully unmounted,
-    // avoiding "removeChild" reconciliation crashes.
-    setTimeout(async () => {
-      setSavingCell(cellKey);
-      try {
-        if (value === "none") {
-          const { error } = await supabase
-            .from("route_permissions")
-            .delete()
-            .eq("route", route)
-            .eq("role", role);
-          if (error) throw error;
-        } else {
-          const { error } = await supabase
-            .from("route_permissions")
-            .upsert({ route, role, permission: value }, { onConflict: "route,role" });
-          if (error) throw error;
-        }
-        setTimeout(() => { loadRoutePermissionsFromDB(); }, 100);
-        toast({ title: "Permissão atualizada" });
-      } catch (e: any) {
-        toast({ title: "Erro", description: e.message ?? "Falha ao salvar permissão", variant: "destructive" });
-      } finally {
-        setSavingCell(null);
+    setSavingCell(cellKey);
+    try {
+      if (value === "none") {
+        const { error } = await supabase
+          .from("route_permissions")
+          .delete()
+          .eq("route", route)
+          .eq("role", role);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("route_permissions")
+          .upsert({ route, role, permission: value }, { onConflict: "route,role" });
+        if (error) throw error;
       }
-    }, 150);
+      await loadRoutePermissionsFromDB();
+      toast({ title: "Permissão atualizada" });
+    } catch (e: any) {
+      toast({ title: "Erro", description: e.message ?? "Falha ao salvar permissão", variant: "destructive" });
+    } finally {
+      setSavingCell(null);
+    }
   };
 
   const openReset = (u: UserWithRoles) => {
@@ -322,28 +318,22 @@ export default function GerenciarUsuariosPage() {
                     const saving = savingCell === cellKey;
                     return (
                       <TableCell key={r} className="text-center">
-                        <Select
-                          disabled={isDevRole}
+                        <select
+                          disabled={isDevRole || saving}
                           value={isDevRole ? "edit" : current}
-                          onValueChange={(v) => updatePermission(route, r, v as Permission | "none")}
+                          onChange={(e) => updatePermission(route, r, e.target.value as Permission | "none")}
+                          className={`h-8 w-[120px] mx-auto text-xs rounded-md border px-2 ${
+                            (isDevRole || current === "edit")
+                              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                              : current === "view"
+                              ? "bg-amber-50 text-amber-800 border-amber-200"
+                              : "text-muted-foreground border-input bg-background"
+                          } disabled:opacity-60`}
                         >
-                          <SelectTrigger
-                            className={`h-8 w-[120px] mx-auto text-xs ${
-                              (isDevRole || current === "edit")
-                                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                                : current === "view"
-                                ? "bg-amber-50 text-amber-800 border-amber-200"
-                                : "text-muted-foreground"
-                            }`}
-                          >
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="edit">Editar</SelectItem>
-                            <SelectItem value="view">Visualizar</SelectItem>
-                            <SelectItem value="none">Sem acesso</SelectItem>
-                          </SelectContent>
-                        </Select>
+                          <option value="edit">Editar</option>
+                          <option value="view">Visualizar</option>
+                          <option value="none">Sem acesso</option>
+                        </select>
                       </TableCell>
                     );
                   })}
@@ -353,6 +343,7 @@ export default function GerenciarUsuariosPage() {
           </Table>
         </CardContent>
       </Card>
+
 
 
       <Dialog open={!!resetTarget} onOpenChange={(o) => !o && setResetTarget(null)}>
