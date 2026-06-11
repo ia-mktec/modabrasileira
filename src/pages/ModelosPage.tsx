@@ -411,28 +411,17 @@ const ModelosPage = () => {
 
   // Gera número de pedido sequencial: PED-XXXXX no backend.
   // Isso evita reinício da sequência por limite/paginação no navegador e por acessos simultâneos.
+  // Reserva o número apenas no momento do INSERT (em handleRegistrarPedido),
+  // para evitar números "queimados" quando o usuário não conclui o cadastro.
   const handleGerarNumeroPedido = async () => {
     if (!referencia) {
       toast({ title: "Referência obrigatória", description: "Informe a referência antes de gerar o número do pedido.", variant: "destructive" });
       return;
     }
     const dataBase = dataPedido || new Date().toISOString().slice(0, 10);
-
-    const { data: numero, error: errBusca } = await (supabase as unknown as {
-      rpc: (fn: "proximo_numero_pedido") => Promise<{ data: string | null; error: { message: string } | null }>;
-    }).rpc("proximo_numero_pedido");
-    if (errBusca || !numero) {
-      toast({
-        title: "Erro ao gerar pedido",
-        description: errBusca?.message || "Não foi possível obter o próximo número do pedido.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setNumeroPedido(numero);
+    setNumeroPedido("PED-AUTO");
     if (!dataPedido) setDataPedido(dataBase);
-    toast({ title: "Nº de Pedido gerado", description: `${numero} — clique em "Registrar Pedido" para persistir.` });
+    toast({ title: "Pronto para registrar", description: 'O Nº definitivo será atribuído ao clicar em "Registrar Pedido".' });
   };
 
 
@@ -772,10 +761,23 @@ const ModelosPage = () => {
       return;
     }
     setSavingPedido(true);
-    const numeroAtual = numeroPedido;
+    const isEdit = !!editingPedidoNumero && editingPedidoNumero === numeroPedido;
+    let numeroAtual = numeroPedido;
+    // Em criação, só agora consome o próximo número (evita números queimados).
+    if (!isEdit) {
+      const { data: numeroNovo, error: errNum } = await (supabase as unknown as {
+        rpc: (fn: "proximo_numero_pedido") => Promise<{ data: string | null; error: { message: string } | null }>;
+      }).rpc("proximo_numero_pedido");
+      if (errNum || !numeroNovo) {
+        setSavingPedido(false);
+        toast({ title: "Erro ao gerar pedido", description: errNum?.message || "Falha ao obter próximo número.", variant: "destructive" });
+        return;
+      }
+      numeroAtual = numeroNovo;
+      setNumeroPedido(numeroNovo);
+    }
     const dataBase = dataPedido || new Date().toISOString().slice(0, 10);
     const dismissSaving = showSaving();
-    const isEdit = editingPedidoNumero === numeroAtual;
     let error: any;
     let duplicado = false;
 
