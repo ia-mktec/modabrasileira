@@ -19,7 +19,7 @@ export function AppLayout() {
             <ViewOnlyBanner />
           </div>
         )}
-        <div className={isViewOnly ? "pointer-events-none opacity-90 select-none" : ""}>
+        <div data-view-only={isViewOnly ? "true" : "false"}>
           <Outlet />
         </div>
       </main>
