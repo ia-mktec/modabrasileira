@@ -158,8 +158,8 @@
       "filters": {
         "cliente": "客户",
         "todosClientes": "所有客户",
-        "ordemCorte": "裁剪单",
-        "buscarOC": "按裁剪单号搜索...",
+        "ordemCorte": "搜索订单",
+        "buscarOC": "订单号、裁剪单、款式或客户...",
         "limpar": "清除"
       },
       "columns": {
