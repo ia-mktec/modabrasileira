@@ -412,10 +412,11 @@ const RelatorioProducaoPage = () => {
       acabamento: [],
     };
     const limite45 = Date.now() - 45 * 24 * 60 * 60 * 1000;
+    const buscaAtiva = !!filtroOC.trim() || filtroCliente !== "__all__";
     pedidosFiltrados.forEach((p) => {
       const c = colByPedido[p.numero_pedido];
       if (!c) return;
-      if (c === "corte" && p.data_pedido) {
+      if (!buscaAtiva && c === "corte" && p.data_pedido) {
         const t = new Date(p.data_pedido).getTime();
         if (!isNaN(t) && t < limite45) return;
       }
@@ -423,7 +424,7 @@ const RelatorioProducaoPage = () => {
 
     });
     return g;
-  }, [pedidosFiltrados, colByPedido]);
+  }, [pedidosFiltrados, colByPedido, filtroOC, filtroCliente]);
 
   const metrics = useMemo(() => {
     const visiveis = pedidosFiltrados.filter((p) => colByPedido[p.numero_pedido]);
