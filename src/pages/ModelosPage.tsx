@@ -761,10 +761,23 @@ const ModelosPage = () => {
       return;
     }
     setSavingPedido(true);
-    const numeroAtual = numeroPedido;
+    const isEdit = !!editingPedidoNumero && editingPedidoNumero === numeroPedido;
+    let numeroAtual = numeroPedido;
+    // Em criação, só agora consome o próximo número (evita números queimados).
+    if (!isEdit) {
+      const { data: numeroNovo, error: errNum } = await (supabase as unknown as {
+        rpc: (fn: "proximo_numero_pedido") => Promise<{ data: string | null; error: { message: string } | null }>;
+      }).rpc("proximo_numero_pedido");
+      if (errNum || !numeroNovo) {
+        setSavingPedido(false);
+        toast({ title: "Erro ao gerar pedido", description: errNum?.message || "Falha ao obter próximo número.", variant: "destructive" });
+        return;
+      }
+      numeroAtual = numeroNovo;
+      setNumeroPedido(numeroNovo);
+    }
     const dataBase = dataPedido || new Date().toISOString().slice(0, 10);
     const dismissSaving = showSaving();
-    const isEdit = editingPedidoNumero === numeroAtual;
     let error: any;
     let duplicado = false;
 
