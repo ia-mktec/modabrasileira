@@ -323,7 +323,7 @@ export default function GerenciarUsuariosPage() {
                     return (
                       <TableCell key={r} className="text-center">
                         <Select
-                          disabled={isDevRole || saving}
+                          disabled={isDevRole}
                           value={isDevRole ? "edit" : current}
                           onValueChange={(v) => updatePermission(route, r, v as Permission | "none")}
                         >
