@@ -82,35 +82,31 @@ export default function GerenciarUsuariosPage() {
   const [resetting, setResetting] = useState(false);
   const [savingCell, setSavingCell] = useState<string | null>(null);
 
-  const updatePermission = (route: string, role: AppRole, value: Permission | "none") => {
+  const updatePermission = async (route: string, role: AppRole, value: Permission | "none") => {
     if (role === "dev") return;
     const cellKey = `${route}__${role}`;
-    // Defer ALL state changes until after Radix Select portal has fully unmounted,
-    // avoiding "removeChild" reconciliation crashes.
-    setTimeout(async () => {
-      setSavingCell(cellKey);
-      try {
-        if (value === "none") {
-          const { error } = await supabase
-            .from("route_permissions")
-            .delete()
-            .eq("route", route)
-            .eq("role", role);
-          if (error) throw error;
-        } else {
-          const { error } = await supabase
-            .from("route_permissions")
-            .upsert({ route, role, permission: value }, { onConflict: "route,role" });
-          if (error) throw error;
-        }
-        setTimeout(() => { loadRoutePermissionsFromDB(); }, 100);
-        toast({ title: "Permissão atualizada" });
-      } catch (e: any) {
-        toast({ title: "Erro", description: e.message ?? "Falha ao salvar permissão", variant: "destructive" });
-      } finally {
-        setSavingCell(null);
+    setSavingCell(cellKey);
+    try {
+      if (value === "none") {
+        const { error } = await supabase
+          .from("route_permissions")
+          .delete()
+          .eq("route", route)
+          .eq("role", role);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("route_permissions")
+          .upsert({ route, role, permission: value }, { onConflict: "route,role" });
+        if (error) throw error;
       }
-    }, 150);
+      await loadRoutePermissionsFromDB();
+      toast({ title: "Permissão atualizada" });
+    } catch (e: any) {
+      toast({ title: "Erro", description: e.message ?? "Falha ao salvar permissão", variant: "destructive" });
+    } finally {
+      setSavingCell(null);
+    }
   };
 
   const openReset = (u: UserWithRoles) => {
