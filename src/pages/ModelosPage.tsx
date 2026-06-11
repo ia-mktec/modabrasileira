@@ -218,7 +218,6 @@ const ModelosPage = () => {
         const desc: string = raw || "";
         const sep = desc.includes(" — ") ? " — " : (desc.includes(" - ") ? " - " : null);
         if (!sep) {
-          // Sem separador: descrição == tipo significa linha vazia (sem item)
           if (tipoBase && desc.trim() === tipoBase.trim()) return { tipo: tipoBase, itemDesc: "" };
           return { tipo: tipoBase || desc, itemDesc: "" };
         }
@@ -226,8 +225,17 @@ const ModelosPage = () => {
         const itemDesc = desc.split(sep).slice(1).join(sep).trim();
         return { tipo: tipoBase || tipo, itemDesc };
       };
+      // Mapeia por `ordem` (1..5 = tipos padrão). Linhas com ordem fora desse
+      // intervalo OU cujo tipo (prefixo da descrição) não bate com o padrão
+      // viram itens "extras" — evita distorção quando o BD tem linhas esparsas.
       const baseRows: AviamentoRow[] = defaultAviamentos.map((d, i) => {
-        const r: any = avs[i];
+        const ordemEsperada = i + 1;
+        const r: any = avs.find((x: any) => {
+          if (Number(x.ordem) !== ordemEsperada) return false;
+          const { tipo } = parseDesc(x.descricao);
+          // aceita se sem separador (legado) ou se o tipo do prefixo bate
+          return !tipo || tipo.trim() === d.tipo.trim() || (x.descricao || "").trim() === d.tipo.trim();
+        });
         if (!r) return { ...d };
         const { itemDesc } = parseDesc(r.descricao, d.tipo);
         return {
@@ -236,15 +244,29 @@ const ModelosPage = () => {
           partesQtde: r.quantidade ? String(r.quantidade) : "",
         };
       });
-      const extras: AviamentoRow[] = avs.slice(defaultAviamentos.length).map((r: any) => {
-        const { tipo, itemDesc } = parseDesc(r.descricao);
-        return {
-          tipo: tipo || "",
-          selectedItem: itemDesc ? { descricao: itemDesc, tamanho: r.unidade } : null,
-          partesQtde: r.quantidade ? String(r.quantidade) : "",
-          isCustom: true,
-        };
+      const tiposPadrao = defaultAviamentos.map((d) => d.tipo.trim());
+      const usadas = new Set<string>();
+      defaultAviamentos.forEach((d, i) => {
+        const ordemEsperada = i + 1;
+        const r: any = avs.find((x: any) => {
+          if (Number(x.ordem) !== ordemEsperada) return false;
+          const { tipo } = parseDesc(x.descricao);
+          return !tipo || tipo.trim() === d.tipo.trim() || (x.descricao || "").trim() === d.tipo.trim();
+        });
+        if (r) usadas.add(r.id);
       });
+      const extras: AviamentoRow[] = avs
+        .filter((r: any) => !usadas.has(r.id))
+        .map((r: any) => {
+          const { tipo, itemDesc } = parseDesc(r.descricao);
+          const tipoFinal = tiposPadrao.includes((tipo || "").trim()) ? tipo : (tipo || "");
+          return {
+            tipo: tipoFinal || "",
+            selectedItem: itemDesc ? { descricao: itemDesc, tamanho: r.unidade } : null,
+            partesQtde: r.quantidade ? String(r.quantidade) : "",
+            isCustom: true,
+          };
+        });
       setAviamentos([...baseRows, ...extras]);
     } else {
       setAviamentos(defaultAviamentos.map((a) => ({ ...a })));
