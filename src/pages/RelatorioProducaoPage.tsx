@@ -10,7 +10,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { CalendarDays, Clock, Package, TrendingUp, Activity, Shirt, Search } from "lucide-react";
+import { CalendarDays, Clock, Package, TrendingUp, Activity, Shirt, Search, FileSpreadsheet, FileDown } from "lucide-react";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { useRef } from "react";
+import { toast } from "sonner";
 import { PedidoTimeline } from "@/components/shared/PedidoTimeline";
 import { cn, formatDateBR } from "@/lib/utils";
 
