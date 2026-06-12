@@ -334,7 +334,7 @@ export default function FichaGestorPage() {
       {/* Header */}
       <div className="bg-[hsl(217,71%,25%)] text-white rounded-t-lg px-6 py-3 text-center print:bg-white print:text-black print:border-b-2 print:border-black">
         <h1 className="text-xl md:text-2xl font-bold tracking-wide font-mono flex items-center justify-center gap-2">
-          <FileText className="w-5 h-5" /> {t("fichaGestor.title")} — {pedido.numero_pedido}
+          <FileText className="w-5 h-5" /> {t("fichaGestor.title")}
         </h1>
       </div>
 

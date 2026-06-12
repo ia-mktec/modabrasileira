@@ -229,7 +229,7 @@
     }
   },
   "fichaGestor": {
-    "title": "Ficha do Gestor",
+    "title": "Ordem de Corte",
     "searchPlaceholder": "Buscar nº pedido, OC, cliente ou modelo...",
     "exportXlsx": "Exportar XLSX",
     "noImage": "Sem imagem",
