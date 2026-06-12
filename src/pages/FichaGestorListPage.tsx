@@ -265,7 +265,7 @@ export default function FichaGestorListPage() {
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full text-[11px] border">
+            <table className="min-w-max w-full text-[11px] border">
               <thead className="bg-muted/50 border-b">
                 <tr>
                   {[
