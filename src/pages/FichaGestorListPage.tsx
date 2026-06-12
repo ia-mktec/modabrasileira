@@ -331,7 +331,7 @@ export default function FichaGestorListPage() {
                     "custoFabricacaoTotal","aviamentosTotal","comissao","acabamentoTotal",
                     "custoTotal","lucro","media",
                   ].map((k) => (
-                    <th key={k} className="text-left px-2 py-2 whitespace-nowrap">{t(`fichaGestor.report.${k}`)}</th>
+                    <th key={k} className={`px-2 py-2 whitespace-nowrap ${k === "modelo" ? "text-center" : "text-left"}`}>{t(`fichaGestor.report.${k}`)}</th>
                   ))}
                 </tr>
               </thead>
