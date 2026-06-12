@@ -386,6 +386,50 @@ export type Database = {
           },
         ]
       }
+      ficha_gestor_custos: {
+        Row: {
+          comissao_percent: number
+          created_at: string
+          custo_acabamento: number
+          custo_entretelagem: number
+          custo_tecido_servico: number
+          numero_pedido: string
+          ordem_corte_id: string
+          preco_venda: number
+          updated_at: string
+        }
+        Insert: {
+          comissao_percent?: number
+          created_at?: string
+          custo_acabamento?: number
+          custo_entretelagem?: number
+          custo_tecido_servico?: number
+          numero_pedido: string
+          ordem_corte_id: string
+          preco_venda?: number
+          updated_at?: string
+        }
+        Update: {
+          comissao_percent?: number
+          created_at?: string
+          custo_acabamento?: number
+          custo_entretelagem?: number
+          custo_tecido_servico?: number
+          numero_pedido?: string
+          ordem_corte_id?: string
+          preco_venda?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ficha_gestor_custos_ordem_corte_id_fkey"
+            columns: ["ordem_corte_id"]
+            isOneToOne: true
+            referencedRelation: "ordens_corte"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fornecedores: {
         Row: {
           cidade: string | null
