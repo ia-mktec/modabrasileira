@@ -106,6 +106,13 @@ export default function GerenciarUsuariosPage() {
   const [showPwd, setShowPwd] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [savingCell, setSavingCell] = useState<string | null>(null);
+  const [permsVersion, setPermsVersion] = useState(0);
+
+  useEffect(() => {
+    loadRoutePermissionsFromDB();
+    const unsub = subscribeRoutePermissions(() => setPermsVersion((v) => v + 1));
+    return () => { unsub(); };
+  }, []);
 
   const updatePermission = async (route: string, role: AppRole, value: Permission | "none") => {
     if (role === "dev") return;
