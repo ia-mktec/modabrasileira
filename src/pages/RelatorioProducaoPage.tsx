@@ -558,7 +558,16 @@ const RelatorioProducaoPage = () => {
       <PageHeader
         title={t("reports.producao.title")}
         description={t("reports.producao.description")}
-      />
+      >
+        <Button variant="outline" size="sm" onClick={exportExcel}>
+          <FileSpreadsheet className="w-4 h-4" />
+          Exportar Excel
+        </Button>
+        <Button variant="outline" size="sm" onClick={exportPDF} disabled={exporting}>
+          <FileDown className="w-4 h-4" />
+          {exporting ? "Gerando PDF..." : "Exportar PDF"}
+        </Button>
+      </PageHeader>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <MetricCard icon={Package} label={t("reports.producao.metrics.total")} value={String(metrics.total)} />
