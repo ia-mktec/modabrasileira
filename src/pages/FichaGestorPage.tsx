@@ -381,7 +381,7 @@ export default function FichaGestorPage() {
           <Card key={oc.id} className="break-inside-avoid">
             <CardContent className="p-4 space-y-4">
               <div className="bg-muted px-3 py-2 rounded font-semibold flex items-center justify-between">
-                <span>{t("fichaGestor.oc.title")}: <span className="font-mono">{oc.numero}</span></span>
+                <span>{t("fichaGestor.oc.title")} - <span className="font-mono">{oc.numero}</span></span>
                 <span className="text-xs capitalize">{oc.status}</span>
               </div>
 
