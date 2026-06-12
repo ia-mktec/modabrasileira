@@ -24,6 +24,7 @@ export const DEFAULT_ROUTE_PERMISSIONS: RoutePermissionsMap = {
   "/relatorio-producao": { corte: "view", modelagem: "view", expedicao: "view", recebimento: "view", acabamento: "view", gestao: "view", dev: "edit" },
   "/cash-flow": { gestao: "view", dev: "edit" },
   "/ficha-ziper": { dev: "edit" },
+  "/ficha-gestor": { gestao: "edit", dev: "edit" },
   "/gerenciar-usuarios": { dev: "edit" },
 };
 

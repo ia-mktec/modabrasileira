@@ -48,6 +48,7 @@
     "cashFlow": "Cash Flow",
     "cadastro": "Records",
     "aviamentos": "Trims",
+    "fichaGestor": "Manager Sheet",
     "gerenciarUsuarios": "Manage Users",
     "signOut": "Sign out",
     "appName": "Moda Brasileira",
@@ -225,6 +226,121 @@
         "ordens": "Orders",
         "pecas": "Pieces"
       }
+    }
+  },
+  "fichaGestor": {
+    "title": "Manager Sheet",
+    "searchPlaceholder": "Search by order #, CO, customer or style...",
+    "exportXlsx": "Export XLSX",
+    "noImage": "No image",
+    "notFound": "Order not found.",
+    "noOCs": "This order has no cutting orders yet.",
+    "currency": "$",
+    "cols": {
+      "pedido": "Order #",
+      "cliente": "Customer",
+      "referencia": "Reference",
+      "data": "Date",
+      "ocs": "Cutting Orders",
+      "status": "Status"
+    },
+    "pedido": {
+      "numero": "Order #",
+      "cliente": "Customer",
+      "data": "Order Date",
+      "referencia": "Reference",
+      "modelo": "Style",
+      "status": "Status",
+      "tecido": "Fabric",
+      "cor": "Color",
+      "consumo": "Consumption/piece",
+      "observacoes": "Notes"
+    },
+    "oc": {
+      "title": "Cutting Order",
+      "dataCorte": "Cut Date",
+      "cortador": "Cutter",
+      "enfestador": "Spreader",
+      "enfestos": "Spreads",
+      "perda": "Loss",
+      "consumoPeca": "Consumption/piece",
+      "qtdPecas": "Pieces"
+    },
+    "tecido": {
+      "title": "Linked fabric / Rolls",
+      "empty": "No fabric linked to this CO.",
+      "nome": "Fabric",
+      "composicao": "Composition",
+      "cor": "Color",
+      "data": "Entry date",
+      "rolos": "Rolls",
+      "metragem": "Meters",
+      "un": "Un."
+    },
+    "grade": {
+      "title": "Size grid — Dispatch / Cutting",
+      "oficina": "Workshop",
+      "dataSaida": "Ship date",
+      "total": "Total",
+      "precoPeca": "Price/piece",
+      "subtotal": "Subtotal",
+      "totalExpedido": "Total dispatched",
+      "saldo": "Balance",
+      "cortado": "cut",
+      "semGrade": "No grid posted",
+      "aguardando": "Awaiting dispatch — showing cut grid"
+    },
+    "recebimento": {
+      "title": "Workshop receiving",
+      "dataEnvio": "Sent date",
+      "dataRecebimento": "Received date",
+      "semDefeitos": "OK",
+      "defeitos": "Defects",
+      "segunda": "2nd quality",
+      "totalPagar": "Total to pay"
+    },
+    "servicos": {
+      "title": "Services ($/piece)",
+      "entretelagem": "Interlining",
+      "acabamento": "Finishing",
+      "tecido": "Fabric (service)"
+    },
+    "aviamentos": {
+      "title": "Trims",
+      "tipo": "Type",
+      "descricao": "Description",
+      "tamanho": "Size",
+      "partes": "Parts/piece",
+      "precoUn": "Unit price",
+      "subtotal": "Subtotal",
+      "totalPeca": "Trim cost per piece"
+    },
+    "report": {
+      "title": "Report by Cutting Order",
+      "ordemCorte": "Cutting Order",
+      "cliente": "Customer",
+      "referencia": "Reference",
+      "modelo": "Style",
+      "custoOficinaPeca": "Workshop cost/piece",
+      "custoAviamentosPeca": "Trim cost/piece",
+      "acabamentoPeca": "Finishing/piece",
+      "custoTotalPeca": "Total cost/piece",
+      "dataEntrega": "Delivery date",
+      "precoVenda": "Sale price",
+      "quantidade": "Quantity",
+      "valorTotal": "Total (Revenue)",
+      "tecidoMontante": "Fabric (amount)",
+      "custoFabricacaoTotal": "Manufacturing cost (Total)",
+      "aviamentosTotal": "Trims (Total)",
+      "comissao": "Commission",
+      "acabamentoTotal": "Finishing (Total)",
+      "custoTotal": "Total cost",
+      "lucro": "Profit",
+      "media": "Average"
+    },
+    "toast": {
+      "errorSave": "Save failed",
+      "exported": "Report exported"
     }
   }
 }

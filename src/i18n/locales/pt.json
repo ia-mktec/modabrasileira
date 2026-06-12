@@ -48,6 +48,7 @@
     "cashFlow": "Cash Flow",
     "cadastro": "Cadastro",
     "aviamentos": "Aviamentos",
+    "fichaGestor": "Ficha do Gestor",
     "gerenciarUsuarios": "Gerenciar Usuários",
     "signOut": "Sair",
     "appName": "Moda Brasileira",
@@ -225,6 +226,121 @@
         "ordens": "Ordens",
         "pecas": "Peças"
       }
+    }
+  },
+  "fichaGestor": {
+    "title": "Ficha do Gestor",
+    "searchPlaceholder": "Buscar nº pedido, OC, cliente ou modelo...",
+    "exportXlsx": "Exportar XLSX",
+    "noImage": "Sem imagem",
+    "notFound": "Pedido não encontrado.",
+    "noOCs": "Este pedido ainda não possui ordens de corte.",
+    "currency": "R$",
+    "cols": {
+      "pedido": "Nº Pedido",
+      "cliente": "Cliente",
+      "referencia": "Referência",
+      "data": "Data",
+      "ocs": "Ordens de Corte",
+      "status": "Status"
+    },
+    "pedido": {
+      "numero": "Nº Pedido",
+      "cliente": "Cliente",
+      "data": "Data do Pedido",
+      "referencia": "Referência",
+      "modelo": "Modelo",
+      "status": "Status",
+      "tecido": "Tecido",
+      "cor": "Cor",
+      "consumo": "Consumo/peça",
+      "observacoes": "Observações"
+    },
+    "oc": {
+      "title": "Ordem de Corte",
+      "dataCorte": "Data do Corte",
+      "cortador": "Cortador",
+      "enfestador": "Enfestador",
+      "enfestos": "Enfestos",
+      "perda": "Perda",
+      "consumoPeca": "Consumo/peça",
+      "qtdPecas": "Qtd de Peças"
+    },
+    "tecido": {
+      "title": "Tecido vinculado / Rolos",
+      "empty": "Nenhum tecido vinculado a esta OC.",
+      "nome": "Tecido",
+      "composicao": "Composição",
+      "cor": "Cor",
+      "data": "Data Entrada",
+      "rolos": "Rolos",
+      "metragem": "Metragem",
+      "un": "Un."
+    },
+    "grade": {
+      "title": "Grade — Expedição / Corte",
+      "oficina": "Oficina",
+      "dataSaida": "Data Saída",
+      "total": "Total",
+      "precoPeca": "Preço/peça",
+      "subtotal": "Subtotal",
+      "totalExpedido": "Total expedido",
+      "saldo": "Saldo",
+      "cortado": "cortado",
+      "semGrade": "Sem grade lançada",
+      "aguardando": "Aguardando expedição — exibindo grade cortada"
+    },
+    "recebimento": {
+      "title": "Entrada na oficina (recebimentos)",
+      "dataEnvio": "Data Envio",
+      "dataRecebimento": "Data Recebimento",
+      "semDefeitos": "Sem defeitos",
+      "defeitos": "Defeitos",
+      "segunda": "2ª qualidade",
+      "totalPagar": "Total a pagar"
+    },
+    "servicos": {
+      "title": "Quadro de Serviços (R$/peça)",
+      "entretelagem": "Entretelagem",
+      "acabamento": "Acabamento",
+      "tecido": "Tecido (serviço)"
+    },
+    "aviamentos": {
+      "title": "Aviamentos do modelo",
+      "tipo": "Tipo",
+      "descricao": "Descrição",
+      "tamanho": "Tamanho",
+      "partes": "Partes/peça",
+      "precoUn": "Preço un.",
+      "subtotal": "Subtotal",
+      "totalPeca": "Custo de aviamentos por peça"
+    },
+    "report": {
+      "title": "Relatório por Ordem de Corte",
+      "ordemCorte": "Ordem de Corte",
+      "cliente": "Cliente",
+      "referencia": "Referência",
+      "modelo": "Modelo",
+      "custoOficinaPeca": "Custo Oficina/peça",
+      "custoAviamentosPeca": "Custo Aviamentos/peça",
+      "acabamentoPeca": "Acabamento/peça",
+      "custoTotalPeca": "Custo Total/peça",
+      "dataEntrega": "Data de Entrega",
+      "precoVenda": "Preço de Venda",
+      "quantidade": "Quantidade",
+      "valorTotal": "Valor Total (Faturamento)",
+      "tecidoMontante": "Tecido (montante)",
+      "custoFabricacaoTotal": "Custo de Fabricação (Total)",
+      "aviamentosTotal": "Aviamentos (Total)",
+      "comissao": "Comissão",
+      "acabamentoTotal": "Acabamento (Total)",
+      "custoTotal": "Custo Total",
+      "lucro": "Lucro",
+      "media": "Média"
+    },
+    "toast": {
+      "errorSave": "Erro ao salvar",
+      "exported": "Relatório exportado"
     }
   }
 }
