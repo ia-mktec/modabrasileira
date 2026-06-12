@@ -1,5 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
-import { formatDateBR } from "@/lib/utils";
+import { cn, formatDateBR } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { canEditRoute } from "@/lib/permissions";
 import { PageLoading } from "@/components/shared/PageLoading";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
