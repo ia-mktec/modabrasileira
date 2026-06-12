@@ -341,7 +341,7 @@ export default function FichaGestorListPage() {
                     <td className="px-2 py-1 font-mono font-semibold text-primary cursor-pointer" onClick={() => navigate(`/ficha-gestor/${r.numero_pedido}`)}>{r.ordemCorte}</td>
                     <td className="px-2 py-1">{r.cliente}</td>
                     <td className="px-2 py-1">{r.referencia}</td>
-                    <td className="px-2 py-1">{r.modelo}</td>
+                    <td className="px-2 py-1 text-center">{r.modelo}</td>
                     <td className="px-2 py-1 text-right font-mono">{fmt(r.custoOficinaPeca)}</td>
                     <td className="px-2 py-1 text-right font-mono">{fmt(r.custoAviamentosPeca)}</td>
                     <td className="px-2 py-1 text-right font-mono">{fmt(r.acabamentoPeca)}</td>
