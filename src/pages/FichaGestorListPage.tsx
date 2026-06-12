@@ -36,7 +36,12 @@ export default function FichaGestorListPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [busca, setBusca] = useState("");
+  const [fOC, setFOC] = useState("");
+  const [fRef, setFRef] = useState("");
+  const [fCliente, setFCliente] = useState("");
+  const [fStatus, setFStatus] = useState("todos");
+  const [fDataDe, setFDataDe] = useState("");
+  const [fDataAte, setFDataAte] = useState("");
   const [pedidos, setPedidos] = useState<any[]>([]);
   const [modelos, setModelos] = useState<any[]>([]);
   const [ocs, setOcs] = useState<any[]>([]);
@@ -52,7 +57,7 @@ export default function FichaGestorListPage() {
       const [p, m, o, e, gE, gC, av, rc, cu] = await Promise.all([
         fetchAllRows<any>((f, to) => sb.from("modelo_pedidos").select("numero_pedido, cliente, modelo_ref, data_pedido").order("data_pedido", { ascending: false }).range(f, to)),
         fetchAllRows<any>((f, to) => sb.from("modelos").select("referencia, descricao, entretela").range(f, to)),
-        fetchAllRows<any>((f, to) => sb.from("ordens_corte").select("id, numero, numero_pedido, quantidade_pecas, consumo_por_peca").range(f, to)),
+        fetchAllRows<any>((f, to) => sb.from("ordens_corte").select("id, numero, numero_pedido, quantidade_pecas, consumo_por_peca, status").range(f, to)),
         fetchAllRows<any>((f, to) => sb.from("expedicao").select("id, ordem_corte_id, preco_peca").range(f, to)),
         fetchAllRows<any>((f, to) => sb.from("grade_expedicao").select("*").range(f, to)),
         fetchAllRows<any>((f, to) => sb.from("grade_corte").select("*").range(f, to)),
