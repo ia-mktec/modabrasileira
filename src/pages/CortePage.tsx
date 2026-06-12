@@ -797,36 +797,48 @@ const CortePage = () => {
 
           <Button className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(142,50%,35%)] hover:bg-[hsl(142,50%,30%)] text-[hsl(0,0%,100%)]" onClick={handleIncluir}>
             <Plus className="w-4 h-4" />
-            <span>Nova Ordem</span>
-          </Button>
+          {!isViewOnly && (
+            <Button className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(142,50%,35%)] hover:bg-[hsl(142,50%,30%)] text-[hsl(0,0%,100%)]" onClick={handleIncluir}>
+              <Plus className="w-4 h-4" />
+              <span>Nova Ordem</span>
+            </Button>
+          )}
 
-          <Button className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]" onClick={handleSave}>
-            <Save className="w-4 h-4" />
-            <span>Salvar</span>
-          </Button>
+          {!isViewOnly && (
+            <Button className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]" onClick={handleSave}>
+              <Save className="w-4 h-4" />
+              <span>Salvar</span>
+            </Button>
+          )}
 
-          <Button variant="destructive" className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0" onClick={() => setDeleteDialogOpen(true)}>
-            <Trash2 className="w-4 h-4" />
-            <span>Limpar Registro</span>
-          </Button>
+          {!isViewOnly && (
+            <Button variant="destructive" className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0" onClick={() => setDeleteDialogOpen(true)}>
+              <Trash2 className="w-4 h-4" />
+              <span>Limpar Registro</span>
+            </Button>
+          )}
 
-          <Button
-            className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]"
-            onClick={() => setViewMode("historico")}
-          >
-            <CheckCircle className="w-4 h-4" />
-            <span>Conferir</span>
-          </Button>
+          {!isViewOnly && (
+            <Button
+              className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]"
+              onClick={() => setViewMode("historico")}
+            >
+              <CheckCircle className="w-4 h-4" />
+              <span>Conferir</span>
+            </Button>
+          )}
 
           <Separator className="hidden md:block" />
 
-          <Button
-            className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(38,92%,45%)] hover:bg-[hsl(38,92%,38%)] text-[hsl(0,0%,100%)]"
-            onClick={() => navigate("/ficha-ziper", { state: { numeroOC: numero } })}>
-            
-            <Scissors className="w-4 h-4" />
-            <span>Ficha de Zíper</span>
-          </Button>
+          {!isViewOnly && (
+            <Button
+              className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(38,92%,45%)] hover:bg-[hsl(38,92%,38%)] text-[hsl(0,0%,100%)]"
+              onClick={() => navigate("/ficha-ziper", { state: { numeroOC: numero } })}>
+              
+              <Scissors className="w-4 h-4" />
+              <span>Ficha de Zíper</span>
+            </Button>
+          )}
 
           <Separator className="hidden md:block" />
 
