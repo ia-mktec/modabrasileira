@@ -262,10 +262,10 @@ export default function FichaGestorListPage() {
         </Button>
       </div>
 
-      <Card>
+      <Card className="overflow-hidden">
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="min-w-max w-full text-[11px] border">
+          <div className="max-h-[calc(100vh-190px)] overflow-auto">
+            <table className="min-w-[2200px] w-full text-[11px] border">
               <thead className="bg-muted/50 border-b">
                 <tr>
                   {[
