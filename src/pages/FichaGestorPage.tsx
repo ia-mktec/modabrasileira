@@ -424,7 +424,7 @@ export default function FichaGestorPage() {
                             <td className="px-2 py-1">{te.cor || "—"}</td>
                             <td className="px-2 py-1 text-center font-mono">{formatDateBR(te.data_entrada)}</td>
                             <td className="px-2 py-1 text-right font-mono">{te.qtde_rolos ?? 0}</td>
-                            <td className="px-2 py-1 text-right font-mono">{fmt(n(te.metragem_total), 2)}</td>
+                            <td className="px-2 py-1 text-right font-mono">{fmt(n(te.metragem_total), 0)}</td>
                             <td className="px-2 py-1 text-center">{te.unidade_medida || "mt"}</td>
                           </tr>
                         ))}
