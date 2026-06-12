@@ -171,6 +171,21 @@ function SidebarContent({ collapsed, setCollapsed, onNavigate }: { collapsed: bo
             {!collapsed && <span>{t("sidebar.gerenciarUsuarios")}</span>}
           </NavLink>
         )}
+        <NavLink
+          to="/alterar-senha"
+          onClick={onNavigate}
+          className={({ isActive }) =>
+            cn(
+              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
+              "hover:bg-[hsl(var(--sidebar-accent))] text-[hsl(var(--sidebar-foreground))]",
+              isActive ? "text-[hsl(var(--sidebar-primary))]" : "",
+              collapsed && "justify-center px-2"
+            )
+          }
+        >
+          <Lock className="w-5 h-5 shrink-0" />
+          {!collapsed && <span>Alterar Senha</span>}
+        </NavLink>
         <button
           onClick={signOut}
           className={cn(

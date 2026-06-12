@@ -28,6 +28,7 @@ import FichaZiperPage from "./pages/FichaZiperPage";
 import FichaGestorListPage from "./pages/FichaGestorListPage";
 import FichaGestorPage from "./pages/FichaGestorPage";
 import GerenciarUsuariosPage from "./pages/GerenciarUsuariosPage";
+import AlterarSenhaPage from "./pages/AlterarSenhaPage";
 import LoginPage from "./pages/LoginPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
@@ -70,6 +71,7 @@ const App = () => (
                     <Route path="/ficha-gestor" element={<FichaGestorListPage />} />
                     <Route path="/ficha-gestor/:numero" element={<FichaGestorPage />} />
                     <Route path="/gerenciar-usuarios" element={<GerenciarUsuariosPage />} />
+                    <Route path="/alterar-senha" element={<AlterarSenhaPage />} />
                   </Route>
                 </Route>
                 <Route path="*" element={<NotFound />} />
