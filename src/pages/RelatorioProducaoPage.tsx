@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { PageLoading } from "@/components/shared/PageLoading";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -86,6 +87,8 @@ function PedidoCard({
   numeroOrdemCorte?: string | null;
 }) {
   const { t } = useTranslation();
+  const { roles } = useAuth();
+  const isGestao = roles.includes("gestao") || roles.includes("dev");
   const colLabel = t(`reports.producao.columns.${col}`);
   return (
     <Card className="mb-3 hover:shadow-md transition-shadow">
@@ -116,7 +119,16 @@ function PedidoCard({
           <div className="flex flex-col min-w-0">
             <span className="font-mono text-xs font-semibold text-primary truncate">{pedido.modelo_ref}</span>
             {numeroOrdemCorte && (
-              <span className="text-[10px] text-muted-foreground truncate">{t("reports.producao.card.ocPrefix")} {numeroOrdemCorte}</span>
+              isGestao ? (
+                <Link
+                  to={`/ficha-gestor/${encodeURIComponent(pedido.numero_pedido)}`}
+                  className="text-[10px] text-primary truncate hover:underline block"
+                >
+                  {t("reports.producao.card.ocPrefix")} {numeroOrdemCorte}
+                </Link>
+              ) : (
+                <span className="text-[10px] text-muted-foreground truncate">{t("reports.producao.card.ocPrefix")} {numeroOrdemCorte}</span>
+              )
             )}
           </div>
           <button
