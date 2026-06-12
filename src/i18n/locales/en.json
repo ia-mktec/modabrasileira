@@ -316,7 +316,7 @@
       "totalPeca": "Trim cost per piece"
     },
     "report": {
-      "title": "Report by Cutting Order",
+      "title": "Cut Order Result",
       "ordemCorte": "Cutting Order",
       "cliente": "Customer",
       "referencia": "Reference",
