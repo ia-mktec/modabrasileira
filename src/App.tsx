@@ -25,6 +25,8 @@ import RelatorioClientesPage from "./pages/RelatorioClientesPage";
 import RelatorioProducaoPage from "./pages/RelatorioProducaoPage";
 import FluxoCaixaPage from "./pages/FluxoCaixaPage";
 import FichaZiperPage from "./pages/FichaZiperPage";
+import FichaGestorListPage from "./pages/FichaGestorListPage";
+import FichaGestorPage from "./pages/FichaGestorPage";
 import GerenciarUsuariosPage from "./pages/GerenciarUsuariosPage";
 import LoginPage from "./pages/LoginPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
@@ -65,6 +67,8 @@ const App = () => (
                     <Route path="/relatorio-producao" element={<RelatorioProducaoPage />} />
                     <Route path="/cash-flow" element={<FluxoCaixaPage />} />
                     <Route path="/ficha-ziper" element={<FichaZiperPage />} />
+                    <Route path="/ficha-gestor" element={<FichaGestorListPage />} />
+                    <Route path="/ficha-gestor/:numero" element={<FichaGestorPage />} />
                     <Route path="/gerenciar-usuarios" element={<GerenciarUsuariosPage />} />
                   </Route>
                 </Route>

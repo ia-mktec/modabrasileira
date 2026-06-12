@@ -23,6 +23,7 @@ import {
   Lock,
   Eye,
   ClipboardList,
+  FileText,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -49,6 +50,7 @@ const navItems = [
   { to: "/cash-flow", icon: DollarSign, labelKey: "sidebar.cashFlow" },
   { to: "/cadastro", icon: Users, labelKey: "sidebar.cadastro" },
   { to: "/aviamentos", icon: Package, labelKey: "sidebar.aviamentos" },
+  { to: "/ficha-gestor", icon: FileText, labelKey: "sidebar.fichaGestor" },
 ];
 
 function SidebarContent({ collapsed, setCollapsed, onNavigate }: { collapsed: boolean; setCollapsed?: (v: boolean) => void; onNavigate?: () => void }) {
