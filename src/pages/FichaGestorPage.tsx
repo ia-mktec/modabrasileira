@@ -52,14 +52,14 @@ interface OC {
   status: string;
   observacoes: string | null;
 }
-interface GradeCorte { ordem_corte_id: string; cor: string } & Record<SizeKey, number | null>;
+type GradeCorte = { ordem_corte_id: string; cor: string } & Partial<Record<SizeKey, number | null>>;
 interface Expedicao {
   id: string; ordem_corte_id: string; data_saida: string | null;
   oficina_nome: string | null; preco_peca: number | null; status: string;
 }
-interface GradeExp {
-  id: string; expedicao_id: string; cor: string;
-} & Record<`${SizeKey}_prod`, number | null> & Record<`${SizeKey}_exp`, number | null>;
+type GradeExp = { id: string; expedicao_id: string; cor: string } &
+  Partial<Record<`${SizeKey}_prod`, number | null>> &
+  Partial<Record<`${SizeKey}_exp`, number | null>>;
 interface Recebimento {
   id: string; expedicao_id: string; ordem_corte_id: string;
   oficina_nome: string | null; data_envio: string | null; data_recebimento: string | null;
