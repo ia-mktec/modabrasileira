@@ -431,7 +431,7 @@ export default function FichaGestorPage() {
                         <tr className="bg-muted/30 font-semibold border-t">
                           <td colSpan={4} className="px-2 py-1 text-right">{t("common.total") || "Total"}:</td>
                           <td className="px-2 py-1 text-right font-mono">{sum(tecs.map((te) => n(te.qtde_rolos)))}</td>
-                          <td className="px-2 py-1 text-right font-mono">{fmt(sum(tecs.map((te) => n(te.metragem_total))), 2)}</td>
+                          <td className="px-2 py-1 text-right font-mono">{fmt(sum(tecs.map((te) => n(te.metragem_total))), 0)}</td>
                           <td></td>
                         </tr>
                       </tbody>
