@@ -613,8 +613,6 @@ export default function FichaGestorPage() {
                 <tr>
                   <th className="text-left px-2 py-1">{t("fichaGestor.aviamentos.tipo")}</th>
                   <th className="text-left px-2 py-1">{t("fichaGestor.aviamentos.descricao")}</th>
-                  <th className="text-left px-2 py-1">{t("fichaGestor.aviamentos.tamanho")}</th>
-                  <th className="text-left px-2 py-1">{t("fichaGestor.tecido.cor")}</th>
                   <th className="text-right px-2 py-1">{t("fichaGestor.aviamentos.partes")}</th>
                   <th className="text-right px-2 py-1">{t("fichaGestor.aviamentos.precoUn")}</th>
                   <th className="text-right px-2 py-1">{t("fichaGestor.aviamentos.subtotal")}</th>
@@ -627,8 +625,6 @@ export default function FichaGestorPage() {
                     <tr key={a.id} className="border-t">
                       <td className="px-2 py-1">{a.tipo || "—"}</td>
                       <td className="px-2 py-1">{a.descricao_item}</td>
-                      <td className="px-2 py-1">{a.tamanho || "—"}</td>
-                      <td className="px-2 py-1">{a.cor || "—"}</td>
                       <td className="px-2 py-1 text-right font-mono">{fmt(n(a.partes_qtde), 2)}</td>
                       <td className="px-2 py-1 text-right">
                         <Input
@@ -636,7 +632,7 @@ export default function FichaGestorPage() {
                           step="0.001"
                           value={a.preco_unitario ?? 0}
                           onChange={(e) => updateAviamentoPreco(a.id, Number(e.target.value))}
-                          className="h-7 w-24 text-right font-mono text-xs ml-auto print:border-0 print:p-0"
+                          className="h-7 w-24 text-right font-mono text-xs ml-auto bg-yellow-100 print:bg-transparent print:border-0 print:p-0"
                         />
                       </td>
                       <td className="px-2 py-1 text-right font-mono">{fmt(sub, 2)}</td>
@@ -644,10 +640,10 @@ export default function FichaGestorPage() {
                   );
                 })}
                 {lista.length === 0 && (
-                  <tr><td colSpan={7} className="px-2 py-2 text-center text-muted-foreground">{t("common.noData")}</td></tr>
+                  <tr><td colSpan={5} className="px-2 py-2 text-center text-muted-foreground">{t("common.noData")}</td></tr>
                 )}
                 <tr className="bg-muted/30 font-semibold border-t">
-                  <td colSpan={6} className="px-2 py-1 text-right">{t("fichaGestor.aviamentos.totalPeca")}:</td>
+                  <td colSpan={4} className="px-2 py-1 text-right">{t("fichaGestor.aviamentos.totalPeca")}:</td>
                   <td className="px-2 py-1 text-right font-mono">{fmt(aviamentosPorPeca, 2)}</td>
                 </tr>
               </tbody>
