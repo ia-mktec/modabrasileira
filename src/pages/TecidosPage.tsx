@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { formatDateBR } from "@/lib/utils";
 import { PageLoading } from "@/components/shared/PageLoading";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,6 +31,7 @@ const cadastroModelos = [
 
 import { cadastroCores as fallbackCadastroCores } from "@/lib/cadastro-cores";
 import { useCadastroCores } from "@/hooks/useCadastroCores";
+import { colorMatchesSearch, findCadastroCor, mergeCadastroCores } from "@/lib/color-utils";
 
 import { Plus, Trash2, Printer, Search, CheckCircle, ArrowLeft, Pencil, FileText } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -66,7 +67,10 @@ const TecidosPage = () => {
   const { clientes: clienteOptions, tecidos: tecidoOptions } = useEntityOptions();
   const { registrarMovimentacao } = useEstoqueMovimentacoes();
   const { cores: cadastroCoresDb } = useCadastroCores();
-  const cadastroCores = cadastroCoresDb.length ? cadastroCoresDb : fallbackCadastroCores;
+  const cadastroCores = useMemo(
+    () => mergeCadastroCores(cadastroCoresDb, fallbackCadastroCores),
+    [cadastroCoresDb],
+  );
   const [viewMode, setViewMode] = useState<ViewMode>("ficha");
 
   // Ficha state
@@ -79,6 +83,7 @@ const TecidosPage = () => {
   const [composicao, setComposicao] = useState("");
   const [qtdeCores, setQtdeCores] = useState("");
   const [cores, setCores] = useState<CorRow[]>([]);
+  const [colorSearchTerms, setColorSearchTerms] = useState<Record<number, string>>({});
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -115,7 +120,6 @@ const TecidosPage = () => {
           .range(from, from + step - 1);
         if (filtroCliente) q = q.ilike("cliente_nome", `%${filtroCliente}%`);
         if (filtroTecido) q = q.ilike("nome_tecido", `%${filtroTecido}%`);
-        if (filtroCor) q = q.ilike("cor", `%${filtroCor}%`);
         if (filtroDataDe) q = q.gte("data_entrada", filtroDataDe);
         if (filtroDataAte) q = q.lte("data_entrada", filtroDataAte);
         if (filtroOrdem) q = q.or(`ordem_corte1.ilike.%${filtroOrdem}%,ordem_corte2.ilike.%${filtroOrdem}%`);
@@ -132,7 +136,12 @@ const TecidosPage = () => {
       }
     })();
     return () => { cancelled = true; };
-  }, [viewMode, filtroCliente, filtroTecido, filtroOrdem, filtroDataDe, filtroDataAte, filtroCor]);
+  }, [viewMode, filtroCliente, filtroTecido, filtroOrdem, filtroDataDe, filtroDataAte]);
+
+  const registrosFiltrados = useMemo(
+    () => registros.filter((r) => colorMatchesSearch(r.cor, filtroCor)),
+    [registros, filtroCor],
+  );
 
   const filteredTecidos = tecidos.filter(
     (t: any) =>
@@ -155,11 +164,15 @@ const TecidosPage = () => {
   };
 
   const selectCorFromCadastro = (idx: number, corNome: string) => {
-    const found = cadastroCores.find(c => c.cor === corNome);
+    const found = findCadastroCor(cadastroCores, corNome);
     if (found) {
       setCores((prev) => prev.map((c, i) => (i === idx ? { ...c, cor: found.cor, cod: found.cod, amostraCor: found.hex } : c)));
+      setColorSearchTerms((prev) => ({ ...prev, [idx]: "" }));
     }
   };
+
+  const filteredCadastroCores = (idx: number) =>
+    cadastroCores.filter((c) => colorMatchesSearch(c.cor, colorSearchTerms[idx] || ""));
 
   const loadTecido = (t: any) => {
     setTecido(t.nome);
@@ -175,8 +188,9 @@ const TecidosPage = () => {
     setDataEntrada(r.data_entrada || "");
     setRegistro("");
     setComposicao(r.composicao || "");
-    const corHex = cadastroCores.find(c => c.cor.toLowerCase() === (r.cor || "").toLowerCase())?.hex || "#ffffff";
-    const codHex = cadastroCores.find(c => c.cor.toLowerCase() === (r.cor || "").toLowerCase())?.cod || "";
+    const cadastroCor = findCadastroCor(cadastroCores, r.cor);
+    const corHex = cadastroCor?.hex || "#ffffff";
+    const codHex = cadastroCor?.cod || "";
     setQtdeCores("1");
     setCores([{
       cor: r.cor || "",
@@ -345,8 +359,8 @@ const TecidosPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {registros.map((r) => {
-                    const corHex = cadastroCores.find(c => c.cor.toLowerCase() === (r.cor || "").toLowerCase())?.hex;
+                  {registrosFiltrados.map((r) => {
+                    const corHex = findCadastroCor(cadastroCores, r.cor)?.hex;
                     const isDisp = (r.status || "").toLowerCase().startsWith("dispon");
                     return (
                       <tr key={r.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
@@ -380,7 +394,7 @@ const TecidosPage = () => {
                       </tr>
                     );
                   })}
-                  {!loadingRegistros && registros.length === 0 && (
+                  {!loadingRegistros && registrosFiltrados.length === 0 && (
                     <tr>
                       <td colSpan={12} className="py-8 text-center text-muted-foreground text-sm">
                         Nenhum registro encontrado com os filtros aplicados.
@@ -399,7 +413,7 @@ const TecidosPage = () => {
         </Card>
 
         <div className="text-xs text-muted-foreground text-right">
-          {registros.length} registro(s){registros.length >= 2000 ? " (limite atingido — refine os filtros)" : ""}
+          {registrosFiltrados.length} registro(s){registros.length >= 2000 ? " (limite atingido — refine os filtros)" : ""}
         </div>
       </div>
     );
@@ -622,7 +636,7 @@ const TecidosPage = () => {
                                       className="w-3 h-3 rounded-full border border-border shrink-0 inline-block"
                                       style={{
                                         backgroundColor:
-                                          cadastroCores.find((c) => c.cor === row.cor)?.hex || "#ffffff",
+                                          findCadastroCor(cadastroCores, row.cor)?.hex || "#ffffff",
                                       }}
                                     />
                                     <span className="truncate">{row.cor}</span>
@@ -634,12 +648,17 @@ const TecidosPage = () => {
                               </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-64 p-0" align="start">
-                              <Command>
-                                <CommandInput placeholder="Buscar cor..." className="h-8 text-xs" />
+                              <Command shouldFilter={false}>
+                                <CommandInput
+                                  value={colorSearchTerms[idx] || ""}
+                                  onValueChange={(value) => setColorSearchTerms((prev) => ({ ...prev, [idx]: value }))}
+                                  placeholder="Buscar cor..."
+                                  className="h-8 text-xs"
+                                />
                                 <CommandList>
                                   <CommandEmpty>Nenhuma cor encontrada.</CommandEmpty>
                                   <CommandGroup>
-                                    {cadastroCores.map((cc) => (
+                                    {filteredCadastroCores(idx).map((cc) => (
                                       <CommandItem
                                         key={cc.cod}
                                         value={cc.cor}

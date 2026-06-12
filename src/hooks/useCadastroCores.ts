@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { cadastroCores as fallbackCores, type CadastroCor } from "@/lib/cadastro-cores";
+import { mergeCadastroCores } from "@/lib/color-utils";
 
 /**
  * Catálogo de cores persistido em `cadastro_cores`.
@@ -19,14 +20,13 @@ export function useCadastroCores() {
     if (error || !data) {
       setCores(fallbackCores);
     } else {
-      setCores(
-        (data as any[]).map((r) => ({
+      const dbCores = (data as any[]).map((r) => ({
           id: String(r.id),
           cor: r.cor,
           cod: r.cod,
           hex: r.hex || "#ffffff",
-        })),
-      );
+        }));
+      setCores(mergeCadastroCores(dbCores, fallbackCores));
     }
     setLoading(false);
   }, []);
