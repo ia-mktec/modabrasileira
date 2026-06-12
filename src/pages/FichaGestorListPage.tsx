@@ -173,9 +173,11 @@ export default function FichaGestorListPage() {
           ocId: oc.id,
           numero_pedido: oc.numero_pedido as string,
           ordemCorte: oc.numero as string,
+          status: (oc.status as string) || "",
+          dataPedido: pedido.data_pedido as string | null,
           cliente: pedido.cliente || "—",
           referencia: pedido.modelo_ref as string,
-          modelo: modelo?.descricao || "—",
+          modelo: modelo?.modelo || "—",
           custoOficinaPeca,
           custoAviamentosPeca: aviamentosPorPeca,
           acabamentoPeca,
@@ -198,12 +200,23 @@ export default function FichaGestorListPage() {
   }, [ocs, pedidosByNumero, modelosByRef, expedicoes, gradeExp, gradeCorte, recebimentos, aviamentosPorPecaByPedido, custosMap]);
 
   const filtered = useMemo(() => {
-    if (!busca.trim()) return rows;
-    const q = norm(busca);
-    return rows.filter((r) =>
-      [r.numero_pedido, r.ordemCorte, r.cliente, r.referencia, r.modelo].some((v) => norm(String(v)).includes(q)),
-    );
-  }, [rows, busca]);
+    const qOC = norm(fOC.trim());
+    const qRef = norm(fRef.trim());
+    const qCli = norm(fCliente.trim());
+    return rows.filter((r) => {
+      if (qOC && !norm(String(r.ordemCorte)).includes(qOC)) return false;
+      if (qRef.length >= 3 && !norm(String(r.referencia)).includes(qRef)) return false;
+      if (qCli && !norm(String(r.cliente)).includes(qCli)) return false;
+      if (fStatus !== "todos" && r.status !== fStatus) return false;
+      if (fDataDe && (!r.dataPedido || r.dataPedido < fDataDe)) return false;
+      if (fDataAte && (!r.dataPedido || r.dataPedido > fDataAte)) return false;
+      return true;
+    });
+  }, [rows, fOC, fRef, fCliente, fStatus, fDataDe, fDataAte]);
+
+  const limparFiltros = () => {
+    setFOC(""); setFRef(""); setFCliente(""); setFStatus("todos"); setFDataDe(""); setFDataAte("");
+  };
 
   const totals = useMemo(() => {
     const t = { quantidade: 0, valorTotal: 0, tecidoMontante: 0, custoFabricacaoTotal: 0, aviamentosTotal: 0, comissaoValor: 0, acabamentoTotal: 0, custoTotal: 0, lucro: 0 };
