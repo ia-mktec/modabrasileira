@@ -8,8 +8,10 @@ import { PageLoading } from "@/components/shared/PageLoading";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Search, FileText, FileSpreadsheet } from "lucide-react";
+import { FileText, FileSpreadsheet } from "lucide-react";
 import { exportRelatorioXLSX, type RelatorioRow } from "@/lib/ficha-gestor-export";
 
 const sb = supabase as any;
