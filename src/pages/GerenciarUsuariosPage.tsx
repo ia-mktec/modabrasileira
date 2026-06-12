@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
-import { routePermissions, loadRoutePermissionsFromDB, type Permission } from "@/lib/permissions";
+import { routePermissions, loadRoutePermissionsFromDB, subscribeRoutePermissions, DEFAULT_ROUTE_PERMISSIONS, type Permission } from "@/lib/permissions";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
@@ -63,11 +63,34 @@ const ROUTE_LABELS: Record<string, string> = {
   "/recebimento": "Recebimento",
   "/entrega-cliente": "Entrega ao Cliente",
   "/relatorio-clientes": "Relatório de Clientes",
-  "/relatorio-producao": "Relatório de Produção",
+  "/relatorio-producao": "Fluxo de Produção",
   "/cash-flow": "Fluxo de Caixa",
   "/ficha-ziper": "Ficha Zíper",
+  "/ficha-gestor": "Ficha do Gestor",
   "/gerenciar-usuarios": "Gerenciar Usuários",
 };
+
+// Ordem fixa para garantir que todas as telas apareçam de forma estável na matriz
+const ROUTE_ORDER: string[] = [
+  "/",
+  "/tecidos",
+  "/estoque-tecidos",
+  "/modelos",
+  "/pedidos",
+  "/pedidos/historico",
+  "/corte",
+  "/cadastro",
+  "/aviamentos",
+  "/expedicao",
+  "/recebimento",
+  "/entrega-cliente",
+  "/relatorio-producao",
+  "/relatorio-clientes",
+  "/cash-flow",
+  "/ficha-ziper",
+  "/ficha-gestor",
+  "/gerenciar-usuarios",
+];
 
 const ROLE_ORDER: AppRole[] = ["modelagem", "corte", "expedicao", "recebimento", "acabamento", "servicos", "gestao", "dev"];
 
@@ -83,6 +106,13 @@ export default function GerenciarUsuariosPage() {
   const [showPwd, setShowPwd] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [savingCell, setSavingCell] = useState<string | null>(null);
+  const [permsVersion, setPermsVersion] = useState(0);
+
+  useEffect(() => {
+    loadRoutePermissionsFromDB();
+    const unsub = subscribeRoutePermissions(() => setPermsVersion((v) => v + 1));
+    return () => { unsub(); };
+  }, []);
 
   const updatePermission = async (route: string, role: AppRole, value: Permission | "none") => {
     if (role === "dev") return;
@@ -307,8 +337,11 @@ export default function GerenciarUsuariosPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {Object.entries(routePermissions).map(([route, perms]) => (
+              {Array.from(new Set([...ROUTE_ORDER, ...Object.keys(routePermissions)])).map((route) => {
+                const perms = routePermissions[route] || {};
+                return (
                 <TableRow key={route}>
+
                   <TableCell className="font-medium">
                     {ROUTE_LABELS[route] || route}
                     <div className="text-[10px] text-muted-foreground font-mono">{route}</div>
@@ -340,7 +373,7 @@ export default function GerenciarUsuariosPage() {
                     );
                   })}
                 </TableRow>
-              ))}
+              );})}
             </TableBody>
           </Table>
         </CardContent>
