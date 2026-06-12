@@ -266,16 +266,52 @@ export default function FichaGestorListPage() {
         </h1>
       </div>
 
-      <div className="flex flex-wrap gap-2 items-center">
-        <div className="relative flex-1 min-w-[240px] max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder={t("fichaGestor.searchPlaceholder")}
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
-            className="pl-9"
-          />
-        </div>
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold">Filtros</h2>
+            <button type="button" onClick={limparFiltros} className="text-xs text-primary hover:underline">
+              Limpar filtros
+            </button>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs">Ordem de Corte</Label>
+              <Input placeholder="OC-..." value={fOC} onChange={(e) => setFOC(e.target.value)} className="h-9" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Referência</Label>
+              <Input placeholder="Mín. 3 caracteres..." value={fRef} onChange={(e) => setFRef(e.target.value)} className="h-9" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Cliente</Label>
+              <Input placeholder="Filtrar..." value={fCliente} onChange={(e) => setFCliente(e.target.value)} className="h-9" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Status</Label>
+              <Select value={fStatus} onValueChange={setFStatus}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos</SelectItem>
+                  <SelectItem value="pendente">Pendente</SelectItem>
+                  <SelectItem value="em_andamento">Em andamento</SelectItem>
+                  <SelectItem value="concluido">Concluído</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Data de</Label>
+              <Input type="date" value={fDataDe} onChange={(e) => setFDataDe(e.target.value)} className="h-9" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Data até</Label>
+              <Input type="date" value={fDataAte} onChange={(e) => setFDataAte(e.target.value)} className="h-9" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-end">
         <Button onClick={handleExport}>
           <FileSpreadsheet className="w-4 h-4 mr-2" />
           {t("fichaGestor.exportXlsx")}
