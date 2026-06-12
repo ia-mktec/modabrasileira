@@ -690,7 +690,7 @@ export default function FichaGestorPage() {
                         <Input
                           type="number" step="0.01" value={c.preco_venda}
                           onChange={(e) => saveCusto(oc.id, { preco_venda: Number(e.target.value) })}
-                          className="h-7 w-24 text-right font-mono text-xs ml-auto print:border-0 print:p-0"
+                          className="h-7 w-24 text-right font-mono text-xs ml-auto bg-yellow-100 print:bg-transparent print:border-0 print:p-0"
                         />
                       </td>
                       <td className="px-2 py-1 text-right font-mono">{r.quantidade}</td>
