@@ -795,8 +795,6 @@ const CortePage = () => {
 
           <Separator className="hidden md:block" />
 
-          <Button className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(142,50%,35%)] hover:bg-[hsl(142,50%,30%)] text-[hsl(0,0%,100%)]" onClick={handleIncluir}>
-            <Plus className="w-4 h-4" />
           {!isViewOnly && (
             <Button className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(142,50%,35%)] hover:bg-[hsl(142,50%,30%)] text-[hsl(0,0%,100%)]" onClick={handleIncluir}>
               <Plus className="w-4 h-4" />
