@@ -761,7 +761,7 @@ function ServicoField({ label, hint, value, onChange, currency }: {
         <Input
           type="number" step="0.01" value={value}
           onChange={(e) => onChange(Number(e.target.value))}
-          className="h-8 font-mono text-sm"
+          className="h-8 font-mono text-sm bg-yellow-100 print:bg-transparent"
         />
       </div>
     </div>
