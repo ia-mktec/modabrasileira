@@ -40,8 +40,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!error && data) {
       const r = data as AppRole[];
       setRoles(r);
-      // Reload route permissions now that the user is authenticated (RLS-gated)
-      loadRoutePermissionsFromDB();
+      // Aguarda o carregamento das permissões do DB para evitar "Acesso negado" durante o race
+      await loadRoutePermissionsFromDB();
       return r;
     }
     // JWT expirado / sessão inválida → desloga para forçar novo login

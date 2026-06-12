@@ -8,20 +8,20 @@ export type RoutePermissionsMap = Record<string, Partial<Record<AppRole, Permiss
 
 // Default matrix — used until DB is loaded, and as fallback for routes not yet in DB
 export const DEFAULT_ROUTE_PERMISSIONS: RoutePermissionsMap = {
-  "/": { corte: "view", modelagem: "view", gestao: "view", dev: "edit" },
+  "/": { corte: "view", modelagem: "view", gestao: "view", servicos: "view", dev: "edit" },
   "/tecidos": { corte: "edit", dev: "edit" },
   "/estoque-tecidos": { corte: "edit", gestao: "view", dev: "edit" },
   "/modelos": { corte: "view", modelagem: "edit", expedicao: "edit", gestao: "view", dev: "edit" },
   "/pedidos": { corte: "view", modelagem: "view", expedicao: "view", recebimento: "view", acabamento: "view", gestao: "view", dev: "edit" },
   "/pedidos/historico": { gestao: "view", modelagem: "view", dev: "edit" },
-  "/corte": { corte: "edit", modelagem: "view", expedicao: "view", recebimento: "view", dev: "edit" },
+  "/corte": { corte: "edit", modelagem: "view", expedicao: "view", recebimento: "view", servicos: "view", dev: "edit" },
   "/cadastro": { corte: "edit", modelagem: "edit", expedicao: "edit", gestao: "edit", dev: "edit" },
   "/aviamentos": { corte: "edit", modelagem: "edit", expedicao: "edit", gestao: "edit", dev: "edit" },
   "/expedicao": { expedicao: "edit", recebimento: "view", gestao: "edit", dev: "edit" },
   "/recebimento": { recebimento: "edit", acabamento: "view", dev: "edit" },
   "/entrega-cliente": { acabamento: "edit", dev: "edit" },
   "/relatorio-clientes": { gestao: "view", dev: "edit" },
-  "/relatorio-producao": { corte: "view", modelagem: "view", expedicao: "view", recebimento: "view", acabamento: "view", gestao: "view", dev: "edit" },
+  "/relatorio-producao": { corte: "view", modelagem: "view", expedicao: "view", recebimento: "view", acabamento: "view", gestao: "view", servicos: "view", dev: "edit" },
   "/cash-flow": { gestao: "view", dev: "edit" },
   "/ficha-ziper": { dev: "edit" },
   "/ficha-gestor": { gestao: "edit", dev: "edit" },
