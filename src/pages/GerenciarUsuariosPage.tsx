@@ -34,6 +34,7 @@ const ROLE_LABELS: Record<AppRole, string> = {
   recebimento: "Recebimento",
   acabamento: "Acabamento",
   gestao: "Gestão",
+  servicos: "Serviços",
   dev: "Dev",
 };
 
@@ -44,6 +45,7 @@ const ROLE_COLORS: Record<AppRole, string> = {
   recebimento: "bg-green-100 text-green-800",
   acabamento: "bg-pink-100 text-pink-800",
   gestao: "bg-yellow-100 text-yellow-800",
+  servicos: "bg-teal-100 text-teal-800",
   dev: "bg-red-100 text-red-800",
 };
 
