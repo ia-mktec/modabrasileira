@@ -337,8 +337,11 @@ export default function GerenciarUsuariosPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {Object.entries(routePermissions).map(([route, perms]) => (
+              {Array.from(new Set([...ROUTE_ORDER, ...Object.keys(routePermissions)])).map((route) => {
+                const perms = routePermissions[route] || {};
+                return (
                 <TableRow key={route}>
+
                   <TableCell className="font-medium">
                     {ROUTE_LABELS[route] || route}
                     <div className="text-[10px] text-muted-foreground font-mono">{route}</div>
