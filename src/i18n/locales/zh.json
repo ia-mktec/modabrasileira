@@ -316,7 +316,7 @@
       "totalPeca": "单件辅料成本"
     },
     "report": {
-      "title": "按裁剪单的报表",
+      "title": "裁剪订单结果",
       "ordemCorte": "裁剪单",
       "cliente": "客户",
       "referencia": "款号",

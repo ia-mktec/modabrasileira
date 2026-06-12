@@ -1,114 +1,50 @@
-## Ficha do Produto (Gestor) — visão completa + custos + relatório
+## Ajustes na página `/ficha-gestor/:numero` (FichaGestorPage)
 
-Nova página `/ficha-gestor` (lista) + `/ficha-gestor/:numero_pedido` (ficha) que consolida tudo do pedido em um layout A4 imprimível, com **quadro de serviços** editáveis, **relatório por coluna** exportável e i18n PT/EN/ZH.
+Todas as alterações são visuais/apresentação no arquivo `src/pages/FichaGestorPage.tsx` e nas traduções em `src/i18n/locales/{pt,en,zh}.json`.
 
-### 1. Acesso
-- Item de menu **"Ficha do Gestor"** (`ClipboardList`/`FileText`), permissão padrão admin/gestor.
-- `/ficha-gestor`: lista de pedidos com busca (nº pedido, OC, cliente, modelo) → abre a ficha.
-- `/ficha-gestor/:numero_pedido`: ficha completa + botões **Imprimir/PDF** e **Exportar XLSX** (relatório).
+### 1. Cabeçalho de cada OC
+Trocar o cabeçalho do bloco da OC de:
+`Ordem de Corte: <numero>   <status>`
+para:
+`Ordem de Corte - <numero>` (status permanece à direita).
 
-### 2. Seções da ficha (por pedido)
+### 2. Quadro inicial do pedido
+Remover o campo **Cor** (`pedido.cor`) do bloco de cabeçalho do pedido.
 
-**Cabeçalho do pedido:** nº, cliente, modelo (ref + descrição + imagem do bucket `modelos`), tecido base, cor, data, status, consumo unitário, observações.
+### 3. Campos editáveis em amarelo claro
+Aplicar fundo amarelo claro (`bg-yellow-100` + foco visível) em todos os inputs editáveis da página:
+- Preço unitário dos aviamentos
+- Serviços: Entretelagem, Acabamento, Tecido
+- Preço de Venda (tabela resultado)
+- Comissão % (tabela resultado)
 
-**Para cada OC (`ordens_corte.numero_pedido = pedido`):**
+Para impressão (`print:`), manter os valores legíveis mas remover o fundo amarelo.
 
-a) **Dados da ordem de corte** — nº, datas, cortador, enfestador, enfestos, perda %, consumo/peça, qtd peças, status, observações.
+### 4. Campos de metragem sem casas decimais
+Na tabela de **Tecidos vinculados**, a coluna **Metragem** (e o total ao final) passa a ser exibida como número inteiro (sem casas decimais). Demais campos (consumo por peça, perda %) permanecem como estão.
 
-b) **Tecido vinculado + rolos** — `tecido_entradas` com `ordem_corte1 = OC.numero OR ordem_corte2 = OC.numero`. Colunas: nome, composição, cor, data entrada, **qtde de rolos**, metragem, unidade + totais.
+### 5. Grade de Expedição/Corte consolidada por oficina
+Reformular a tabela quando existem expedições:
+- Remover a coluna **Cor**.
+- Consolidar uma única linha por **oficina + expedição** somando todas as cores em cada tamanho.
+- Manter: Oficina, Data Saída, PP…G3, Total, Preço/Peça, Subtotal.
+- Linhas de total expedido e saldo permanecem.
 
-c) **Grade — linha por oficina**:
-- Com expedições: `Oficina | Data saída | Cor | PP…G3 | Total | Preço peça | Subtotal` (uma linha por expedição×cor a partir de `grade_expedicao`), com linha de **Total expedido** e **Saldo vs. cortado** (cobre saídas parciais).
-- Sem expedição: cair em `grade_corte` (`Cor | PP…G3 | Total`) com aviso "Aguardando expedição".
+Quando não há expedições, a grade de corte também passa a ser consolidada (somando cores), exibindo apenas a linha de tamanhos + total (sem coluna Cor).
 
-d) **Entrada na oficina (recebimentos)** — por `recebimento`: oficina, data envio, recebimento, sem defeitos, defeitos, 2ª qualidade, total a pagar, status.
+### 6. Tabela de Aviamentos
+- Remover as colunas **Tamanho** e **Cor**.
+- Manter: Tipo, Descrição, Partes, Preço Un. (editável amarelo), Subtotal.
+- O valor unitário continua sendo lido de `aviamentos_pedido.preco_unitario` (valor cadastrado no pedido) e editável inline — comportamento atual, apenas com novo destaque amarelo.
 
-e) **Aviamentos do modelo com preços** — fonte `aviamentos_pedido` (preço já existe), fallback `modelo_aviamentos`. Colunas: `Tipo | Descrição | Tamanho | Cor | Partes/peça | Qtd total | Preço un. | Subtotal`. Preço editável inline → `update` em `aviamentos_pedido` (cria a linha quando vier do fallback). Botão "Restaurar do cadastro" puxa `aviamentos.preco_un`.
+### 7. Renomear título do relatório
+Trocar `fichaGestor.report.title` de **"Relatório por Ordem de Corte"** para **"Resultado da Ordem de Corte"** nos três idiomas (pt/en/zh):
+- pt: `Resultado da Ordem de Corte`
+- en: `Cut Order Result`
+- zh: `裁剪订单结果`
 
-### 3. Quadro de Serviços (novo, editável por pedido)
-
-Card com três campos numéricos por OC (ou por pedido, ver §5):
-- **Entretelagem** — só aparece quando `modelos.entretela = true` no modelo do pedido. Mostra também `entretela_descricao` e `entretela_consumo_peca` como referência.
-- **Acabamento** — sempre visível.
-- **Tecido (serviço)** — sempre visível (custo de processamento/lavagem/etc., separado do tecido em si).
-
-Cada campo é R$/peça, editável, com debounce + toast e total calculado (`valor × qtdPeças`).
-
-### 4. Relatório por coluna (tabela ao final + export XLSX)
-
-Uma linha por OC do pedido, com as colunas exatamente nesta ordem:
-
-| Coluna | Origem |
-|---|---|
-| Ordem de Corte | `ordens_corte.numero` |
-| Cliente | `modelo_pedidos.cliente` |
-| Referência | `modelo_pedidos.modelo_ref` |
-| Modelo | `modelos.descricao` |
-| Custo Oficina/peça | média ponderada de `expedicao.preco_peca` (fallback 0) |
-| Custo Aviamentos/peça | Σ(`preco_unitario × partes_qtde`) dos aviamentos do pedido |
-| Acabamento/peça | campo editável (serviços) |
-| Custo Total/peça | oficina + aviamentos + acabamento + entretelagem + tecido serviço |
-| Data de Entrega | última `recebimento.data_recebimento` da OC (ou — se pendente) |
-| Preço de Venda | **editável** (novo campo) |
-| Quantidade | total expedido se houver; senão total cortado |
-| Valor Total (Faturamento) | preço venda × quantidade |
-| Tecido (montante) | `consumo_por_peca × quantidade` (em mt) + custo se houver; mostra a metragem da OC |
-| Custo de Fabricação (Total) | Custo Oficina/peça × quantidade |
-| Aviamentos (Total) | Custo Aviamentos/peça × quantidade |
-| Comissão | **editável** em % → valor = faturamento × % |
-| Acabamento (Total) | Acabamento/peça × quantidade |
-| Custo Total | Σ dos custos acima (incluindo comissão e tecido serviço) |
-| Lucro | Faturamento − Custo Total |
-| Média | Lucro / quantidade |
-
-- Linha de **totais do pedido** ao final.
-- Botão **Exportar XLSX** gera a planilha com as mesmas colunas (via lib já usada no projeto para o Dashboard de auditoria).
-
-### 5. Persistência dos campos editáveis novos
-
-Nova tabela `public.ficha_gestor_custos` (1 linha por OC), via migration:
-
-```
-ordem_corte_id uuid PK FK → ordens_corte(id) ON DELETE CASCADE
-numero_pedido text NOT NULL
-custo_entretelagem numeric(10,2) DEFAULT 0
-custo_acabamento numeric(10,2) DEFAULT 0
-custo_tecido_servico numeric(10,2) DEFAULT 0
-preco_venda numeric(10,2) DEFAULT 0
-comissao_percent numeric(5,2) DEFAULT 0
-created_at / updated_at + trigger update_updated_at_column
-```
-
-GRANTS para `authenticated` e `service_role`, RLS habilitado, políticas "Authenticated can read/insert/update/delete" (mesmo padrão das demais tabelas do projeto). Sem `anon`.
-
-### 6. Internacionalização
-
-Todas as strings da página (rótulos das seções, colunas da tabela, status, botões, toasts) entram em `src/i18n/locales/pt.json`, `en.json` e `zh.json` sob a chave `fichaGestor.*`. Item de sidebar via `sidebar.fichaGestor`.
-
-### 7. Arquivos a criar/editar
-
-**Criar**
-- `src/pages/FichaGestorListPage.tsx` — lista de pedidos + busca.
-- `src/pages/FichaGestorPage.tsx` — ficha completa + quadro de serviços + relatório + impressão + export.
-- (helper) `src/lib/ficha-gestor-export.ts` — geração do XLSX.
-
-**Editar**
-- `src/App.tsx` — registrar `/ficha-gestor` e `/ficha-gestor/:numero_pedido`.
-- `src/components/layout/AppSidebar.tsx` — novo item de menu.
-- `src/i18n/locales/{pt,en,zh}.json` — chaves `fichaGestor.*` e `sidebar.fichaGestor`.
-- `src/lib/permissions.ts` (se necessário) — permissão da rota.
-
-**Migration**
-- Criar tabela `ficha_gestor_custos` com GRANTs + RLS + políticas + trigger.
-
-### 8. Detalhes técnicos
-- Buscas em paralelo via `Promise.all` + `fetchAllRows` (padrão do projeto), evita limite de 1000.
-- Imagem do modelo via `supabase.storage.from('modelos').getPublicUrl(...)`.
-- Edição de preços/serviços com debounce ~500ms, toast de "Salvo" e tratamento de erro.
-- Impressão A4: `@media print` esconde sidebar/botões, `break-inside-avoid` por OC, fundo branco.
-- Export XLSX: `xlsx` (lib já usada em `dashboard-audit.ts`).
-
-### Fora de escopo
-- Edição de campos da OC, expedição ou recebimento (somente leitura aqui).
-- Histórico de alterações de preço/comissão.
-- Múltiplos cenários de simulação de preço.
+### Detalhes técnicos
+- Arquivo principal: `src/pages/FichaGestorPage.tsx` (edições nas seções: header do pedido, header de cada OC card, tabela de tecidos, tabela grade expedição, tabela grade corte, tabela aviamentos, inputs de serviço e da tabela resultado).
+- i18n: atualizar somente a chave `fichaGestor.report.title` em pt/en/zh.
+- Sem alterações de schema, lógica de cálculo ou regras de negócio.
+- Sem alterações na listagem (`FichaGestorListPage`).

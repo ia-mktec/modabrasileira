@@ -316,7 +316,7 @@
       "totalPeca": "Custo de aviamentos por peça"
     },
     "report": {
-      "title": "Relatório por Ordem de Corte",
+      "title": "Resultado da Ordem de Corte",
       "ordemCorte": "Ordem de Corte",
       "cliente": "Cliente",
       "referencia": "Referência",

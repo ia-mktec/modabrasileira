@@ -354,7 +354,6 @@ export default function FichaGestorPage() {
             <Field label={t("fichaGestor.pedido.modelo")} value={modelo?.descricao || "—"} />
             <Field label={t("fichaGestor.pedido.status")} value={pedido.status_kanban || "—"} />
             <Field label={t("fichaGestor.pedido.tecido")} value={pedido.tecido || "—"} />
-            <Field label={t("fichaGestor.pedido.cor")} value={pedido.cor || "—"} />
             <Field label={t("fichaGestor.pedido.consumo")} value={`${fmt(n(pedido.consumo_tecido), 3)} mt`} mono />
             {pedido.observacoes && (
               <div className="col-span-full">
@@ -382,7 +381,7 @@ export default function FichaGestorPage() {
           <Card key={oc.id} className="break-inside-avoid">
             <CardContent className="p-4 space-y-4">
               <div className="bg-muted px-3 py-2 rounded font-semibold flex items-center justify-between">
-                <span>{t("fichaGestor.oc.title")}: <span className="font-mono">{oc.numero}</span></span>
+                <span>{t("fichaGestor.oc.title")} - <span className="font-mono">{oc.numero}</span></span>
                 <span className="text-xs capitalize">{oc.status}</span>
               </div>
 
@@ -425,14 +424,14 @@ export default function FichaGestorPage() {
                             <td className="px-2 py-1">{te.cor || "—"}</td>
                             <td className="px-2 py-1 text-center font-mono">{formatDateBR(te.data_entrada)}</td>
                             <td className="px-2 py-1 text-right font-mono">{te.qtde_rolos ?? 0}</td>
-                            <td className="px-2 py-1 text-right font-mono">{fmt(n(te.metragem_total), 2)}</td>
+                            <td className="px-2 py-1 text-right font-mono">{fmt(n(te.metragem_total), 0)}</td>
                             <td className="px-2 py-1 text-center">{te.unidade_medida || "mt"}</td>
                           </tr>
                         ))}
                         <tr className="bg-muted/30 font-semibold border-t">
                           <td colSpan={4} className="px-2 py-1 text-right">{t("common.total") || "Total"}:</td>
                           <td className="px-2 py-1 text-right font-mono">{sum(tecs.map((te) => n(te.qtde_rolos)))}</td>
-                          <td className="px-2 py-1 text-right font-mono">{fmt(sum(tecs.map((te) => n(te.metragem_total))), 2)}</td>
+                          <td className="px-2 py-1 text-right font-mono">{fmt(sum(tecs.map((te) => n(te.metragem_total))), 0)}</td>
                           <td></td>
                         </tr>
                       </tbody>
@@ -451,7 +450,6 @@ export default function FichaGestorPage() {
                         <tr>
                           <th className="text-left px-2 py-1">{t("fichaGestor.grade.oficina")}</th>
                           <th className="text-center px-2 py-1">{t("fichaGestor.grade.dataSaida")}</th>
-                          <th className="text-left px-2 py-1">{t("fichaGestor.tecido.cor")}</th>
                           {SIZES.map((s) => <th key={s} className="text-right px-2 py-1 uppercase">{s}</th>)}
                           <th className="text-right px-2 py-1">{t("fichaGestor.grade.total")}</th>
                           <th className="text-right px-2 py-1">{t("fichaGestor.grade.precoPeca")}</th>
@@ -459,29 +457,29 @@ export default function FichaGestorPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {exps.flatMap((e) => {
+                        {exps.map((e) => {
                           const rows = gradeExp.filter((g) => g.expedicao_id === e.id);
-                          if (rows.length === 0) return [(
-                            <tr key={e.id} className="border-t text-muted-foreground italic">
-                              <td className="px-2 py-1">{e.oficina_nome || "—"}</td>
-                              <td className="px-2 py-1 text-center font-mono">{formatDateBR(e.data_saida)}</td>
-                              <td colSpan={SIZES.length + 4} className="px-2 py-1">{t("fichaGestor.grade.semGrade")}</td>
-                            </tr>
-                          )];
-                          return rows.map((g) => {
-                            const tot = sum(SIZES.map((s) => n((g as any)[`${s}_exp`])));
+                          const sizeTotals = SIZES.map((s) => sum(rows.map((g) => n((g as any)[`${s}_exp`]))));
+                          const tot = sum(sizeTotals);
+                          if (rows.length === 0) {
                             return (
-                              <tr key={g.id} className="border-t">
+                              <tr key={e.id} className="border-t text-muted-foreground italic">
                                 <td className="px-2 py-1">{e.oficina_nome || "—"}</td>
                                 <td className="px-2 py-1 text-center font-mono">{formatDateBR(e.data_saida)}</td>
-                                <td className="px-2 py-1">{g.cor}</td>
-                                {SIZES.map((s) => <td key={s} className="px-2 py-1 text-right font-mono">{n((g as any)[`${s}_exp`])}</td>)}
-                                <td className="px-2 py-1 text-right font-mono font-semibold">{tot}</td>
-                                <td className="px-2 py-1 text-right font-mono">{fmt(n(e.preco_peca), 2)}</td>
-                                <td className="px-2 py-1 text-right font-mono">{fmt(tot * n(e.preco_peca), 2)}</td>
+                                <td colSpan={SIZES.length + 3} className="px-2 py-1">{t("fichaGestor.grade.semGrade")}</td>
                               </tr>
                             );
-                          });
+                          }
+                          return (
+                            <tr key={e.id} className="border-t">
+                              <td className="px-2 py-1">{e.oficina_nome || "—"}</td>
+                              <td className="px-2 py-1 text-center font-mono">{formatDateBR(e.data_saida)}</td>
+                              {sizeTotals.map((v, i) => <td key={i} className="px-2 py-1 text-right font-mono">{v}</td>)}
+                              <td className="px-2 py-1 text-right font-mono font-semibold">{tot}</td>
+                              <td className="px-2 py-1 text-right font-mono">{fmt(n(e.preco_peca), 2)}</td>
+                              <td className="px-2 py-1 text-right font-mono">{fmt(tot * n(e.preco_peca), 2)}</td>
+                            </tr>
+                          );
                         })}
                         {(() => {
                           const totalExp = sum(gradeExp.filter((g) => exps.some((e) => e.id === g.expedicao_id)).flatMap((g) => SIZES.map((s) => n((g as any)[`${s}_exp`]))));
@@ -489,12 +487,12 @@ export default function FichaGestorPage() {
                           return (
                             <>
                               <tr className="bg-muted/30 font-semibold border-t">
-                                <td colSpan={SIZES.length + 3} className="px-2 py-1 text-right">{t("fichaGestor.grade.totalExpedido")}:</td>
+                                <td colSpan={SIZES.length + 2} className="px-2 py-1 text-right">{t("fichaGestor.grade.totalExpedido")}:</td>
                                 <td className="px-2 py-1 text-right font-mono">{totalExp}</td>
                                 <td colSpan={2}></td>
                               </tr>
                               <tr className="bg-muted/30 text-xs border-t">
-                                <td colSpan={SIZES.length + 3} className="px-2 py-1 text-right">{t("fichaGestor.grade.saldo")} ({t("fichaGestor.grade.cortado")} {totalCort}):</td>
+                                <td colSpan={SIZES.length + 2} className="px-2 py-1 text-right">{t("fichaGestor.grade.saldo")} ({t("fichaGestor.grade.cortado")} {totalCort}):</td>
                                 <td className="px-2 py-1 text-right font-mono">{totalCort - totalExp}</td>
                                 <td colSpan={2}></td>
                               </tr>
@@ -511,25 +509,24 @@ export default function FichaGestorPage() {
                       <table className="w-full text-xs border">
                         <thead className="bg-muted/50">
                           <tr>
-                            <th className="text-left px-2 py-1">{t("fichaGestor.tecido.cor")}</th>
                             {SIZES.map((s) => <th key={s} className="text-right px-2 py-1 uppercase">{s}</th>)}
                             <th className="text-right px-2 py-1">{t("fichaGestor.grade.total")}</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {gcs.map((g) => {
-                            const tot = sum(SIZES.map((s) => n((g as any)[s])));
+                          {(() => {
+                            const sizeTotals = SIZES.map((s) => sum(gcs.map((g) => n((g as any)[s]))));
+                            const tot = sum(sizeTotals);
+                            if (gcs.length === 0) {
+                              return <tr><td colSpan={SIZES.length + 1} className="px-2 py-2 text-center text-muted-foreground">{t("common.noData")}</td></tr>;
+                            }
                             return (
-                              <tr key={g.cor} className="border-t">
-                                <td className="px-2 py-1">{g.cor}</td>
-                                {SIZES.map((s) => <td key={s} className="px-2 py-1 text-right font-mono">{n((g as any)[s])}</td>)}
+                              <tr className="border-t">
+                                {sizeTotals.map((v, i) => <td key={i} className="px-2 py-1 text-right font-mono">{v}</td>)}
                                 <td className="px-2 py-1 text-right font-mono font-semibold">{tot}</td>
                               </tr>
                             );
-                          })}
-                          {gcs.length === 0 && (
-                            <tr><td colSpan={SIZES.length + 2} className="px-2 py-2 text-center text-muted-foreground">{t("common.noData")}</td></tr>
-                          )}
+                          })()}
                         </tbody>
                       </table>
                     </div>
@@ -616,8 +613,6 @@ export default function FichaGestorPage() {
                 <tr>
                   <th className="text-left px-2 py-1">{t("fichaGestor.aviamentos.tipo")}</th>
                   <th className="text-left px-2 py-1">{t("fichaGestor.aviamentos.descricao")}</th>
-                  <th className="text-left px-2 py-1">{t("fichaGestor.aviamentos.tamanho")}</th>
-                  <th className="text-left px-2 py-1">{t("fichaGestor.tecido.cor")}</th>
                   <th className="text-right px-2 py-1">{t("fichaGestor.aviamentos.partes")}</th>
                   <th className="text-right px-2 py-1">{t("fichaGestor.aviamentos.precoUn")}</th>
                   <th className="text-right px-2 py-1">{t("fichaGestor.aviamentos.subtotal")}</th>
@@ -630,8 +625,6 @@ export default function FichaGestorPage() {
                     <tr key={a.id} className="border-t">
                       <td className="px-2 py-1">{a.tipo || "—"}</td>
                       <td className="px-2 py-1">{a.descricao_item}</td>
-                      <td className="px-2 py-1">{a.tamanho || "—"}</td>
-                      <td className="px-2 py-1">{a.cor || "—"}</td>
                       <td className="px-2 py-1 text-right font-mono">{fmt(n(a.partes_qtde), 2)}</td>
                       <td className="px-2 py-1 text-right">
                         <Input
@@ -639,7 +632,7 @@ export default function FichaGestorPage() {
                           step="0.001"
                           value={a.preco_unitario ?? 0}
                           onChange={(e) => updateAviamentoPreco(a.id, Number(e.target.value))}
-                          className="h-7 w-24 text-right font-mono text-xs ml-auto print:border-0 print:p-0"
+                          className="h-7 w-24 text-right font-mono text-xs ml-auto bg-yellow-100 print:bg-transparent print:border-0 print:p-0"
                         />
                       </td>
                       <td className="px-2 py-1 text-right font-mono">{fmt(sub, 2)}</td>
@@ -647,10 +640,10 @@ export default function FichaGestorPage() {
                   );
                 })}
                 {lista.length === 0 && (
-                  <tr><td colSpan={7} className="px-2 py-2 text-center text-muted-foreground">{t("common.noData")}</td></tr>
+                  <tr><td colSpan={5} className="px-2 py-2 text-center text-muted-foreground">{t("common.noData")}</td></tr>
                 )}
                 <tr className="bg-muted/30 font-semibold border-t">
-                  <td colSpan={6} className="px-2 py-1 text-right">{t("fichaGestor.aviamentos.totalPeca")}:</td>
+                  <td colSpan={4} className="px-2 py-1 text-right">{t("fichaGestor.aviamentos.totalPeca")}:</td>
                   <td className="px-2 py-1 text-right font-mono">{fmt(aviamentosPorPeca, 2)}</td>
                 </tr>
               </tbody>
@@ -697,7 +690,7 @@ export default function FichaGestorPage() {
                         <Input
                           type="number" step="0.01" value={c.preco_venda}
                           onChange={(e) => saveCusto(oc.id, { preco_venda: Number(e.target.value) })}
-                          className="h-7 w-24 text-right font-mono text-xs ml-auto print:border-0 print:p-0"
+                          className="h-7 w-24 text-right font-mono text-xs ml-auto bg-yellow-100 print:bg-transparent print:border-0 print:p-0"
                         />
                       </td>
                       <td className="px-2 py-1 text-right font-mono">{r.quantidade}</td>
@@ -710,7 +703,7 @@ export default function FichaGestorPage() {
                           <Input
                             type="number" step="0.01" value={c.comissao_percent}
                             onChange={(e) => saveCusto(oc.id, { comissao_percent: Number(e.target.value) })}
-                            className="h-7 w-16 text-right font-mono text-xs print:border-0 print:p-0"
+                            className="h-7 w-16 text-right font-mono text-xs bg-yellow-100 print:bg-transparent print:border-0 print:p-0"
                           />
                           <span className="text-[10px] text-muted-foreground">%</span>
                           <span className="font-mono text-[10px]">({fmt(r.comissaoValor, 2)})</span>
@@ -768,7 +761,7 @@ function ServicoField({ label, hint, value, onChange, currency }: {
         <Input
           type="number" step="0.01" value={value}
           onChange={(e) => onChange(Number(e.target.value))}
-          className="h-8 font-mono text-sm"
+          className="h-8 font-mono text-sm bg-yellow-100 print:bg-transparent"
         />
       </div>
     </div>
