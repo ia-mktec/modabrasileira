@@ -63,11 +63,34 @@ const ROUTE_LABELS: Record<string, string> = {
   "/recebimento": "Recebimento",
   "/entrega-cliente": "Entrega ao Cliente",
   "/relatorio-clientes": "Relatório de Clientes",
-  "/relatorio-producao": "Relatório de Produção",
+  "/relatorio-producao": "Fluxo de Produção",
   "/cash-flow": "Fluxo de Caixa",
   "/ficha-ziper": "Ficha Zíper",
+  "/ficha-gestor": "Ficha do Gestor",
   "/gerenciar-usuarios": "Gerenciar Usuários",
 };
+
+// Ordem fixa para garantir que todas as telas apareçam de forma estável na matriz
+const ROUTE_ORDER: string[] = [
+  "/",
+  "/tecidos",
+  "/estoque-tecidos",
+  "/modelos",
+  "/pedidos",
+  "/pedidos/historico",
+  "/corte",
+  "/cadastro",
+  "/aviamentos",
+  "/expedicao",
+  "/recebimento",
+  "/entrega-cliente",
+  "/relatorio-producao",
+  "/relatorio-clientes",
+  "/cash-flow",
+  "/ficha-ziper",
+  "/ficha-gestor",
+  "/gerenciar-usuarios",
+];
 
 const ROLE_ORDER: AppRole[] = ["modelagem", "corte", "expedicao", "recebimento", "acabamento", "servicos", "gestao", "dev"];
 
