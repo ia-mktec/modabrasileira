@@ -8,8 +8,10 @@ import { PageLoading } from "@/components/shared/PageLoading";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Search, FileText, FileSpreadsheet } from "lucide-react";
+import { FileText, FileSpreadsheet } from "lucide-react";
 import { exportRelatorioXLSX, type RelatorioRow } from "@/lib/ficha-gestor-export";
 
 const sb = supabase as any;
@@ -34,7 +36,12 @@ export default function FichaGestorListPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [busca, setBusca] = useState("");
+  const [fOC, setFOC] = useState("");
+  const [fRef, setFRef] = useState("");
+  const [fCliente, setFCliente] = useState("");
+  const [fStatus, setFStatus] = useState("todos");
+  const [fDataDe, setFDataDe] = useState("");
+  const [fDataAte, setFDataAte] = useState("");
   const [pedidos, setPedidos] = useState<any[]>([]);
   const [modelos, setModelos] = useState<any[]>([]);
   const [ocs, setOcs] = useState<any[]>([]);
@@ -50,7 +57,7 @@ export default function FichaGestorListPage() {
       const [p, m, o, e, gE, gC, av, rc, cu] = await Promise.all([
         fetchAllRows<any>((f, to) => sb.from("modelo_pedidos").select("numero_pedido, cliente, modelo_ref, data_pedido").order("data_pedido", { ascending: false }).range(f, to)),
         fetchAllRows<any>((f, to) => sb.from("modelos").select("referencia, descricao, entretela").range(f, to)),
-        fetchAllRows<any>((f, to) => sb.from("ordens_corte").select("id, numero, numero_pedido, quantidade_pecas, consumo_por_peca").range(f, to)),
+        fetchAllRows<any>((f, to) => sb.from("ordens_corte").select("id, numero, numero_pedido, quantidade_pecas, consumo_por_peca, status").range(f, to)),
         fetchAllRows<any>((f, to) => sb.from("expedicao").select("id, ordem_corte_id, preco_peca").range(f, to)),
         fetchAllRows<any>((f, to) => sb.from("grade_expedicao").select("*").range(f, to)),
         fetchAllRows<any>((f, to) => sb.from("grade_corte").select("*").range(f, to)),
@@ -166,9 +173,11 @@ export default function FichaGestorListPage() {
           ocId: oc.id,
           numero_pedido: oc.numero_pedido as string,
           ordemCorte: oc.numero as string,
+          status: (oc.status as string) || "",
+          dataPedido: pedido.data_pedido as string | null,
           cliente: pedido.cliente || "—",
           referencia: pedido.modelo_ref as string,
-          modelo: modelo?.descricao || "—",
+          modelo: modelo?.modelo || "—",
           custoOficinaPeca,
           custoAviamentosPeca: aviamentosPorPeca,
           acabamentoPeca,
@@ -191,12 +200,23 @@ export default function FichaGestorListPage() {
   }, [ocs, pedidosByNumero, modelosByRef, expedicoes, gradeExp, gradeCorte, recebimentos, aviamentosPorPecaByPedido, custosMap]);
 
   const filtered = useMemo(() => {
-    if (!busca.trim()) return rows;
-    const q = norm(busca);
-    return rows.filter((r) =>
-      [r.numero_pedido, r.ordemCorte, r.cliente, r.referencia, r.modelo].some((v) => norm(String(v)).includes(q)),
-    );
-  }, [rows, busca]);
+    const qOC = norm(fOC.trim());
+    const qRef = norm(fRef.trim());
+    const qCli = norm(fCliente.trim());
+    return rows.filter((r) => {
+      if (qOC && !norm(String(r.ordemCorte)).includes(qOC)) return false;
+      if (qRef.length >= 3 && !norm(String(r.referencia)).includes(qRef)) return false;
+      if (qCli && !norm(String(r.cliente)).includes(qCli)) return false;
+      if (fStatus !== "todos" && r.status !== fStatus) return false;
+      if (fDataDe && (!r.dataPedido || r.dataPedido < fDataDe)) return false;
+      if (fDataAte && (!r.dataPedido || r.dataPedido > fDataAte)) return false;
+      return true;
+    });
+  }, [rows, fOC, fRef, fCliente, fStatus, fDataDe, fDataAte]);
+
+  const limparFiltros = () => {
+    setFOC(""); setFRef(""); setFCliente(""); setFStatus("todos"); setFDataDe(""); setFDataAte("");
+  };
 
   const totals = useMemo(() => {
     const t = { quantidade: 0, valorTotal: 0, tecidoMontante: 0, custoFabricacaoTotal: 0, aviamentosTotal: 0, comissaoValor: 0, acabamentoTotal: 0, custoTotal: 0, lucro: 0 };
@@ -246,16 +266,52 @@ export default function FichaGestorListPage() {
         </h1>
       </div>
 
-      <div className="flex flex-wrap gap-2 items-center">
-        <div className="relative flex-1 min-w-[240px] max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder={t("fichaGestor.searchPlaceholder")}
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
-            className="pl-9"
-          />
-        </div>
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold">Filtros</h2>
+            <button type="button" onClick={limparFiltros} className="text-xs text-primary hover:underline">
+              Limpar filtros
+            </button>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs">Ordem de Corte</Label>
+              <Input placeholder="OC-..." value={fOC} onChange={(e) => setFOC(e.target.value)} className="h-9" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Referência</Label>
+              <Input placeholder="Mín. 3 caracteres..." value={fRef} onChange={(e) => setFRef(e.target.value)} className="h-9" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Cliente</Label>
+              <Input placeholder="Filtrar..." value={fCliente} onChange={(e) => setFCliente(e.target.value)} className="h-9" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Status</Label>
+              <Select value={fStatus} onValueChange={setFStatus}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos</SelectItem>
+                  <SelectItem value="pendente">Pendente</SelectItem>
+                  <SelectItem value="em_andamento">Em andamento</SelectItem>
+                  <SelectItem value="concluido">Concluído</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Data de</Label>
+              <Input type="date" value={fDataDe} onChange={(e) => setFDataDe(e.target.value)} className="h-9" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Data até</Label>
+              <Input type="date" value={fDataAte} onChange={(e) => setFDataAte(e.target.value)} className="h-9" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-end">
         <Button onClick={handleExport}>
           <FileSpreadsheet className="w-4 h-4 mr-2" />
           {t("fichaGestor.exportXlsx")}
@@ -275,7 +331,7 @@ export default function FichaGestorListPage() {
                     "custoFabricacaoTotal","aviamentosTotal","comissao","acabamentoTotal",
                     "custoTotal","lucro","media",
                   ].map((k) => (
-                    <th key={k} className="text-left px-2 py-2 whitespace-nowrap">{t(`fichaGestor.report.${k}`)}</th>
+                    <th key={k} className={`px-2 py-2 whitespace-nowrap ${k === "modelo" ? "text-center" : "text-left"}`}>{t(`fichaGestor.report.${k}`)}</th>
                   ))}
                 </tr>
               </thead>
@@ -285,7 +341,7 @@ export default function FichaGestorListPage() {
                     <td className="px-2 py-1 font-mono font-semibold text-primary cursor-pointer" onClick={() => navigate(`/ficha-gestor/${r.numero_pedido}`)}>{r.ordemCorte}</td>
                     <td className="px-2 py-1">{r.cliente}</td>
                     <td className="px-2 py-1">{r.referencia}</td>
-                    <td className="px-2 py-1">{r.modelo}</td>
+                    <td className="px-2 py-1 text-center">{r.modelo}</td>
                     <td className="px-2 py-1 text-right font-mono">{fmt(r.custoOficinaPeca)}</td>
                     <td className="px-2 py-1 text-right font-mono">{fmt(r.custoAviamentosPeca)}</td>
                     <td className="px-2 py-1 text-right font-mono">{fmt(r.acabamentoPeca)}</td>
