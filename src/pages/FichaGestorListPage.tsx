@@ -58,11 +58,11 @@ export default function FichaGestorListPage() {
         fetchAllRows<any>((f, to) => sb.from("recebimento").select("ordem_corte_id, data_recebimento").range(f, to)),
         fetchAllRows<Custos>((f, to) => sb.from("ficha_gestor_custos").select("*").range(f, to)),
       ]);
-      setPedidos(p || []); setModelos(m || []); setOcs(o || []);
-      setExpedicoes(e || []); setGradeExp(gE || []); setGradeCorte(gC || []);
-      setAviamentos(av || []); setRecebimentos(rc || []);
+      setPedidos(p.data || []); setModelos(m.data || []); setOcs(o.data || []);
+      setExpedicoes(e.data || []); setGradeExp(gE.data || []); setGradeCorte(gC.data || []);
+      setAviamentos(av.data || []); setRecebimentos(rc.data || []);
       const cm: Record<string, Custos> = {};
-      (cu || []).forEach((c) => (cm[c.ordem_corte_id] = c));
+      (cu.data || []).forEach((c) => (cm[c.ordem_corte_id] = c));
       setCustosMap(cm);
       setLoading(false);
     })();
