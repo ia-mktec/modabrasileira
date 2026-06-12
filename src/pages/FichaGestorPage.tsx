@@ -450,7 +450,6 @@ export default function FichaGestorPage() {
                         <tr>
                           <th className="text-left px-2 py-1">{t("fichaGestor.grade.oficina")}</th>
                           <th className="text-center px-2 py-1">{t("fichaGestor.grade.dataSaida")}</th>
-                          <th className="text-left px-2 py-1">{t("fichaGestor.tecido.cor")}</th>
                           {SIZES.map((s) => <th key={s} className="text-right px-2 py-1 uppercase">{s}</th>)}
                           <th className="text-right px-2 py-1">{t("fichaGestor.grade.total")}</th>
                           <th className="text-right px-2 py-1">{t("fichaGestor.grade.precoPeca")}</th>
@@ -458,29 +457,29 @@ export default function FichaGestorPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {exps.flatMap((e) => {
+                        {exps.map((e) => {
                           const rows = gradeExp.filter((g) => g.expedicao_id === e.id);
-                          if (rows.length === 0) return [(
-                            <tr key={e.id} className="border-t text-muted-foreground italic">
-                              <td className="px-2 py-1">{e.oficina_nome || "—"}</td>
-                              <td className="px-2 py-1 text-center font-mono">{formatDateBR(e.data_saida)}</td>
-                              <td colSpan={SIZES.length + 4} className="px-2 py-1">{t("fichaGestor.grade.semGrade")}</td>
-                            </tr>
-                          )];
-                          return rows.map((g) => {
-                            const tot = sum(SIZES.map((s) => n((g as any)[`${s}_exp`])));
+                          const sizeTotals = SIZES.map((s) => sum(rows.map((g) => n((g as any)[`${s}_exp`]))));
+                          const tot = sum(sizeTotals);
+                          if (rows.length === 0) {
                             return (
-                              <tr key={g.id} className="border-t">
+                              <tr key={e.id} className="border-t text-muted-foreground italic">
                                 <td className="px-2 py-1">{e.oficina_nome || "—"}</td>
                                 <td className="px-2 py-1 text-center font-mono">{formatDateBR(e.data_saida)}</td>
-                                <td className="px-2 py-1">{g.cor}</td>
-                                {SIZES.map((s) => <td key={s} className="px-2 py-1 text-right font-mono">{n((g as any)[`${s}_exp`])}</td>)}
-                                <td className="px-2 py-1 text-right font-mono font-semibold">{tot}</td>
-                                <td className="px-2 py-1 text-right font-mono">{fmt(n(e.preco_peca), 2)}</td>
-                                <td className="px-2 py-1 text-right font-mono">{fmt(tot * n(e.preco_peca), 2)}</td>
+                                <td colSpan={SIZES.length + 3} className="px-2 py-1">{t("fichaGestor.grade.semGrade")}</td>
                               </tr>
                             );
-                          });
+                          }
+                          return (
+                            <tr key={e.id} className="border-t">
+                              <td className="px-2 py-1">{e.oficina_nome || "—"}</td>
+                              <td className="px-2 py-1 text-center font-mono">{formatDateBR(e.data_saida)}</td>
+                              {sizeTotals.map((v, i) => <td key={i} className="px-2 py-1 text-right font-mono">{v}</td>)}
+                              <td className="px-2 py-1 text-right font-mono font-semibold">{tot}</td>
+                              <td className="px-2 py-1 text-right font-mono">{fmt(n(e.preco_peca), 2)}</td>
+                              <td className="px-2 py-1 text-right font-mono">{fmt(tot * n(e.preco_peca), 2)}</td>
+                            </tr>
+                          );
                         })}
                         {(() => {
                           const totalExp = sum(gradeExp.filter((g) => exps.some((e) => e.id === g.expedicao_id)).flatMap((g) => SIZES.map((s) => n((g as any)[`${s}_exp`]))));
@@ -488,12 +487,12 @@ export default function FichaGestorPage() {
                           return (
                             <>
                               <tr className="bg-muted/30 font-semibold border-t">
-                                <td colSpan={SIZES.length + 3} className="px-2 py-1 text-right">{t("fichaGestor.grade.totalExpedido")}:</td>
+                                <td colSpan={SIZES.length + 2} className="px-2 py-1 text-right">{t("fichaGestor.grade.totalExpedido")}:</td>
                                 <td className="px-2 py-1 text-right font-mono">{totalExp}</td>
                                 <td colSpan={2}></td>
                               </tr>
                               <tr className="bg-muted/30 text-xs border-t">
-                                <td colSpan={SIZES.length + 3} className="px-2 py-1 text-right">{t("fichaGestor.grade.saldo")} ({t("fichaGestor.grade.cortado")} {totalCort}):</td>
+                                <td colSpan={SIZES.length + 2} className="px-2 py-1 text-right">{t("fichaGestor.grade.saldo")} ({t("fichaGestor.grade.cortado")} {totalCort}):</td>
                                 <td className="px-2 py-1 text-right font-mono">{totalCort - totalExp}</td>
                                 <td colSpan={2}></td>
                               </tr>
@@ -510,25 +509,24 @@ export default function FichaGestorPage() {
                       <table className="w-full text-xs border">
                         <thead className="bg-muted/50">
                           <tr>
-                            <th className="text-left px-2 py-1">{t("fichaGestor.tecido.cor")}</th>
                             {SIZES.map((s) => <th key={s} className="text-right px-2 py-1 uppercase">{s}</th>)}
                             <th className="text-right px-2 py-1">{t("fichaGestor.grade.total")}</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {gcs.map((g) => {
-                            const tot = sum(SIZES.map((s) => n((g as any)[s])));
+                          {(() => {
+                            const sizeTotals = SIZES.map((s) => sum(gcs.map((g) => n((g as any)[s]))));
+                            const tot = sum(sizeTotals);
+                            if (gcs.length === 0) {
+                              return <tr><td colSpan={SIZES.length + 1} className="px-2 py-2 text-center text-muted-foreground">{t("common.noData")}</td></tr>;
+                            }
                             return (
-                              <tr key={g.cor} className="border-t">
-                                <td className="px-2 py-1">{g.cor}</td>
-                                {SIZES.map((s) => <td key={s} className="px-2 py-1 text-right font-mono">{n((g as any)[s])}</td>)}
+                              <tr className="border-t">
+                                {sizeTotals.map((v, i) => <td key={i} className="px-2 py-1 text-right font-mono">{v}</td>)}
                                 <td className="px-2 py-1 text-right font-mono font-semibold">{tot}</td>
                               </tr>
                             );
-                          })}
-                          {gcs.length === 0 && (
-                            <tr><td colSpan={SIZES.length + 2} className="px-2 py-2 text-center text-muted-foreground">{t("common.noData")}</td></tr>
-                          )}
+                          })()}
                         </tbody>
                       </table>
                     </div>
