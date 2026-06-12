@@ -636,7 +636,7 @@ const TecidosPage = () => {
                                       className="w-3 h-3 rounded-full border border-border shrink-0 inline-block"
                                       style={{
                                         backgroundColor:
-                                          cadastroCores.find((c) => c.cor === row.cor)?.hex || "#ffffff",
+                                          findCadastroCor(cadastroCores, row.cor)?.hex || "#ffffff",
                                       }}
                                     />
                                     <span className="truncate">{row.cor}</span>
@@ -648,12 +648,17 @@ const TecidosPage = () => {
                               </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-64 p-0" align="start">
-                              <Command>
-                                <CommandInput placeholder="Buscar cor..." className="h-8 text-xs" />
+                              <Command shouldFilter={false}>
+                                <CommandInput
+                                  value={colorSearchTerms[idx] || ""}
+                                  onValueChange={(value) => setColorSearchTerms((prev) => ({ ...prev, [idx]: value }))}
+                                  placeholder="Buscar cor..."
+                                  className="h-8 text-xs"
+                                />
                                 <CommandList>
                                   <CommandEmpty>Nenhuma cor encontrada.</CommandEmpty>
                                   <CommandGroup>
-                                    {cadastroCores.map((cc) => (
+                                    {filteredCadastroCores(idx).map((cc) => (
                                       <CommandItem
                                         key={cc.cod}
                                         value={cc.cor}
