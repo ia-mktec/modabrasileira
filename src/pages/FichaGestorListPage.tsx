@@ -56,7 +56,7 @@ export default function FichaGestorListPage() {
     (async () => {
       const [p, m, o, e, gE, gC, av, rc, cu] = await Promise.all([
         fetchAllRows<any>((f, to) => sb.from("modelo_pedidos").select("numero_pedido, cliente, modelo_ref, data_pedido").order("data_pedido", { ascending: false }).range(f, to)),
-        fetchAllRows<any>((f, to) => sb.from("modelos").select("referencia, descricao, entretela").range(f, to)),
+        fetchAllRows<any>((f, to) => sb.from("modelos").select("referencia, modelo, descricao, entretela").range(f, to)),
         fetchAllRows<any>((f, to) => sb.from("ordens_corte").select("id, numero, numero_pedido, quantidade_pecas, consumo_por_peca, status").range(f, to)),
         fetchAllRows<any>((f, to) => sb.from("expedicao").select("id, ordem_corte_id, preco_peca").range(f, to)),
         fetchAllRows<any>((f, to) => sb.from("grade_expedicao").select("*").range(f, to)),
@@ -83,7 +83,11 @@ export default function FichaGestorListPage() {
 
   const modelosByRef = useMemo(() => {
     const m: Record<string, any> = {};
-    modelos.forEach((x) => (m[x.referencia] = x));
+    modelos.forEach((x) => {
+      if (!x.referencia) return;
+      m[x.referencia] = x;
+      m[norm(String(x.referencia))] = x;
+    });
     return m;
   }, [modelos]);
 
@@ -123,7 +127,7 @@ export default function FichaGestorListPage() {
       .filter((oc) => oc.numero_pedido && pedidosByNumero[oc.numero_pedido])
       .map((oc) => {
         const pedido = pedidosByNumero[oc.numero_pedido];
-        const modelo = modelosByRef[pedido.modelo_ref];
+        const modelo = modelosByRef[pedido.modelo_ref] || modelosByRef[norm(String(pedido.modelo_ref || ""))];
         const c = getCustos(oc.id, oc.numero_pedido);
 
         const exps = expedicoes.filter((e) => e.ordem_corte_id === oc.id);
@@ -320,8 +324,8 @@ export default function FichaGestorListPage() {
 
       <Card className="overflow-hidden">
         <CardContent className="p-0">
-          <div className="max-h-[calc(100vh-190px)] overflow-auto">
-            <table className="min-w-[2200px] w-full text-[11px] border">
+          <div className="ordem-corte-table-scroll max-h-[calc(100vh-320px)] min-h-[260px] overflow-x-scroll overflow-y-auto pb-3">
+            <table className="w-[2200px] min-w-[2200px] text-[11px] border">
               <thead className="bg-muted/50 border-b">
                 <tr>
                   {[
