@@ -68,6 +68,8 @@ const findModeloByReferencia = (modelos: any[], referencia: string | null | unde
 
 const CortePage = () => {
   const navigate = useNavigate();
+  const { roles } = useAuth();
+  const isViewOnly = !canEditRoute("/corte", roles);
   const { ordens: ordensCorteDb, loading: loadingOrdens, salvarOrdem, deletarOrdem, loadOrdemDetalhada } = useOrdensCorte();
   const { modelos: modelosDb, loading: loadingModelos, carregarModeloCompleto } = useModelos();
   const { tecidos: tecidosDb, loading: loadingTecidos, refetch: refetchTecidos } = useTecidos();
