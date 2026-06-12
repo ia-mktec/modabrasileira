@@ -47,7 +47,10 @@ export async function loadRoutePermissionsFromDB(): Promise<void> {
   const { data, error } = await supabase
     .from("route_permissions")
     .select("route, role, permission");
-  if (error || !data) return;
+  if (error || !data || data.length === 0) {
+    // Unauthenticated or RLS blocked — keep current matrix (default fallback) intact
+    return;
+  }
   const next: RoutePermissionsMap = {};
   for (const row of data) {
     const route = row.route as string;
