@@ -14,7 +14,6 @@ import { CalendarDays, Clock, Package, TrendingUp, Activity, Shirt, Search, File
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { useRef } from "react";
 import { toast } from "sonner";
 import { PedidoTimeline } from "@/components/shared/PedidoTimeline";
 import { cn, formatDateBR } from "@/lib/utils";
