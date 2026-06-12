@@ -703,7 +703,7 @@ export default function FichaGestorPage() {
                           <Input
                             type="number" step="0.01" value={c.comissao_percent}
                             onChange={(e) => saveCusto(oc.id, { comissao_percent: Number(e.target.value) })}
-                            className="h-7 w-16 text-right font-mono text-xs print:border-0 print:p-0"
+                            className="h-7 w-16 text-right font-mono text-xs bg-yellow-100 print:bg-transparent print:border-0 print:p-0"
                           />
                           <span className="text-[10px] text-muted-foreground">%</span>
                           <span className="font-mono text-[10px]">({fmt(r.comissaoValor, 2)})</span>
