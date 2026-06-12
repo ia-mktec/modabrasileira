@@ -321,7 +321,7 @@ export default function FichaGestorPage() {
   } as AvPedido));
 
   return (
-    <div className="p-4 md:p-6 space-y-4 print:p-2 print:space-y-2">
+    <div className="p-4 md:p-6 space-y-4 print:p-2 print:space-y-2 overflow-x-auto">
       {/* Top bar (hidden on print) */}
       <div className="flex flex-wrap gap-2 print:hidden">
         <Button variant="outline" asChild>
