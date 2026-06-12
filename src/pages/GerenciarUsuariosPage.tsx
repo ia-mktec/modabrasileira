@@ -69,7 +69,7 @@ const ROUTE_LABELS: Record<string, string> = {
   "/gerenciar-usuarios": "Gerenciar Usuários",
 };
 
-const ROLE_ORDER: AppRole[] = ["modelagem", "corte", "expedicao", "recebimento", "acabamento", "gestao", "dev"];
+const ROLE_ORDER: AppRole[] = ["modelagem", "corte", "expedicao", "recebimento", "acabamento", "servicos", "gestao", "dev"];
 
 export default function GerenciarUsuariosPage() {
   const { isDev } = useAuth();
