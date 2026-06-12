@@ -847,7 +847,7 @@ const CortePage = () => {
         </div>
 
         {/* Main Ficha Content */}
-        <div className="flex-1 space-y-4">
+        <fieldset disabled={isViewOnly} className={cn("flex-1 space-y-4 min-w-0 border-0 p-0 m-0", isViewOnly && "[&_input]:!bg-muted [&_textarea]:!bg-muted [&_[role=combobox]]:!bg-muted")}>
           {/* Basic Info */}
           <Card>
             <CardContent className="p-4">
