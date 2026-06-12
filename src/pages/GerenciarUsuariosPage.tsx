@@ -373,7 +373,7 @@ export default function GerenciarUsuariosPage() {
                     );
                   })}
                 </TableRow>
-              ))}
+              );})}
             </TableBody>
           </Table>
         </CardContent>
