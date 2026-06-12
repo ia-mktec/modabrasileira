@@ -1298,7 +1298,7 @@ const CortePage = () => {
               
             </CardContent>
           </Card>
-        </div>
+        </fieldset>
       </div>
 
       {/* Clear Confirmation Dialog */}
