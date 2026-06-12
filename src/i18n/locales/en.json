@@ -229,7 +229,7 @@
     }
   },
   "fichaGestor": {
-    "title": "Manager Sheet",
+    "title": "Cutting Order",
     "searchPlaceholder": "Search by order #, CO, customer or style...",
     "exportXlsx": "Export XLSX",
     "noImage": "No image",

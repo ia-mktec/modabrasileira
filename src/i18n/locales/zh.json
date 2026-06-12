@@ -229,7 +229,7 @@
     }
   },
   "fichaGestor": {
-    "title": "经理产品表",
+    "title": "裁剪单",
     "searchPlaceholder": "按订单号、裁单号、客户或款式搜索...",
     "exportXlsx": "导出 XLSX",
     "noImage": "无图片",
