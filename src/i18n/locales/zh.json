@@ -227,5 +227,120 @@
         "pecas": "件数"
       }
     }
+  },
+  "fichaGestor": {
+    "title": "经理产品表",
+    "searchPlaceholder": "按订单号、裁单号、客户或款式搜索...",
+    "exportXlsx": "导出 XLSX",
+    "noImage": "无图片",
+    "notFound": "未找到订单。",
+    "noOCs": "此订单尚无裁剪单。",
+    "currency": "¥",
+    "cols": {
+      "pedido": "订单号",
+      "cliente": "客户",
+      "referencia": "款号",
+      "data": "日期",
+      "ocs": "裁剪单",
+      "status": "状态"
+    },
+    "pedido": {
+      "numero": "订单号",
+      "cliente": "客户",
+      "data": "下单日期",
+      "referencia": "款号",
+      "modelo": "款式",
+      "status": "状态",
+      "tecido": "面料",
+      "cor": "颜色",
+      "consumo": "单件用量",
+      "observacoes": "备注"
+    },
+    "oc": {
+      "title": "裁剪单",
+      "dataCorte": "裁剪日期",
+      "cortador": "裁剪员",
+      "enfestador": "铺布员",
+      "enfestos": "铺布层数",
+      "perda": "损耗",
+      "consumoPeca": "单件用量",
+      "qtdPecas": "件数"
+    },
+    "tecido": {
+      "title": "关联面料 / 卷数",
+      "empty": "该裁剪单未关联面料。",
+      "nome": "面料",
+      "composicao": "成分",
+      "cor": "颜色",
+      "data": "入库日期",
+      "rolos": "卷数",
+      "metragem": "米数",
+      "un": "单位"
+    },
+    "grade": {
+      "title": "尺码表 — 发货 / 裁剪",
+      "oficina": "工厂",
+      "dataSaida": "发货日期",
+      "total": "合计",
+      "precoPeca": "单价",
+      "subtotal": "小计",
+      "totalExpedido": "发货合计",
+      "saldo": "余量",
+      "cortado": "已裁",
+      "semGrade": "未录入尺码表",
+      "aguardando": "等待发货 — 显示已裁尺码表"
+    },
+    "recebimento": {
+      "title": "工厂收货",
+      "dataEnvio": "发送日期",
+      "dataRecebimento": "收货日期",
+      "semDefeitos": "合格",
+      "defeitos": "瑕疵",
+      "segunda": "次品",
+      "totalPagar": "应付总额"
+    },
+    "servicos": {
+      "title": "服务费用（¥/件）",
+      "entretelagem": "粘衬",
+      "acabamento": "后整理",
+      "tecido": "面料（服务）"
+    },
+    "aviamentos": {
+      "title": "辅料",
+      "tipo": "类别",
+      "descricao": "描述",
+      "tamanho": "尺寸",
+      "partes": "件数/件",
+      "precoUn": "单价",
+      "subtotal": "小计",
+      "totalPeca": "单件辅料成本"
+    },
+    "report": {
+      "title": "按裁剪单的报表",
+      "ordemCorte": "裁剪单",
+      "cliente": "客户",
+      "referencia": "款号",
+      "modelo": "款式",
+      "custoOficinaPeca": "工厂单价",
+      "custoAviamentosPeca": "辅料单价",
+      "acabamentoPeca": "后整理单价",
+      "custoTotalPeca": "单件总成本",
+      "dataEntrega": "交货日期",
+      "precoVenda": "销售单价",
+      "quantidade": "数量",
+      "valorTotal": "总价（销售额）",
+      "tecidoMontante": "面料（数量）",
+      "custoFabricacaoTotal": "制造成本（总）",
+      "aviamentosTotal": "辅料（总）",
+      "comissao": "佣金",
+      "acabamentoTotal": "后整理（总）",
+      "custoTotal": "总成本",
+      "lucro": "利润",
+      "media": "平均"
+    },
+    "toast": {
+      "errorSave": "保存失败",
+      "exported": "报表已导出"
+    }
   }
 }
