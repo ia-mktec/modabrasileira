@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,7 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { CalendarDays, Clock, Package, TrendingUp, Activity, Shirt, Search } from "lucide-react";
+import { CalendarDays, Clock, Package, TrendingUp, Activity, Shirt, Search, FileSpreadsheet, FileDown } from "lucide-react";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { toast } from "sonner";
 import { PedidoTimeline } from "@/components/shared/PedidoTimeline";
 import { cn, formatDateBR } from "@/lib/utils";
 
@@ -452,6 +456,99 @@ const RelatorioProducaoPage = () => {
     setDialogOpen(true);
   };
 
+  const kanbanRef = useRef<HTMLDivElement>(null);
+  const [exporting, setExporting] = useState(false);
+
+  const exportExcel = () => {
+    try {
+      const rows: any[] = [];
+      kanbanColumns.forEach((col) => {
+        const fase = t(`reports.producao.columns.${col.key}`);
+        grouped[col.key].forEach((p) => {
+          rows.push({
+            "Fase": fase,
+            "Nº Pedido": p.numero_pedido,
+            "Nº Ordem de Corte": ordemNumeroByPedido[p.numero_pedido] || "",
+            "Referência": p.modelo_ref,
+            "Cliente": p.cliente || "",
+            "Tecido": p.tecido || "",
+            "Cor": p.cor || "",
+            "Data do Pedido": p.data_pedido ? formatDateBR(p.data_pedido) : "",
+            "Status Kanban": p.status_kanban,
+          });
+        });
+      });
+      if (!rows.length) {
+        toast.warning("Nenhum dado para exportar");
+        return;
+      }
+      const ws = XLSX.utils.json_to_sheet(rows);
+      ws["!cols"] = [
+        { wch: 22 }, { wch: 16 }, { wch: 20 }, { wch: 16 }, { wch: 28 },
+        { wch: 18 }, { wch: 18 }, { wch: 14 }, { wch: 16 },
+      ];
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Fluxo de Produção");
+      const stamp = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, `fluxo-producao-${stamp}.xlsx`);
+      toast.success("Excel exportado");
+    } catch (e) {
+      console.error(e);
+      toast.error("Falha ao exportar Excel");
+    }
+  };
+
+  const exportPDF = async () => {
+    if (!kanbanRef.current) return;
+    setExporting(true);
+    try {
+      const canvas = await html2canvas(kanbanRef.current, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+        windowWidth: kanbanRef.current.scrollWidth,
+      });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+      const availW = pageW - margin * 2;
+      const ratio = canvas.height / canvas.width;
+      const imgW = availW;
+      const imgH = availW * ratio;
+      if (imgH <= pageH - margin * 2) {
+        pdf.addImage(imgData, "PNG", margin, margin, imgW, imgH);
+      } else {
+        // pagina em fatias
+        const pageContentH = pageH - margin * 2;
+        const sliceCanvasH = (pageContentH / imgH) * canvas.height;
+        let renderedH = 0;
+        while (renderedH < canvas.height) {
+          const sliceH = Math.min(sliceCanvasH, canvas.height - renderedH);
+          const sliceCanvas = document.createElement("canvas");
+          sliceCanvas.width = canvas.width;
+          sliceCanvas.height = sliceH;
+          const ctx = sliceCanvas.getContext("2d")!;
+          ctx.drawImage(canvas, 0, renderedH, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+          const sliceData = sliceCanvas.toDataURL("image/png");
+          const sliceImgH = (sliceH / canvas.width) * availW;
+          if (renderedH > 0) pdf.addPage("a4", "landscape");
+          pdf.addImage(sliceData, "PNG", margin, margin, availW, sliceImgH);
+          renderedH += sliceH;
+        }
+      }
+      const stamp = new Date().toISOString().slice(0, 10);
+      pdf.save(`fluxo-producao-${stamp}.pdf`);
+      toast.success("PDF exportado");
+    } catch (e) {
+      console.error(e);
+      toast.error("Falha ao exportar PDF");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   if (pedidos.length === 0 && ordens.length === 0) {
     return <PageLoading message={t("reports.producao.loading")} />;
   }
@@ -461,7 +558,16 @@ const RelatorioProducaoPage = () => {
       <PageHeader
         title={t("reports.producao.title")}
         description={t("reports.producao.description")}
-      />
+      >
+        <Button variant="outline" size="sm" onClick={exportExcel}>
+          <FileSpreadsheet className="w-4 h-4" />
+          Exportar Excel
+        </Button>
+        <Button variant="outline" size="sm" onClick={exportPDF} disabled={exporting}>
+          <FileDown className="w-4 h-4" />
+          {exporting ? "Gerando PDF..." : "Exportar PDF"}
+        </Button>
+      </PageHeader>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <MetricCard icon={Package} label={t("reports.producao.metrics.total")} value={String(metrics.total)} />
@@ -506,7 +612,7 @@ const RelatorioProducaoPage = () => {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4">
+      <div ref={kanbanRef} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4 bg-background p-2">
         {kanbanColumns.map((col) => (
           <div key={col.key} className="flex flex-col">
             <div className="flex items-center gap-2 mb-3">
