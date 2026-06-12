@@ -1,5 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
-import { formatDateBR } from "@/lib/utils";
+import { cn, formatDateBR } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { canEditRoute } from "@/lib/permissions";
 import { PageLoading } from "@/components/shared/PageLoading";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -66,6 +68,8 @@ const findModeloByReferencia = (modelos: any[], referencia: string | null | unde
 
 const CortePage = () => {
   const navigate = useNavigate();
+  const { roles } = useAuth();
+  const isViewOnly = !canEditRoute("/corte", roles);
   const { ordens: ordensCorteDb, loading: loadingOrdens, salvarOrdem, deletarOrdem, loadOrdemDetalhada } = useOrdensCorte();
   const { modelos: modelosDb, loading: loadingModelos, carregarModeloCompleto } = useModelos();
   const { tecidos: tecidosDb, loading: loadingTecidos, refetch: refetchTecidos } = useTecidos();
@@ -791,38 +795,48 @@ const CortePage = () => {
 
           <Separator className="hidden md:block" />
 
-          <Button className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(142,50%,35%)] hover:bg-[hsl(142,50%,30%)] text-[hsl(0,0%,100%)]" onClick={handleIncluir}>
-            <Plus className="w-4 h-4" />
-            <span>Nova Ordem</span>
-          </Button>
+          {!isViewOnly && (
+            <Button className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(142,50%,35%)] hover:bg-[hsl(142,50%,30%)] text-[hsl(0,0%,100%)]" onClick={handleIncluir}>
+              <Plus className="w-4 h-4" />
+              <span>Nova Ordem</span>
+            </Button>
+          )}
 
-          <Button className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]" onClick={handleSave}>
-            <Save className="w-4 h-4" />
-            <span>Salvar</span>
-          </Button>
+          {!isViewOnly && (
+            <Button className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]" onClick={handleSave}>
+              <Save className="w-4 h-4" />
+              <span>Salvar</span>
+            </Button>
+          )}
 
-          <Button variant="destructive" className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0" onClick={() => setDeleteDialogOpen(true)}>
-            <Trash2 className="w-4 h-4" />
-            <span>Limpar Registro</span>
-          </Button>
+          {!isViewOnly && (
+            <Button variant="destructive" className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0" onClick={() => setDeleteDialogOpen(true)}>
+              <Trash2 className="w-4 h-4" />
+              <span>Limpar Registro</span>
+            </Button>
+          )}
 
-          <Button
-            className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]"
-            onClick={() => setViewMode("historico")}
-          >
-            <CheckCircle className="w-4 h-4" />
-            <span>Conferir</span>
-          </Button>
+          {!isViewOnly && (
+            <Button
+              className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]"
+              onClick={() => setViewMode("historico")}
+            >
+              <CheckCircle className="w-4 h-4" />
+              <span>Conferir</span>
+            </Button>
+          )}
 
           <Separator className="hidden md:block" />
 
-          <Button
-            className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(38,92%,45%)] hover:bg-[hsl(38,92%,38%)] text-[hsl(0,0%,100%)]"
-            onClick={() => navigate("/ficha-ziper", { state: { numeroOC: numero } })}>
-            
-            <Scissors className="w-4 h-4" />
-            <span>Ficha de Zíper</span>
-          </Button>
+          {!isViewOnly && (
+            <Button
+              className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(38,92%,45%)] hover:bg-[hsl(38,92%,38%)] text-[hsl(0,0%,100%)]"
+              onClick={() => navigate("/ficha-ziper", { state: { numeroOC: numero } })}>
+              
+              <Scissors className="w-4 h-4" />
+              <span>Ficha de Zíper</span>
+            </Button>
+          )}
 
           <Separator className="hidden md:block" />
 
@@ -833,7 +847,7 @@ const CortePage = () => {
         </div>
 
         {/* Main Ficha Content */}
-        <div className="flex-1 space-y-4">
+        <fieldset disabled={isViewOnly} className={cn("flex-1 space-y-4 min-w-0 border-0 p-0 m-0", isViewOnly && "[&_input]:!bg-muted [&_textarea]:!bg-muted [&_[role=combobox]]:!bg-muted")}>
           {/* Basic Info */}
           <Card>
             <CardContent className="p-4">
@@ -1284,7 +1298,7 @@ const CortePage = () => {
               
             </CardContent>
           </Card>
-        </div>
+        </fieldset>
       </div>
 
       {/* Clear Confirmation Dialog */}
