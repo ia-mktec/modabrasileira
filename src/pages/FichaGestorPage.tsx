@@ -354,7 +354,6 @@ export default function FichaGestorPage() {
             <Field label={t("fichaGestor.pedido.modelo")} value={modelo?.descricao || "—"} />
             <Field label={t("fichaGestor.pedido.status")} value={pedido.status_kanban || "—"} />
             <Field label={t("fichaGestor.pedido.tecido")} value={pedido.tecido || "—"} />
-            <Field label={t("fichaGestor.pedido.cor")} value={pedido.cor || "—"} />
             <Field label={t("fichaGestor.pedido.consumo")} value={`${fmt(n(pedido.consumo_tecido), 3)} mt`} mono />
             {pedido.observacoes && (
               <div className="col-span-full">
