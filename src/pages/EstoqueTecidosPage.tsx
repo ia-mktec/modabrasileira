@@ -269,6 +269,16 @@ const EstoqueTecidosPage = () => {
           </div>
         </CardContent>
       </Card>
+
+      <DetalhesAlocacaoDialog
+        open={!!detalheRow}
+        onClose={() => setDetalheRow(null)}
+        clienteId={detalheRow?.cliente_id ?? null}
+        clienteNome={detalheRow?.cliente ?? ""}
+        tecido={detalheRow?.tecido ?? ""}
+        cor={detalheRow?.cor ?? ""}
+        composicao={detalheRow?.composicao ?? ""}
+      />
     </div>
   );
 };
