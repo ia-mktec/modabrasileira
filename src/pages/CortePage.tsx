@@ -16,6 +16,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from
 "@/components/ui/alert-dialog";
 import { useOrdensCorte, useModelos, useTecidos, useClientes, useAviamentos } from "@/hooks/useSupabaseData";
+import { useTecidoSaldos } from "@/hooks/useTecidoSaldos";
 import { Plus, Save, Trash2, Printer, Search, ImageOff, Scissors, AlertTriangle, CheckCircle, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { showSaving } from "@/lib/saving-toast";
