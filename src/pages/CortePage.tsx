@@ -224,42 +224,59 @@ const CortePage = () => {
     m.descricao.toLowerCase().includes(modeloSearchTerm.toLowerCase())
   );
 
-  // Filtra tecidos pelo cliente selecionado, agrupando por TIPO (nome) — uma entrada por tipo,
-  // somando estoque de todas as cores disponíveis e contando quantas cores têm saldo > 0.
-  const tecidosPorTipoMap = (() => {
-    const map = new Map<string, { nome: string; estoque_total: number; cores_disponiveis: number; cliente_nome: string }>();
-    tecidosDb
+  // Saldos calculados a partir de `tecido_entradas` (fonte real do estoque).
+  // Fallback para a tabela `tecidos` quando não há entradas registradas para o cliente.
+  const saldosCliente = (() => {
+    const fromEntradas = tecidoSaldos.filter((s) => s.cliente_id === selectedClienteId);
+    if (fromEntradas.length > 0) return fromEntradas;
+    return tecidosDb
       .filter((t: any) => t.cliente_id === selectedClienteId)
-      .forEach((t: any) => {
-        const nome = t.nome;
-        const estoque = Number(t.estoque_kg || 0);
-        const cur = map.get(nome) || { nome, estoque_total: 0, cores_disponiveis: 0, cliente_nome: t.clientes?.razao_social || "" };
-        cur.estoque_total += estoque;
-        if (estoque > 0) cur.cores_disponiveis += 1;
-        map.set(nome, cur);
+      .flatMap((t: any) => {
+        const cores = String(t.cor || "")
+          .split(/[,;/|]+/)
+          .map((c: string) => c.trim())
+          .filter(Boolean);
+        const base = { cliente_id: t.cliente_id, nome: t.nome, saldo: Number(t.estoque_kg || 0) };
+        return cores.length === 0
+          ? [{ ...base, cor: "" }]
+          : cores.map((cor: string) => ({ ...base, cor }));
       });
+  })();
+
+  // Lista de TIPOS (nome do tecido) com saldo agregado e nº de cores disponíveis.
+  const tecidosPorTipoMap = (() => {
+    const cliNome = clientesDb.find((c: any) => c.id === selectedClienteId)?.razao_social || "";
+    const map = new Map<string, { nome: string; estoque_total: number; cores_disponiveis: number; cliente_nome: string }>();
+    saldosCliente.forEach((s) => {
+      const cur = map.get(s.nome) || { nome: s.nome, estoque_total: 0, cores_disponiveis: 0, cliente_nome: cliNome };
+      cur.estoque_total += s.saldo;
+      if (s.saldo > 0) cur.cores_disponiveis += 1;
+      map.set(s.nome, cur);
+    });
     return map;
   })();
   const filteredTecidos = Array.from(tecidosPorTipoMap.values()).filter((t) =>
     t.nome.toLowerCase().includes(tecidoSearchTerm.toLowerCase())
   );
 
-  // Cores disponíveis em estoque (estoque_kg > 0) para o tipo de tecido selecionado.
-  // O campo `cor` pode conter várias cores separadas por vírgula — explodimos em uma opção por cor.
-  const coresDisponiveisData = tecidosDb
-    .filter((t: any) => t.cliente_id === selectedClienteId && t.nome === tecido && Number(t.estoque_kg || 0) > 0)
-    .flatMap((t: any) => {
-      const cores = String(t.cor || "")
-        .split(/[,;/|]+/)
-        .map((c: string) => c.trim())
-        .filter(Boolean);
-      if (cores.length === 0) return [{ ...t, cor: "" }];
-      return cores.map((c: string) => ({ ...t, cor: c }));
+  // Cores com saldo > 0 para o tipo selecionado. tecidoId é resolvido na tabela
+  // `tecidos` (necessário para o FK em grade_corte.tecido_id).
+  const coresDisponiveisData = saldosCliente
+    .filter((s) => s.nome === tecido && s.saldo > 0)
+    .map((s) => {
+      const tecRow = tecidosDb.find(
+        (t: any) =>
+          t.cliente_id === s.cliente_id &&
+          t.nome === s.nome &&
+          (t.cor || "") === (s.cor || ""),
+      );
+      return { id: tecRow?.id || "", cor: s.cor, estoque_kg: s.saldo };
     });
 
   const filteredCores = coresDisponiveisData.filter((t: any) =>
     (t.cor || "").toLowerCase().includes(corSearchTerm.toLowerCase())
   );
+
 
   const filteredClientes = clientesDb.filter(
     (c: any) =>
