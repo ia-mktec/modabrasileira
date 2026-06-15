@@ -1,49 +1,37 @@
 ## Objetivo
 
-Na tela **Estoque de Tecidos** (`/estoque-tecidos`), adicionar uma coluna **Ação** com botão **Detalhar** em cada linha. Ao clicar, abre um pop-up listando as ordens de corte que alocaram aquele tecido (cliente + tipo + cor).
+Incluir 4 novas colunas na exportação Excel do **Relatório de Produção** (`/relatorio-producao` → botão "Exportar Excel"):
 
-## Como o sistema sabe quem alocou
+1. **Qtd Peças Cortadas** — vem de `ordens_corte.quantidade_pecas` (OC vinculada ao pedido)
+2. **Data Envio Oficina** — `expedicao.data_saida` (mais recente da OC)
+3. **Nome da Oficina** — `expedicao.oficina_nome`
+4. **Data Recebimento Oficina** — `recebimento.data_recebimento` (mais recente)
 
-Nas entradas de `tecido_entradas` com `status = 'Alocado'`, os campos `ordem_corte1` e `ordem_corte2` guardam o número da ordem de corte (ex.: `26770`). Cruzando esses números com `ordens_corte.numero`, recuperamos modelo, data, cortador e status.
+Quando um pedido tiver várias OCs/expedições/recebimentos, é usado o registro mais recente por etapa. Quando a etapa ainda não ocorreu, a célula fica vazia.
 
-## Estrutura do pop-up
+## Alterações em `src/pages/RelatorioProducaoPage.tsx`
 
-Cabeçalho com a identificação do tecido:
-- Cliente • Tipo de tecido • Cor • Composição
+**1. Ampliar os fetches** (`useEffect` em torno da linha 232):
+- `ordens_corte` → adicionar `quantidade_pecas` ao `select`.
+- `expedicao` → adicionar `data_saida, oficina_nome` ao `select` e à interface `ExpedicaoRow`.
+- `recebimento` → já traz `data_recebimento` (ok).
 
-Tabela de ordens alocadas:
+**2. Construir 3 mapas auxiliares** (via `useMemo`, junto aos demais):
+- `qtdCortadaByPedido: Record<string, number>` — soma de `quantidade_pecas` das OCs do pedido.
+- `expByPedido: Record<string, { data_saida, oficina_nome }>` — última expedição (por `updated_at`) entre as OCs do pedido.
+- `recByPedido: Record<string, { data_recebimento }>` — último recebimento (por `data_recebimento || updated_at`).
+
+**3. Atualizar `exportExcel`** (linha 462): incluir as 4 chaves novas em cada `rows.push({...})`, formatando datas com `formatDateBR`, e adicionar 4 entradas em `ws["!cols"]`.
+
+Ordem final das colunas no Excel:
 
 ```text
-OC      Modelo    Data Corte    Metragem (mt)   Status OC      Ação
-26770   CH 032    03/06/2026         150,00      Em Andamento   [Abrir]
-24949   ZK 1272   28/03/2024         148,00      Concluído      [Abrir]
+Fase | Nº Pedido | Nº Ordem de Corte | Referência | Cliente | Tecido | Cor
+    | Data do Pedido | Qtd Peças Cortadas | Data Envio Oficina | Nome da Oficina
+    | Data Recebimento Oficina | Status Kanban
 ```
 
-Linha de total: soma da metragem alocada.
+## Fora de escopo
 
-Botão **Abrir** na linha → navega para `/corte` e carrega a OC (mesma rota de busca já existente). Pop-up fecha.
-
-## Comportamento
-
-- Se a linha de estoque não tiver alocações (`alocado = 0`), o botão **Detalhar** fica desabilitado com tooltip "Sem alocações".
-- Busca de ordens é feita no momento de abrir o diálogo (uma única query filtrando `tecido_entradas` por cliente_id + nome_tecido + cor + status = 'Alocado', depois `ordens_corte` pelos números encontrados).
-- Estado de carregamento mostra spinner pequeno dentro do diálogo.
-- Mensagem "Nenhuma ordem encontrada" quando os números em `ordem_corte1/2` não baterem com nenhuma OC.
-
-## Detalhes técnicos
-
-Arquivos:
-- **`src/pages/EstoqueTecidosPage.tsx`** — adicionar coluna **Ação**, botão **Detalhar** com ícone `Eye`, controlar `selectedRow` e abrir `<Dialog>`.
-- **`src/components/shared/DetalhesAlocacaoDialog.tsx`** (novo) — componente do diálogo. Recebe `{ open, onClose, cliente_id, cliente_nome, tecido, cor, composicao }`. Faz a busca interna usando `supabase`.
-
-Query (resumo):
-1. `tecido_entradas` filtrando por `cliente_id`, `nome_tecido`, `cor` e `status ILIKE 'aloc%'` → coleta `ordem_corte1` + `ordem_corte2` + `metragem_total`.
-2. `ordens_corte` com `.in('numero', [...])` → traz `numero, modelo_ref, data_corte, status, id`.
-3. Junta no cliente para montar a tabela.
-
-Navegação ao clicar **Abrir**: `navigate('/corte?oc=' + numero)` — a tela de Corte já tem busca por número (`searchTerm`). Se preferir abrir já carregada, posso ajustar `CortePage` para ler `?oc=` do query string em um passo extra (opcional, posso incluir no plano se desejar).
-
-## Fora do escopo
-
-- Edição/cancelamento de alocação a partir do pop-up.
-- Histórico de mudança de status da alocação.
+- Não altera a UI do kanban nem a exportação em PDF.
+- Não toca em outras telas/relatórios.

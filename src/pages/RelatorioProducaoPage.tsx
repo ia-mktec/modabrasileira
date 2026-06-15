@@ -40,6 +40,8 @@ interface ExpedicaoRow {
   ordem_corte_id: string;
   status: string;
   updated_at: string;
+  data_saida: string | null;
+  oficina_nome: string | null;
 }
 interface RecebimentoRow {
   ordem_corte_id: string;
