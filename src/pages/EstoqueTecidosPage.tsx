@@ -214,6 +214,7 @@ const EstoqueTecidosPage = () => {
                   <th className="text-right py-3 px-3 font-semibold">Alocado</th>
                   <th className="text-right py-3 px-3 font-semibold">Saldo</th>
                   <th className="text-center py-3 px-3 font-semibold">Status</th>
+                  <th className="text-center py-3 px-3 font-semibold">Ação</th>
                 </tr>
               </thead>
               <tbody>
