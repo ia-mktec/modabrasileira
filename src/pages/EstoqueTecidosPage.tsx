@@ -59,7 +59,7 @@ const EstoqueTecidosPage = () => {
       while (true) {
         const { data, error } = await supabase
           .from("tecido_entradas")
-          .select("cliente_nome,nome_tecido,composicao,cor,unidade_medida,status,qtde_rolos,metragem_total,data_entrada")
+          .select("cliente_id,cliente_nome,nome_tecido,composicao,cor,unidade_medida,status,qtde_rolos,metragem_total,data_entrada")
           .range(from, from + size - 1);
         if (error || !data || data.length === 0) break;
         all.push(...(data as Entrada[]));
