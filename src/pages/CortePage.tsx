@@ -20,7 +20,7 @@ import { useTecidoSaldos } from "@/hooks/useTecidoSaldos";
 import { Plus, Save, Trash2, Printer, Search, ImageOff, Scissors, AlertTriangle, CheckCircle, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { showSaving } from "@/lib/saving-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { CreatableCombobox } from "@/components/shared/CreatableCombobox";
 
 const TAMANHOS = ["PP", "P", "M", "G", "GG", "G1", "G2", "G3"];
@@ -69,6 +69,7 @@ const findModeloByReferencia = (modelos: any[], referencia: string | null | unde
 
 const CortePage = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { roles } = useAuth();
   const isViewOnly = !canEditRoute("/corte", roles);
   const { ordens: ordensCorteDb, loading: loadingOrdens, salvarOrdem, deletarOrdem, loadOrdemDetalhada } = useOrdensCorte();
@@ -363,6 +364,20 @@ const CortePage = () => {
     setIsLoadedFromSearch(false);
     setReservaAtiva(false);
   };
+
+  // Auto-carrega OC se vier por ?oc= na URL (ex.: vindo da tela Estoque de Tecidos)
+  useEffect(() => {
+    const ocParam = searchParams.get("oc");
+    if (!ocParam || ordensCorteDb.length === 0) return;
+    const found = ordensCorteDb.find((o: any) => String(o.numero) === ocParam);
+    if (found) {
+      loadOrdem(found);
+      setViewMode("ficha");
+      searchParams.delete("oc");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, ordensCorteDb]);
+
 
   // Carrega pedidos de modelos (apenas nao vinculados a ordens de corte)
   useEffect(() => {

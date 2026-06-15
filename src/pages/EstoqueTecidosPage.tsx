@@ -3,10 +3,13 @@ import { formatDateBR } from "@/lib/utils";
 import { PageLoading } from "@/components/shared/PageLoading";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Layers, Package } from "lucide-react";
+import { Search, Layers, Package, Eye } from "lucide-react";
+import { DetalhesAlocacaoDialog } from "@/components/shared/DetalhesAlocacaoDialog";
 
 interface Entrada {
+  cliente_id: string | null;
   cliente_nome: string | null;
   nome_tecido: string;
   composicao: string | null;
@@ -20,6 +23,7 @@ interface Entrada {
 
 interface SaldoRow {
   key: string;
+  cliente_id: string | null;
   cliente: string;
   tecido: string;
   composicao: string;
@@ -45,6 +49,7 @@ const EstoqueTecidosPage = () => {
   const [filtroStatus, setFiltroStatus] = useState<"todos" | "disponivel" | "alocado" | "esgotado">("todos");
   const [entradas, setEntradas] = useState<Entrada[]>([]);
   const [loading, setLoading] = useState(true);
+  const [detalheRow, setDetalheRow] = useState<SaldoRow | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -55,7 +60,7 @@ const EstoqueTecidosPage = () => {
       while (true) {
         const { data, error } = await supabase
           .from("tecido_entradas")
-          .select("cliente_nome,nome_tecido,composicao,cor,unidade_medida,status,qtde_rolos,metragem_total,data_entrada")
+          .select("cliente_id,cliente_nome,nome_tecido,composicao,cor,unidade_medida,status,qtde_rolos,metragem_total,data_entrada")
           .range(from, from + size - 1);
         if (error || !data || data.length === 0) break;
         all.push(...(data as Entrada[]));
@@ -80,7 +85,7 @@ const EstoqueTecidosPage = () => {
       const rolos = Number(e.qtde_rolos || 0);
       let row = map.get(key);
       if (!row) {
-        row = { key, cliente, tecido, composicao: comp, cor, unidade: un, rolos: 0, entrada: 0, alocado: 0, disponivel: 0, ultimaData: null };
+        row = { key, cliente_id: e.cliente_id || null, cliente, tecido, composicao: comp, cor, unidade: un, rolos: 0, entrada: 0, alocado: 0, disponivel: 0, ultimaData: null };
         map.set(key, row);
       }
       row.entrada += qtd;
@@ -209,6 +214,7 @@ const EstoqueTecidosPage = () => {
                   <th className="text-right py-3 px-3 font-semibold">Alocado</th>
                   <th className="text-right py-3 px-3 font-semibold">Saldo</th>
                   <th className="text-center py-3 px-3 font-semibold">Status</th>
+                  <th className="text-center py-3 px-3 font-semibold">Ação</th>
                 </tr>
               </thead>
               <tbody>
@@ -232,10 +238,22 @@ const EstoqueTecidosPage = () => {
                       {r.disponivel.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}
                     </td>
                     <td className="py-2 px-3 text-center">{statusBadge(r)}</td>
+                    <td className="py-2 px-3 text-center">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 px-2 text-xs"
+                        disabled={r.alocado <= 0}
+                        title={r.alocado <= 0 ? "Sem alocações" : "Ver ordens alocadas"}
+                        onClick={() => setDetalheRow(r)}
+                      >
+                        <Eye className="w-3 h-3 mr-1" /> Detalhar
+                      </Button>
+                    </td>
                   </tr>
                 ))}
                 {filtered.length === 0 && (
-                  <tr><td colSpan={11} className="py-8 text-center text-muted-foreground text-sm">Nenhum tecido encontrado.</td></tr>
+                  <tr><td colSpan={12} className="py-8 text-center text-muted-foreground text-sm">Nenhum tecido encontrado.</td></tr>
                 )}
               </tbody>
               <tfoot>
@@ -244,13 +262,23 @@ const EstoqueTecidosPage = () => {
                   <td className="py-3 px-3 text-right font-mono">{filtered.reduce((s, r) => s + r.entrada, 0).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}</td>
                   <td className="py-3 px-3 text-right font-mono text-[hsl(38,92%,50%)]">{filtered.reduce((s, r) => s + r.alocado, 0).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}</td>
                   <td className="py-3 px-3 text-right font-mono text-[hsl(142,71%,35%)]">{filtered.reduce((s, r) => s + r.disponivel, 0).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}</td>
-                  <td></td>
+                  <td colSpan={2}></td>
                 </tr>
               </tfoot>
             </table>
           </div>
         </CardContent>
       </Card>
+
+      <DetalhesAlocacaoDialog
+        open={!!detalheRow}
+        onClose={() => setDetalheRow(null)}
+        clienteId={detalheRow?.cliente_id ?? null}
+        clienteNome={detalheRow?.cliente ?? ""}
+        tecido={detalheRow?.tecido ?? ""}
+        cor={detalheRow?.cor ?? ""}
+        composicao={detalheRow?.composicao ?? ""}
+      />
     </div>
   );
 };
