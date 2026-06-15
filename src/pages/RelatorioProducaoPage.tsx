@@ -233,8 +233,8 @@ const RelatorioProducaoPage = () => {
 
     Promise.all([
       fetchAll<PedidoRow>("modelo_pedidos", "*"),
-      fetchAll<OrdemCorteRow & { id: string; modelo_ref: string | null; tecido_nome: string | null; cliente_id: string | null; data_corte: string | null; created_at: string }>("ordens_corte", "id,numero,numero_pedido,status,updated_at,modelo_ref,tecido_nome,cliente_id,data_corte,created_at"),
-      fetchAll<ExpedicaoRow>("expedicao", "ordem_corte_id,status,updated_at"),
+      fetchAll<OrdemCorteRow & { id: string; modelo_ref: string | null; tecido_nome: string | null; cliente_id: string | null; data_corte: string | null; created_at: string; quantidade_pecas: number | null }>("ordens_corte", "id,numero,numero_pedido,status,updated_at,modelo_ref,tecido_nome,cliente_id,data_corte,created_at,quantidade_pecas"),
+      fetchAll<ExpedicaoRow>("expedicao", "ordem_corte_id,status,updated_at,data_saida,oficina_nome"),
       fetchAll<RecebimentoRow>("recebimento", "ordem_corte_id,status,updated_at,data_recebimento,total_sem_defeitos,segunda_qualidade"),
       fetchAll<EntregaRow>("entrega_cliente", "ordem_corte_id,status,updated_at"),
       fetchAll<{ referencia: string; imagem_url: string | null }>("modelos", "referencia,imagem_url"),
