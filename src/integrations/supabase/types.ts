@@ -1287,6 +1287,10 @@ export type Database = {
         Returns: boolean
       }
       proximo_numero_pedido: { Args: never; Returns: string }
+      recompute_tecido_estoque: {
+        Args: { p_cliente_id: string; p_cor: string; p_nome: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role:
