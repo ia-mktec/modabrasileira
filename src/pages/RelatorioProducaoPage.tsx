@@ -500,6 +500,8 @@ const RelatorioProducaoPage = () => {
       kanbanColumns.forEach((col) => {
         const fase = t(`reports.producao.columns.${col.key}`);
         grouped[col.key].forEach((p) => {
+          const exp = expByPedido[p.numero_pedido];
+          const rec = recByPedido[p.numero_pedido];
           rows.push({
             "Fase": fase,
             "Nº Pedido": p.numero_pedido,
@@ -509,6 +511,10 @@ const RelatorioProducaoPage = () => {
             "Tecido": p.tecido || "",
             "Cor": p.cor || "",
             "Data do Pedido": p.data_pedido ? formatDateBR(p.data_pedido) : "",
+            "Qtd Peças Cortadas": qtdCortadaByPedido[p.numero_pedido] || 0,
+            "Data Envio Oficina": exp?.data_saida ? formatDateBR(exp.data_saida) : "",
+            "Nome da Oficina": exp?.oficina_nome || "",
+            "Data Recebimento Oficina": rec?.data_recebimento ? formatDateBR(rec.data_recebimento) : "",
             "Status Kanban": p.status_kanban,
           });
         });
@@ -520,7 +526,9 @@ const RelatorioProducaoPage = () => {
       const ws = XLSX.utils.json_to_sheet(rows);
       ws["!cols"] = [
         { wch: 22 }, { wch: 16 }, { wch: 20 }, { wch: 16 }, { wch: 28 },
-        { wch: 18 }, { wch: 18 }, { wch: 14 }, { wch: 16 },
+        { wch: 18 }, { wch: 18 }, { wch: 14 },
+        { wch: 18 }, { wch: 18 }, { wch: 22 }, { wch: 22 },
+        { wch: 16 },
       ];
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Fluxo de Produção");
