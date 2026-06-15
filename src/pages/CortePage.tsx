@@ -69,6 +69,7 @@ const findModeloByReferencia = (modelos: any[], referencia: string | null | unde
 
 const CortePage = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { roles } = useAuth();
   const isViewOnly = !canEditRoute("/corte", roles);
   const { ordens: ordensCorteDb, loading: loadingOrdens, salvarOrdem, deletarOrdem, loadOrdemDetalhada } = useOrdensCorte();
