@@ -238,10 +238,22 @@ const EstoqueTecidosPage = () => {
                       {r.disponivel.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}
                     </td>
                     <td className="py-2 px-3 text-center">{statusBadge(r)}</td>
+                    <td className="py-2 px-3 text-center">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 px-2 text-xs"
+                        disabled={r.alocado <= 0}
+                        title={r.alocado <= 0 ? "Sem alocações" : "Ver ordens alocadas"}
+                        onClick={() => setDetalheRow(r)}
+                      >
+                        <Eye className="w-3 h-3 mr-1" /> Detalhar
+                      </Button>
+                    </td>
                   </tr>
                 ))}
                 {filtered.length === 0 && (
-                  <tr><td colSpan={11} className="py-8 text-center text-muted-foreground text-sm">Nenhum tecido encontrado.</td></tr>
+                  <tr><td colSpan={12} className="py-8 text-center text-muted-foreground text-sm">Nenhum tecido encontrado.</td></tr>
                 )}
               </tbody>
               <tfoot>
@@ -250,7 +262,7 @@ const EstoqueTecidosPage = () => {
                   <td className="py-3 px-3 text-right font-mono">{filtered.reduce((s, r) => s + r.entrada, 0).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}</td>
                   <td className="py-3 px-3 text-right font-mono text-[hsl(38,92%,50%)]">{filtered.reduce((s, r) => s + r.alocado, 0).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}</td>
                   <td className="py-3 px-3 text-right font-mono text-[hsl(142,71%,35%)]">{filtered.reduce((s, r) => s + r.disponivel, 0).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}</td>
-                  <td></td>
+                  <td colSpan={2}></td>
                 </tr>
               </tfoot>
             </table>
