@@ -20,7 +20,7 @@ import { useTecidoSaldos } from "@/hooks/useTecidoSaldos";
 import { Plus, Save, Trash2, Printer, Search, ImageOff, Scissors, AlertTriangle, CheckCircle, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { showSaving } from "@/lib/saving-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { CreatableCombobox } from "@/components/shared/CreatableCombobox";
 
 const TAMANHOS = ["PP", "P", "M", "G", "GG", "G1", "G2", "G3"];
