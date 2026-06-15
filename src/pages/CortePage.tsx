@@ -365,6 +365,20 @@ const CortePage = () => {
     setReservaAtiva(false);
   };
 
+  // Auto-carrega OC se vier por ?oc= na URL (ex.: vindo da tela Estoque de Tecidos)
+  useEffect(() => {
+    const ocParam = searchParams.get("oc");
+    if (!ocParam || ordensCorteDb.length === 0) return;
+    const found = ordensCorteDb.find((o: any) => String(o.numero) === ocParam);
+    if (found) {
+      loadOrdem(found);
+      setViewMode("ficha");
+      searchParams.delete("oc");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, ordensCorteDb]);
+
+
   // Carrega pedidos de modelos (apenas nao vinculados a ordens de corte)
   useEffect(() => {
     const loadPedidos = async () => {
