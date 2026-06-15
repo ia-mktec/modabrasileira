@@ -23,6 +23,7 @@ interface Entrada {
 
 interface SaldoRow {
   key: string;
+  cliente_id: string | null;
   cliente: string;
   tecido: string;
   composicao: string;
