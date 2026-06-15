@@ -40,6 +40,8 @@ interface ExpedicaoRow {
   ordem_corte_id: string;
   status: string;
   updated_at: string;
+  data_saida: string | null;
+  oficina_nome: string | null;
 }
 interface RecebimentoRow {
   ordem_corte_id: string;
@@ -231,8 +233,8 @@ const RelatorioProducaoPage = () => {
 
     Promise.all([
       fetchAll<PedidoRow>("modelo_pedidos", "*"),
-      fetchAll<OrdemCorteRow & { id: string; modelo_ref: string | null; tecido_nome: string | null; cliente_id: string | null; data_corte: string | null; created_at: string }>("ordens_corte", "id,numero,numero_pedido,status,updated_at,modelo_ref,tecido_nome,cliente_id,data_corte,created_at"),
-      fetchAll<ExpedicaoRow>("expedicao", "ordem_corte_id,status,updated_at"),
+      fetchAll<OrdemCorteRow & { id: string; modelo_ref: string | null; tecido_nome: string | null; cliente_id: string | null; data_corte: string | null; created_at: string; quantidade_pecas: number | null }>("ordens_corte", "id,numero,numero_pedido,status,updated_at,modelo_ref,tecido_nome,cliente_id,data_corte,created_at,quantidade_pecas"),
+      fetchAll<ExpedicaoRow>("expedicao", "ordem_corte_id,status,updated_at,data_saida,oficina_nome"),
       fetchAll<RecebimentoRow>("recebimento", "ordem_corte_id,status,updated_at,data_recebimento,total_sem_defeitos,segunda_qualidade"),
       fetchAll<EntregaRow>("entrega_cliente", "ordem_corte_id,status,updated_at"),
       fetchAll<{ referencia: string; imagem_url: string | null }>("modelos", "referencia,imagem_url"),
@@ -402,6 +404,39 @@ const RelatorioProducaoPage = () => {
     return m;
   }, [ordens]);
 
+  const qtdCortadaByPedido = useMemo(() => {
+    const m: Record<string, number> = {};
+    ordens.forEach((o: any) => {
+      if (!o.numero_pedido) return;
+      m[o.numero_pedido] = (m[o.numero_pedido] || 0) + Number(o.quantidade_pecas || 0);
+    });
+    return m;
+  }, [ordens]);
+
+  const expByPedido = useMemo(() => {
+    const m: Record<string, { data_saida: string | null; oficina_nome: string | null; ts: number }> = {};
+    expedicoes.forEach((x) => {
+      const np = ordemToPedido[x.ordem_corte_id];
+      if (!np) return;
+      const ts = new Date(x.data_saida || x.updated_at || 0).getTime() || 0;
+      const cur = m[np];
+      if (!cur || ts >= cur.ts) m[np] = { data_saida: x.data_saida, oficina_nome: x.oficina_nome, ts };
+    });
+    return m;
+  }, [expedicoes, ordemToPedido]);
+
+  const recByPedido = useMemo(() => {
+    const m: Record<string, { data_recebimento: string | null; ts: number }> = {};
+    recebimentos.forEach((x) => {
+      const np = ordemToPedido[x.ordem_corte_id];
+      if (!np) return;
+      const ts = new Date(x.data_recebimento || x.updated_at || 0).getTime() || 0;
+      const cur = m[np];
+      if (!cur || ts >= cur.ts) m[np] = { data_recebimento: x.data_recebimento, ts };
+    });
+    return m;
+  }, [recebimentos, ordemToPedido]);
+
   const pedidosFiltrados = useMemo(() => {
     const q = norm(filtroOC);
     return pedidos.filter((p) => {
@@ -465,6 +500,8 @@ const RelatorioProducaoPage = () => {
       kanbanColumns.forEach((col) => {
         const fase = t(`reports.producao.columns.${col.key}`);
         grouped[col.key].forEach((p) => {
+          const exp = expByPedido[p.numero_pedido];
+          const rec = recByPedido[p.numero_pedido];
           rows.push({
             "Fase": fase,
             "Nº Pedido": p.numero_pedido,
@@ -474,6 +511,10 @@ const RelatorioProducaoPage = () => {
             "Tecido": p.tecido || "",
             "Cor": p.cor || "",
             "Data do Pedido": p.data_pedido ? formatDateBR(p.data_pedido) : "",
+            "Qtd Peças Cortadas": qtdCortadaByPedido[p.numero_pedido] || 0,
+            "Data Envio Oficina": exp?.data_saida ? formatDateBR(exp.data_saida) : "",
+            "Nome da Oficina": exp?.oficina_nome || "",
+            "Data Recebimento Oficina": rec?.data_recebimento ? formatDateBR(rec.data_recebimento) : "",
             "Status Kanban": p.status_kanban,
           });
         });
@@ -485,7 +526,9 @@ const RelatorioProducaoPage = () => {
       const ws = XLSX.utils.json_to_sheet(rows);
       ws["!cols"] = [
         { wch: 22 }, { wch: 16 }, { wch: 20 }, { wch: 16 }, { wch: 28 },
-        { wch: 18 }, { wch: 18 }, { wch: 14 }, { wch: 16 },
+        { wch: 18 }, { wch: 18 }, { wch: 14 },
+        { wch: 18 }, { wch: 18 }, { wch: 22 }, { wch: 22 },
+        { wch: 16 },
       ];
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Fluxo de Produção");
