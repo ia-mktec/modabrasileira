@@ -49,6 +49,7 @@ const EstoqueTecidosPage = () => {
   const [filtroStatus, setFiltroStatus] = useState<"todos" | "disponivel" | "alocado" | "esgotado">("todos");
   const [entradas, setEntradas] = useState<Entrada[]>([]);
   const [loading, setLoading] = useState(true);
+  const [detalheRow, setDetalheRow] = useState<SaldoRow | null>(null);
 
   useEffect(() => {
     (async () => {
