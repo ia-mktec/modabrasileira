@@ -84,7 +84,7 @@ const EstoqueTecidosPage = () => {
       const rolos = Number(e.qtde_rolos || 0);
       let row = map.get(key);
       if (!row) {
-        row = { key, cliente, tecido, composicao: comp, cor, unidade: un, rolos: 0, entrada: 0, alocado: 0, disponivel: 0, ultimaData: null };
+        row = { key, cliente_id: e.cliente_id || null, cliente, tecido, composicao: comp, cor, unidade: un, rolos: 0, entrada: 0, alocado: 0, disponivel: 0, ultimaData: null };
         map.set(key, row);
       }
       row.entrada += qtd;
