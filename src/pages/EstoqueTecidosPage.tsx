@@ -3,10 +3,13 @@ import { formatDateBR } from "@/lib/utils";
 import { PageLoading } from "@/components/shared/PageLoading";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Layers, Package } from "lucide-react";
+import { Search, Layers, Package, Eye } from "lucide-react";
+import { DetalhesAlocacaoDialog } from "@/components/shared/DetalhesAlocacaoDialog";
 
 interface Entrada {
+  cliente_id: string | null;
   cliente_nome: string | null;
   nome_tecido: string;
   composicao: string | null;
