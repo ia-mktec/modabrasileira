@@ -73,6 +73,7 @@ const CortePage = () => {
   const { ordens: ordensCorteDb, loading: loadingOrdens, salvarOrdem, deletarOrdem, loadOrdemDetalhada } = useOrdensCorte();
   const { modelos: modelosDb, loading: loadingModelos, carregarModeloCompleto } = useModelos();
   const { tecidos: tecidosDb, loading: loadingTecidos, refetch: refetchTecidos } = useTecidos();
+  const { saldos: tecidoSaldos, refetch: refetchSaldos } = useTecidoSaldos();
   const { clientes: clientesDb, loading: loadingClientes } = useClientes();
   const { aviamentos: aviamentosDb, loading: loadingAviamentos } = useAviamentos();
   const [selectedTecidoId, setSelectedTecidoId] = useState("");
