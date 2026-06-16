@@ -212,6 +212,24 @@ const CortePage = () => {
     }
   }, [modeloRef, modelosDb]);
 
+  // Auto-resolve selectedClienteId quando o usuário digita o nome do cliente
+  // diretamente no Input (sem usar o Buscar). Sem isso, o botão de buscar
+  // tecido bloqueia com "Selecione um cliente".
+  useEffect(() => {
+    const norm = (s: string) =>
+      (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+    const alvo = norm(clienteNome);
+    if (!alvo) {
+      if (selectedClienteId) setSelectedClienteId("");
+      return;
+    }
+    const atual = clientesDb.find((c: any) => c.id === selectedClienteId);
+    if (atual && norm(atual.razao_social) === alvo) return;
+    const match = clientesDb.find((c: any) => norm(c.razao_social) === alvo);
+    if (match && match.id !== selectedClienteId) setSelectedClienteId(match.id);
+    else if (!match && selectedClienteId) setSelectedClienteId("");
+  }, [clienteNome, clientesDb, selectedClienteId]);
+
   const filteredOrdens = ordensCorteDb.filter(
     (oc: any) =>
     (oc.numero || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
