@@ -480,7 +480,10 @@ const CortePage = () => {
     if (p.tecido) setTecido(p.tecido);
     if (p.consumo_tecido) setConsumoPorPeca(String(p.consumo_tecido));
     if (p.cliente) {
-      const cli = clientesDb.find((c: any) => c.razao_social === p.cliente);
+      const norm = (s: string) =>
+        (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+      const alvo = norm(p.cliente);
+      const cli = clientesDb.find((c: any) => norm(c.razao_social) === alvo);
       if (cli) {
         setSelectedClienteId(cli.id);
         setClienteNome(cli.razao_social);
