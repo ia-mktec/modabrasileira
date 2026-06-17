@@ -47,21 +47,22 @@ export async function loadRoutePermissionsFromDB(): Promise<void> {
   const { data, error } = await supabase
     .from("route_permissions")
     .select("route, role, permission");
-  if (error || !data || data.length === 0) {
+  if (error || !data) {
     // Unauthenticated or RLS blocked — keep current matrix (default fallback) intact
     return;
   }
+  // Start from DEFAULT so any route/role not yet persisted in DB still works as fallback
   const next: RoutePermissionsMap = {};
+  for (const route of Object.keys(DEFAULT_ROUTE_PERMISSIONS)) {
+    next[route] = { ...DEFAULT_ROUTE_PERMISSIONS[route] };
+  }
+  // Overlay DB rows on top (DB wins where defined)
   for (const row of data) {
     const route = row.route as string;
     const role = row.role as AppRole;
     const perm = row.permission as Permission;
     if (!next[route]) next[route] = {};
     next[route][role] = perm;
-  }
-  // Ensure all known default routes exist as keys (so they appear in matrix even if no roles)
-  for (const route of Object.keys(DEFAULT_ROUTE_PERMISSIONS)) {
-    if (!next[route]) next[route] = {};
   }
   setRoutePermissions(next);
 }
