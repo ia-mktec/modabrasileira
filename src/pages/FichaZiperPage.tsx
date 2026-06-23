@@ -429,8 +429,9 @@ const FichaZiperPage = () => {
           </Card>
 
           {/* Row 2: Referência | Tecido | Descrição Zíper (highlighted) */}
-          <Card>
-            <CardContent className="p-4">
+          <Card className="ficha-header-card">
+            <CardContent className="p-4 ficha-header-content">
+
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-1">
                   <Label className="text-xs font-bold uppercase">Referência</Label>
