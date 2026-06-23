@@ -381,8 +381,9 @@ const FichaZiperPage = () => {
         {/* Main Ficha Content */}
         <div className="flex-1 space-y-4">
           {/* Row 1: Ordem de Corte | Cliente | Data de Corte */}
-          <Card>
-            <CardContent className="p-4">
+          <Card className="ficha-header-card">
+            <CardContent className="p-4 ficha-header-content">
+
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-1">
                   <Label className="text-xs font-bold uppercase">Ordem de Corte</Label>
@@ -428,8 +429,9 @@ const FichaZiperPage = () => {
           </Card>
 
           {/* Row 2: Referência | Tecido | Descrição Zíper (highlighted) */}
-          <Card>
-            <CardContent className="p-4">
+          <Card className="ficha-header-card">
+            <CardContent className="p-4 ficha-header-content">
+
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-1">
                   <Label className="text-xs font-bold uppercase">Referência</Label>
@@ -491,8 +493,9 @@ const FichaZiperPage = () => {
                 </Card>
               ))}
               {/* Linha de TOTAL */}
-              <Card className="border-2 border-primary/40">
-                <CardContent className="p-4">
+              <Card className="border-2 border-primary/40 ficha-total-card">
+                <CardContent className="p-4 ficha-total-content">
+
                   <div className="grid grid-cols-3 gap-4 items-center">
                     <div className="text-sm font-bold uppercase">Total</div>
                     <div />
