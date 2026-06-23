@@ -249,4 +249,44 @@
     max-height: 560mm;
     overflow: hidden !important;
   }
+
+  /* === Ficha de Corte — Zíper: caber em UMA página A4 === */
+  .ficha-ziper-print {
+    padding: 0 !important;
+  }
+  .ficha-ziper-print > * + * {
+    margin-top: 4px !important;
+  }
+  .ficha-ziper-print .ziper-cor-card,
+  .ficha-ziper-print [class*="rounded-lg"] {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  .ficha-ziper-print .ziper-cor-content {
+    padding: 4px 8px !important;
+  }
+  .ficha-ziper-print .ziper-cor-content .w-16.h-16 {
+    width: 28px !important;
+    height: 28px !important;
+  }
+  .ficha-ziper-print .ziper-cor-content .h-16 {
+    height: 28px !important;
+  }
+  .ficha-ziper-print .ziper-cor-content label,
+  .ficha-ziper-print .ziper-cor-content .text-xs {
+    font-size: 9px !important;
+    padding: 1px 2px !important;
+  }
+  .ficha-ziper-print .ziper-cor-content .text-sm,
+  .ficha-ziper-print .ziper-cor-content .text-lg {
+    font-size: 11px !important;
+    line-height: 1.1 !important;
+  }
+  .ficha-ziper-print .ziper-cor-content .gap-4 {
+    gap: 6px !important;
+  }
+  .ficha-ziper-print .ziper-cor-content .space-y-1 > * + * {
+    margin-top: 1px !important;
+  }
+
 }
