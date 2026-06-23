@@ -255,38 +255,95 @@
     padding: 0 !important;
   }
   .ficha-ziper-print > * + * {
-    margin-top: 4px !important;
+    margin-top: 3px !important;
+  }
+  .ficha-ziper-print .space-y-4 > * + * {
+    margin-top: 3px !important;
   }
   .ficha-ziper-print .ziper-cor-card,
+  .ficha-ziper-print .ficha-header-card,
+  .ficha-ziper-print .ficha-total-card,
   .ficha-ziper-print [class*="rounded-lg"] {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
-  .ficha-ziper-print .ziper-cor-content {
+
+  /* Cabeçalho do bloco (faixa azul) bem compacto */
+  .ficha-ziper-print .bg-\[hsl\(217\,71\%\,25\%\)\] {
+    padding: 4px 12px !important;
+  }
+  .ficha-ziper-print .bg-\[hsl\(217\,71\%\,25\%\)\] h1 {
+    font-size: 14px !important;
+  }
+
+  /* Cards de cabeçalho (Ordem/Cliente/Data e Ref/Tecido/Descrição) - reduzidos */
+  .ficha-ziper-print .ficha-header-content {
     padding: 4px 8px !important;
   }
+  .ficha-ziper-print .ficha-header-content .gap-4 {
+    gap: 6px !important;
+  }
+  .ficha-ziper-print .ficha-header-content label {
+    font-size: 8px !important;
+    margin-bottom: 0 !important;
+  }
+  .ficha-ziper-print .ficha-header-content input,
+  .ficha-ziper-print .ficha-header-content textarea {
+    height: 18px !important;
+    min-height: 18px !important;
+    padding: 1px 6px !important;
+    font-size: 10px !important;
+    line-height: 1.1 !important;
+  }
+  .ficha-ziper-print .ficha-header-content textarea {
+    height: auto !important;
+    min-height: 18px !important;
+  }
+  .ficha-ziper-print .ficha-header-content .space-y-1 > * + * {
+    margin-top: 1px !important;
+  }
+
+  /* Cards de cores - AUMENTADOS para preencher a página */
+  .ficha-ziper-print .ziper-cor-content {
+    padding: 6px 12px !important;
+  }
   .ficha-ziper-print .ziper-cor-content .w-16.h-16 {
-    width: 28px !important;
-    height: 28px !important;
+    width: 44px !important;
+    height: 44px !important;
   }
   .ficha-ziper-print .ziper-cor-content .h-16 {
-    height: 28px !important;
+    height: 44px !important;
   }
   .ficha-ziper-print .ziper-cor-content label,
   .ficha-ziper-print .ziper-cor-content .text-xs {
-    font-size: 9px !important;
-    padding: 1px 2px !important;
-  }
-  .ficha-ziper-print .ziper-cor-content .text-sm,
-  .ficha-ziper-print .ziper-cor-content .text-lg {
     font-size: 11px !important;
-    line-height: 1.1 !important;
+    padding: 2px 4px !important;
+  }
+  .ficha-ziper-print .ziper-cor-content .text-sm {
+    font-size: 14px !important;
+    line-height: 1.2 !important;
+  }
+  .ficha-ziper-print .ziper-cor-content .text-lg {
+    font-size: 18px !important;
+    line-height: 1.2 !important;
   }
   .ficha-ziper-print .ziper-cor-content .gap-4 {
-    gap: 6px !important;
+    gap: 8px !important;
   }
   .ficha-ziper-print .ziper-cor-content .space-y-1 > * + * {
-    margin-top: 1px !important;
+    margin-top: 2px !important;
   }
+
+  /* Card de TOTAL - destaque */
+  .ficha-ziper-print .ficha-total-content {
+    padding: 8px 12px !important;
+  }
+  .ficha-ziper-print .ficha-total-content .text-sm {
+    font-size: 14px !important;
+  }
+  .ficha-ziper-print .ficha-total-content .text-xl {
+    font-size: 20px !important;
+  }
+
 
 }
