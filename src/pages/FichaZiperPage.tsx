@@ -153,23 +153,40 @@ const FichaZiperPage = () => {
       const isZiper = (t: string | null | undefined) =>
         !!t && (t.toLowerCase().includes("zíper") || t.toLowerCase().includes("ziper"));
 
+      // Exclui explicitamente outros tipos comuns que poderiam vir misturados
+      const isOutroAviamento = (t: string | null | undefined) => {
+        const v = (t || "").toLowerCase();
+        if (!v) return false;
+        return /(fivela|bot[ãa]o|elastico|elástico|cord[ãa]o|ilh[óo]s|rebite|tag|etiqueta|linha|velcro|fita|regulador|passador)/.test(v);
+      };
+
       const norm = (s: string | null | undefined) =>
         (s || "").toString().trim().toLowerCase();
 
-      const ziperAvis = avis.filter((a: any) => isZiper(a.tipo) || isZiper(a.descricao));
+      const ziperAvis = avis.filter((a: any) => isZiper(a.tipo));
 
       const result: ZiperOrdemData[] = ocs.map((oc: any) => {
+        // Estritamente itens cujo TIPO é zíper. Se tipo estiver vazio, exige
+        // que a descrição mencione zíper E não seja outro tipo de aviamento.
         let zips = aviPedido.filter(
           (a: any) =>
             !!oc.numero_pedido &&
             a.numero_pedido === oc.numero_pedido &&
             (a.modelo_ref === oc.modelo_ref || !a.modelo_ref) &&
-            (isZiper(a.tipo) || isZiper(a.descricao_item))
+            !isOutroAviamento(a.tipo) &&
+            !isOutroAviamento(a.descricao_item) &&
+            (isZiper(a.tipo) || (!a.tipo && isZiper(a.descricao_item)))
         );
 
         const modeloId = modeloByReferencia.get(oc.modelo_ref);
         const zipsModelo = modeloAviamentos
-          .filter((a: any) => modeloId && a.modelo_id === modeloId && isZiper(a.descricao))
+          .filter(
+            (a: any) =>
+              modeloId &&
+              a.modelo_id === modeloId &&
+              isZiper(a.descricao) &&
+              !isOutroAviamento(a.descricao)
+          )
           .map((a: any) => ({
             tipo: "Zíper",
             descricao_item: a.descricao,
@@ -177,6 +194,7 @@ const FichaZiperPage = () => {
           }));
 
         if (zips.length === 0) zips = zipsModelo;
+
 
         const descricaoZiper = Array.from(
           new Set(
@@ -280,7 +298,8 @@ const FichaZiperPage = () => {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-4">
+    <div className="p-4 md:p-6 space-y-4 ficha-ziper-print">
+
       {/* Header */}
       <div className="bg-[hsl(217,71%,25%)] text-[hsl(0,0%,100%)] rounded-t-lg px-6 py-3 flex items-center gap-4">
         <Button
@@ -438,8 +457,9 @@ const FichaZiperPage = () => {
           {cores.length > 0 ? (
             <>
               {cores.map((row, idx) => (
-                <Card key={idx}>
-                  <CardContent className="p-4">
+                <Card key={idx} className="ziper-cor-card">
+                  <CardContent className="p-4 ziper-cor-content">
+
                     <div className="grid grid-cols-3 gap-4 items-end">
                       {/* COR with color swatch */}
                       <div className="space-y-1">
