@@ -457,8 +457,9 @@ const FichaZiperPage = () => {
           {cores.length > 0 ? (
             <>
               {cores.map((row, idx) => (
-                <Card key={idx}>
-                  <CardContent className="p-4">
+                <Card key={idx} className="ziper-cor-card">
+                  <CardContent className="p-4 ziper-cor-content">
+
                     <div className="grid grid-cols-3 gap-4 items-end">
                       {/* COR with color swatch */}
                       <div className="space-y-1">
