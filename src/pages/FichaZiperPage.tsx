@@ -381,8 +381,9 @@ const FichaZiperPage = () => {
         {/* Main Ficha Content */}
         <div className="flex-1 space-y-4">
           {/* Row 1: Ordem de Corte | Cliente | Data de Corte */}
-          <Card>
-            <CardContent className="p-4">
+          <Card className="ficha-header-card">
+            <CardContent className="p-4 ficha-header-content">
+
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-1">
                   <Label className="text-xs font-bold uppercase">Ordem de Corte</Label>
