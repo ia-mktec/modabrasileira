@@ -546,8 +546,15 @@ const ExpedicaoPage = () => {
 
   const totalProdBySize = (tam: string) => gradeRows.reduce((s, r) => s + (r.qtdProduzida[tam] || 0), 0);
   const totalProdGeral = TAMANHOS.reduce((s, t) => s + totalProdBySize(t), 0);
+  const enviadoNesteRegistro = (row: GradeExpRow, tam: string): number => {
+    if (!editingExpedicaoId) return 0;
+    const g = editingExpedicaoGrade.find((x: any) => (x.cor || "") === (row.cor || ""));
+    if (!g) return 0;
+    const key = (tam.toLowerCase() + "_exp") as keyof typeof g;
+    return Number((g as any)[key]) || 0;
+  };
   const saldoCell = (row: GradeExpRow, tam: string) =>
-    Math.max(0, (row.qtdProduzida[tam] || 0) - (row.qtdEnviadaAnterior[tam] || 0));
+    Math.max(0, (row.qtdProduzida[tam] || 0) - (row.qtdEnviadaAnterior[tam] || 0) + enviadoNesteRegistro(row, tam));
   const totalEnviarRow = (row: GradeExpRow) =>
     TAMANHOS.reduce((s, t) => s + (parseInt(row.qtdEnviar[t]) || 0), 0);
   const totalEnviarGeral = gradeRows.reduce((s, r) => s + totalEnviarRow(r), 0);
