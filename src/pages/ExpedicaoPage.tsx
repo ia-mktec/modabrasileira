@@ -751,6 +751,7 @@ const ExpedicaoPage = () => {
         <style>
           body { margin: 0; padding: 0; background: #fff; }
           .popup-print-wrapper { padding: 0; }
+          .popup-print-wrapper .print\\:hidden { display: none !important; }
         </style>
       </head>
       <body>
