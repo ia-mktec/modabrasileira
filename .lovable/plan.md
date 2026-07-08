@@ -1,37 +1,29 @@
-## Objetivo
+## Problema
 
-Incluir 4 novas colunas na exportação Excel do **Relatório de Produção** (`/relatorio-producao` → botão "Exportar Excel"):
+Quando uma ordem de corte já foi expedida 100%, ao clicar em "Imprimir Ficha" a ficha sai com quantidades zeradas, porque a impressão usa o formulário "Quantidade a Enviar" (`qtdEnviar`), que fica vazio quando o saldo é zero. Isso impede a reimpressão da ficha para incluir informações ou redirecionar para outra oficina.
 
-1. **Qtd Peças Cortadas** — vem de `ordens_corte.quantidade_pecas` (OC vinculada ao pedido)
-2. **Data Envio Oficina** — `expedicao.data_saida` (mais recente da OC)
-3. **Nome da Oficina** — `expedicao.oficina_nome`
-4. **Data Recebimento Oficina** — `recebimento.data_recebimento` (mais recente)
+## Solução
 
-Quando um pedido tiver várias OCs/expedições/recebimentos, é usado o registro mais recente por etapa. Quando a etapa ainda não ocorreu, a célula fica vazia.
+Ao abrir um registro de expedição existente pelo histórico, o grid deve ser pré-preenchido com as quantidades daquela saída, permitindo imprimir novamente (e editar campos como oficina/observações antes de reimprimir).
 
-## Alterações em `src/pages/RelatorioProducaoPage.tsx`
+### Comportamento
 
-**1. Ampliar os fetches** (`useEffect` em torno da linha 232):
-- `ordens_corte` → adicionar `quantidade_pecas` ao `select`.
-- `expedicao` → adicionar `data_saida, oficina_nome` ao `select` e à interface `ExpedicaoRow`.
-- `recebimento` → já traz `data_recebimento` (ok).
+1. Abrir registro pelo histórico → o grid de "Quantidade" carrega automaticamente as quantidades por cor/tamanho salvas naquele registro.
+2. Saldo por célula passa a considerar que as peças daquele registro em edição estão "disponíveis" para ele mesmo — os inputs deixam de ficar bloqueados em zero.
+3. "Imprimir Ficha" gera a ficha com as quantidades corretas, pronta para reimpressão.
+4. Se o usuário alterar oficina, observações ou quantidades e salvar, o registro é atualizado (comportamento já existente via `editingExpedicaoId`), sem duplicar saída.
+5. Nova saída parcial (quando ainda há saldo) continua funcionando exatamente como hoje.
 
-**2. Construir 3 mapas auxiliares** (via `useMemo`, junto aos demais):
-- `qtdCortadaByPedido: Record<string, number>` — soma de `quantidade_pecas` das OCs do pedido.
-- `expByPedido: Record<string, { data_saida, oficina_nome }>` — última expedição (por `updated_at`) entre as OCs do pedido.
-- `recByPedido: Record<string, { data_recebimento }>` — último recebimento (por `data_recebimento || updated_at`).
+## Detalhes técnicos
 
-**3. Atualizar `exportExcel`** (linha 462): incluir as 4 chaves novas em cada `rows.push({...})`, formatando datas com `formatDateBR`, e adicionar 4 entradas em `ws["!cols"]`.
+Arquivo único: `src/pages/ExpedicaoPage.tsx`.
 
-Ordem final das colunas no Excel:
+- Em `loadRegistroExpedicao`, após carregar `editingExpedicaoGrade`, mapear cada linha de `gradeRows` pela cor e preencher `qtdEnviar[tam]` com os valores `pp_exp / p_exp / m_exp / g_exp / gg_exp / g1_exp / g2_exp / g3_exp` da expedição aberta.
+- Criar helper `enviadoNesteRegistro(row, tam)` a partir de `editingExpedicaoGrade`.
+- Ajustar `saldoCell` para: `max(0, produzida − enviada_anterior + enviadoNesteRegistro)`. Assim o `max` dos inputs libera as quantidades daquele registro para edição/reimpressão.
+- Nenhuma mudança em schema, RLS, edge functions ou em outras telas.
 
-```text
-Fase | Nº Pedido | Nº Ordem de Corte | Referência | Cliente | Tecido | Cor
-    | Data do Pedido | Qtd Peças Cortadas | Data Envio Oficina | Nome da Oficina
-    | Data Recebimento Oficina | Status Kanban
-```
+## Fora do escopo
 
-## Fora de escopo
-
-- Não altera a UI do kanban nem a exportação em PDF.
-- Não toca em outras telas/relatórios.
+- Sem botão separado "Reimprimir": a reimpressão é abrir o registro no histórico e clicar em Imprimir Ficha.
+- Sem mudanças no fluxo de nova saída parcial nem no layout de impressão.
