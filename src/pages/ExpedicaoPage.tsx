@@ -713,15 +713,21 @@ const ExpedicaoPage = () => {
   const handlePrint = useCallback(() => {window.print();}, []);
 
   const handleImprimirPopup = async (r: RegistroExpedicao) => {
+    const viewModeAnterior = viewMode;
     await loadRegistroExpedicao(r);
     // Aguarda o React renderizar a ficha após carregar o registro
     await new Promise((resolve) => setTimeout(resolve, 600));
 
     const printable = document.querySelector(".expedicao-ficha") as HTMLElement | null;
     if (!printable) {
+      setViewMode(viewModeAnterior);
       toast({ title: "Erro ao preparar impressão", description: "Conteúdo da ficha não encontrado.", variant: "destructive" });
       return;
     }
+
+    // Captura o HTML da ficha e volta para o histórico sem recarregar a página
+    const htmlContent = printable.innerHTML;
+    setViewMode(viewModeAnterior);
 
     const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
       .map((el) => el.outerHTML)
@@ -749,7 +755,7 @@ const ExpedicaoPage = () => {
       </head>
       <body>
         <div class="popup-print-wrapper expedicao-ficha">
-          ${printable.innerHTML}
+          ${htmlContent}
         </div>
         <script>
           window.addEventListener("load", function() {
