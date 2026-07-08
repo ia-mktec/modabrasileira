@@ -847,6 +847,18 @@ const ExpedicaoPage = () => {
                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => loadRegistroExpedicao(r)} title="Abrir registro">
                               <Pencil className="w-3.5 h-3.5" />
                             </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={async () => {
+                                await loadRegistroExpedicao(r);
+                                setTimeout(() => window.print(), 400);
+                              }}
+                              title="Imprimir ficha"
+                            >
+                              <Printer className="w-3.5 h-3.5" />
+                            </Button>
                             {canRegistrarDevolucao && !isDevolvido && (
                               <Button
                                 variant="ghost"
