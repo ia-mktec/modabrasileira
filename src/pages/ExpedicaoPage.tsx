@@ -285,7 +285,8 @@ const ExpedicaoPage = () => {
     }
     setEditingExpedicaoId(exp.id);
     setEditingExpedicaoStatus((exp.status as string) || null);
-    setEditingExpedicaoGrade((exp as any).grade_expedicao || []);
+    const gradeExp = ((exp as any).grade_expedicao || []) as any[];
+    setEditingExpedicaoGrade(gradeExp);
     setDataSaida((exp.data_saida as string) || "");
     setOficina((exp.oficina_nome as string) || "");
     setPreco(exp.preco_peca != null ? String(exp.preco_peca) : "");
@@ -293,6 +294,26 @@ const ExpedicaoPage = () => {
     // Status devolvido não existe no select de kanban; mantém vazio nesse caso
     const st = (exp.status as string) || "";
     setStatusKanban(st === "devolvido" ? "" : st);
+
+    // Pré-preenche as quantidades da grade com os valores salvos neste registro
+    // para permitir reimpressão da ficha com quantidades corretas.
+    const gradeByCor = new Map<string, any>(
+      gradeExp.map((g: any) => [(g.cor || "").toString(), g])
+    );
+    setGradeRows((prev) =>
+      prev.map((r) => {
+        const g = gradeByCor.get(r.cor || "");
+        if (!g) return r;
+        const num = (v: any) => (v && Number(v) > 0 ? String(Number(v)) : "");
+        return {
+          ...r,
+          qtdEnviar: {
+            PP: num(g.pp_exp), P: num(g.p_exp), M: num(g.m_exp), G: num(g.g_exp),
+            GG: num(g.gg_exp), G1: num(g.g1_exp), G2: num(g.g2_exp), G3: num(g.g3_exp),
+          },
+        };
+      })
+    );
   };
 
 
@@ -525,8 +546,15 @@ const ExpedicaoPage = () => {
 
   const totalProdBySize = (tam: string) => gradeRows.reduce((s, r) => s + (r.qtdProduzida[tam] || 0), 0);
   const totalProdGeral = TAMANHOS.reduce((s, t) => s + totalProdBySize(t), 0);
+  const enviadoNesteRegistro = (row: GradeExpRow, tam: string): number => {
+    if (!editingExpedicaoId) return 0;
+    const g = editingExpedicaoGrade.find((x: any) => (x.cor || "") === (row.cor || ""));
+    if (!g) return 0;
+    const key = (tam.toLowerCase() + "_exp") as keyof typeof g;
+    return Number((g as any)[key]) || 0;
+  };
   const saldoCell = (row: GradeExpRow, tam: string) =>
-    Math.max(0, (row.qtdProduzida[tam] || 0) - (row.qtdEnviadaAnterior[tam] || 0));
+    Math.max(0, (row.qtdProduzida[tam] || 0) - (row.qtdEnviadaAnterior[tam] || 0) + enviadoNesteRegistro(row, tam));
   const totalEnviarRow = (row: GradeExpRow) =>
     TAMANHOS.reduce((s, t) => s + (parseInt(row.qtdEnviar[t]) || 0), 0);
   const totalEnviarGeral = gradeRows.reduce((s, r) => s + totalEnviarRow(r), 0);
