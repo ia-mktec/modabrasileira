@@ -710,7 +710,21 @@ const ExpedicaoPage = () => {
     }
   };
 
-  const handlePrint = useCallback(() => {window.print();}, []);
+  const handlePrint = useCallback(() => {
+    // Auto-preenche a coluna "Quantidade" com o saldo disponível quando o
+    // usuário não digitou nada, para que a ficha impressa não saia zerada.
+    setGradeRows((prev) => prev.map((r) => {
+      const jaTem = TAMANHOS.some((t) => (parseInt(r.qtdEnviar[t]) || 0) > 0);
+      if (jaTem) return r;
+      const qtdEnviar: Record<string, string> = { ...r.qtdEnviar };
+      TAMANHOS.forEach((t) => {
+        const saldo = Math.max(0, (r.qtdProduzida[t] || 0) - (r.qtdEnviadaAnterior[t] || 0) + enviadoNesteRegistro(r, t));
+        qtdEnviar[t] = saldo > 0 ? String(saldo) : "";
+      });
+      return { ...r, qtdEnviar };
+    }));
+    setTimeout(() => window.print(), 100);
+  }, [editingExpedicaoId, editingExpedicaoGrade]);
 
   const handleImprimirPopup = async (r: RegistroExpedicao) => {
     const viewModeAnterior = viewMode;
