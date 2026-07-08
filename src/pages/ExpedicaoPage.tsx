@@ -725,6 +725,31 @@ const ExpedicaoPage = () => {
       return;
     }
 
+    // Sincroniza o valor atual dos inputs/textareas como atributos no DOM
+    // (React só atualiza a propriedade .value, não o atributo, então innerHTML
+    // sairia vazio/zerado). Isso garante que quantidade produzida, quantidade
+    // a enviar, oficina, observações etc. apareçam corretamente no popup.
+    printable.querySelectorAll("input").forEach((el) => {
+      const input = el as HTMLInputElement;
+      if (input.type === "checkbox" || input.type === "radio") {
+        if (input.checked) input.setAttribute("checked", "");
+        else input.removeAttribute("checked");
+      } else {
+        input.setAttribute("value", input.value ?? "");
+      }
+    });
+    printable.querySelectorAll("textarea").forEach((el) => {
+      const ta = el as HTMLTextAreaElement;
+      ta.textContent = ta.value ?? "";
+    });
+    printable.querySelectorAll("select").forEach((sel) => {
+      const s = sel as HTMLSelectElement;
+      Array.from(s.options).forEach((opt) => {
+        if (opt.selected) opt.setAttribute("selected", "");
+        else opt.removeAttribute("selected");
+      });
+    });
+
     // Captura o HTML da ficha e volta para o histórico sem recarregar a página
     const htmlContent = printable.innerHTML;
     setViewMode(viewModeAnterior);
