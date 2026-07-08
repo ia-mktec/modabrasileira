@@ -1452,7 +1452,6 @@ const ExpedicaoPage = () => {
                     <thead>
                       <tr className="border-b">
                         <th className="px-3 py-1.5 text-left font-semibold">Descrição</th>
-                        <th className="px-3 py-1.5 text-left font-semibold w-28">Tipo</th>
                         <th className="px-3 py-1.5 text-center font-semibold w-24">Qtd Modelo</th>
                         <th className="px-3 py-1.5 text-center font-semibold w-28">Qtd Envio</th>
                       </tr>
@@ -1461,7 +1460,6 @@ const ExpedicaoPage = () => {
                       {aviamentosExp.map((a) =>
                     <tr key={a.id} className="border-b">
                           <td className="px-3 py-1.5">{a.descricao}</td>
-                          <td className="px-3 py-1.5 text-muted-foreground">{a.tipo}</td>
                           <td className="px-3 py-1.5 text-center">
                             <span className="bg-muted rounded px-2 py-0.5 font-mono">{a.qtdModelo}</span>
                           </td>
