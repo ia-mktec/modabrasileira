@@ -1057,7 +1057,7 @@ const ExpedicaoPage = () => {
       </div>
 
       {editingExpedicaoId && (
-        <div className={`rounded-md border px-4 py-2 text-xs flex items-center justify-between gap-3 ${
+        <div className={`rounded-md border px-4 py-2 text-xs flex items-center justify-between gap-3 print:hidden ${
           editingExpedicaoStatus === "devolvido"
             ? "bg-[hsl(0_84%_50%/0.08)] border-[hsl(0_84%_50%/0.35)] text-[hsl(0,72%,35%)]"
             : "bg-[hsl(38_92%_50%/0.10)] border-[hsl(38_92%_50%/0.35)] text-[hsl(38,92%,30%)]"
