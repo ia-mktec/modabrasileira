@@ -712,6 +712,63 @@ const ExpedicaoPage = () => {
 
   const handlePrint = useCallback(() => {window.print();}, []);
 
+  const handleImprimirPopup = async (r: RegistroExpedicao) => {
+    const viewModeAnterior = viewMode;
+    await loadRegistroExpedicao(r);
+    // Aguarda o React renderizar a ficha após carregar o registro
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    const printable = document.querySelector(".expedicao-ficha") as HTMLElement | null;
+    if (!printable) {
+      setViewMode(viewModeAnterior);
+      toast({ title: "Erro ao preparar impressão", description: "Conteúdo da ficha não encontrado.", variant: "destructive" });
+      return;
+    }
+
+    // Captura o HTML da ficha e volta para o histórico sem recarregar a página
+    const htmlContent = printable.innerHTML;
+    setViewMode(viewModeAnterior);
+
+    const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
+      .map((el) => el.outerHTML)
+      .join("");
+
+    const popup = window.open("", "_blank", "width=1000,height=700,scrollbars=yes,resizable=yes");
+    if (!popup) {
+      toast({ title: "Popup bloqueado", description: "Permita popups no navegador para imprimir a ficha.", variant: "destructive" });
+      return;
+    }
+
+    popup.document.open();
+    popup.document.write(`
+      <!DOCTYPE html>
+      <html lang="pt-BR">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Ficha de Expedição - ${r.ordens_corte?.numero || ""}</title>
+        ${styles}
+        <style>
+          body { margin: 0; padding: 0; background: #fff; }
+          .popup-print-wrapper { padding: 0; }
+          .popup-print-wrapper .print\\:hidden { display: none !important; }
+        </style>
+      </head>
+      <body>
+        <div class="popup-print-wrapper expedicao-ficha">
+          ${htmlContent}
+        </div>
+        <script>
+          window.addEventListener("load", function() {
+            setTimeout(function() { window.print(); }, 400);
+          });
+        </script>
+      </body>
+      </html>
+    `);
+    popup.document.close();
+  };
+
   const yellowInput =
   "bg-[hsl(48,100%,88%)] text-[hsl(220,15%,15%)] border-[hsl(48,80%,60%)] focus:ring-[hsl(48,80%,50%)] placeholder:text-[hsl(48,30%,50%)] print:bg-transparent print:border-[hsl(220,15%,80%)]";
 
@@ -851,10 +908,7 @@ const ExpedicaoPage = () => {
                               variant="ghost"
                               size="icon"
                               className="h-7 w-7"
-                              onClick={async () => {
-                                await loadRegistroExpedicao(r);
-                                setTimeout(() => window.print(), 400);
-                              }}
+                              onClick={() => handleImprimirPopup(r)}
                               title="Imprimir ficha"
                             >
                               <Printer className="w-3.5 h-3.5" />
