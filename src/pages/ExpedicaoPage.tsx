@@ -901,10 +901,7 @@ const ExpedicaoPage = () => {
                               variant="ghost"
                               size="icon"
                               className="h-7 w-7"
-                              onClick={async () => {
-                                await loadRegistroExpedicao(r);
-                                setTimeout(() => window.print(), 400);
-                              }}
+                              onClick={() => handleImprimirPopup(r)}
                               title="Imprimir ficha"
                             >
                               <Printer className="w-3.5 h-3.5" />
