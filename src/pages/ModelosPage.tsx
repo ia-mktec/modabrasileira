@@ -1627,6 +1627,32 @@ const ModelosPage = () => {
         {fichaContent}
       </div>
 
+      {/* Delete Image Dialog */}
+      <AlertDialog open={deleteImageTarget !== null} onOpenChange={(open) => !open && setDeleteImageTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir imagem?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir a imagem {deleteImageTarget === "frente" ? "da Frente" : "das Costas"}? A remoção só será persistida no banco após clicar em <strong>Salvar</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (deleteImageTarget === "frente") setModelImage(null);
+                else if (deleteImageTarget === "costas") setModelImageCostas(null);
+                setDeleteImageTarget(null);
+                toast({ title: "Imagem removida", description: "Salve o modelo para confirmar a exclusão." });
+              }}
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Save / Clone Dialog */}
       <AlertDialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
         <AlertDialogContent>
