@@ -1075,14 +1075,24 @@ const ModelosPage = () => {
               {modelImage ? (
                 <div className="relative w-full h-full min-h-[280px] print:min-h-[980px]">
                   <img src={modelImage} alt="Modelo - Frente" className="w-full h-full object-contain p-2 print:p-0" />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="absolute bottom-2 right-2 text-xs print:hidden"
-                    onClick={() => imageInputRef.current?.click()}
-                  >
-                    Trocar Imagem
-                  </Button>
+                  <div className="absolute bottom-2 right-2 flex gap-2 print:hidden">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => imageInputRef.current?.click()}
+                    >
+                      Trocar Imagem
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="text-xs gap-1"
+                      onClick={() => setDeleteImageTarget("frente")}
+                    >
+                      <Trash2 className="w-3 h-3" /> Excluir
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center text-muted-foreground space-y-2">
