@@ -148,6 +148,7 @@ const ModelosPage = () => {
   const imageCostasInputRef = useRef<HTMLInputElement>(null);
   const [modelImage, setModelImage] = useState<string | null>(null);
   const [modelImageCostas, setModelImageCostas] = useState<string | null>(null);
+  const [deleteImageTarget, setDeleteImageTarget] = useState<null | "frente" | "costas">(null);
   const [currentModeloId, setCurrentModeloId] = useState<string | null>(null);
   const [editingPedidoNumero, setEditingPedidoNumero] = useState<string | null>(null);
   const location = useLocation();
@@ -1074,14 +1075,24 @@ const ModelosPage = () => {
               {modelImage ? (
                 <div className="relative w-full h-full min-h-[280px] print:min-h-[980px]">
                   <img src={modelImage} alt="Modelo - Frente" className="w-full h-full object-contain p-2 print:p-0" />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="absolute bottom-2 right-2 text-xs print:hidden"
-                    onClick={() => imageInputRef.current?.click()}
-                  >
-                    Trocar Imagem
-                  </Button>
+                  <div className="absolute bottom-2 right-2 flex gap-2 print:hidden">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => imageInputRef.current?.click()}
+                    >
+                      Trocar Imagem
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="text-xs gap-1"
+                      onClick={() => setDeleteImageTarget("frente")}
+                    >
+                      <Trash2 className="w-3 h-3" /> Excluir
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center text-muted-foreground space-y-2">
@@ -1103,14 +1114,24 @@ const ModelosPage = () => {
               {modelImageCostas ? (
                 <div className="relative w-full h-full min-h-[280px] print:min-h-[980px]">
                   <img src={modelImageCostas} alt="Modelo - Costas" className="w-full h-full object-contain p-2 print:p-0" />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="absolute bottom-2 right-2 text-xs print:hidden"
-                    onClick={() => imageCostasInputRef.current?.click()}
-                  >
-                    Trocar Imagem
-                  </Button>
+                  <div className="absolute bottom-2 right-2 flex gap-2 print:hidden">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => imageCostasInputRef.current?.click()}
+                    >
+                      Trocar Imagem
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="text-xs gap-1"
+                      onClick={() => setDeleteImageTarget("costas")}
+                    >
+                      <Trash2 className="w-3 h-3" /> Excluir
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center text-muted-foreground space-y-2">
@@ -1605,6 +1626,32 @@ const ModelosPage = () => {
 
         {fichaContent}
       </div>
+
+      {/* Delete Image Dialog */}
+      <AlertDialog open={deleteImageTarget !== null} onOpenChange={(open) => !open && setDeleteImageTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir imagem?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir a imagem {deleteImageTarget === "frente" ? "da Frente" : "das Costas"}? A remoção só será persistida no banco após clicar em <strong>Salvar</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (deleteImageTarget === "frente") setModelImage(null);
+                else if (deleteImageTarget === "costas") setModelImageCostas(null);
+                setDeleteImageTarget(null);
+                toast({ title: "Imagem removida", description: "Salve o modelo para confirmar a exclusão." });
+              }}
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Save / Clone Dialog */}
       <AlertDialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
