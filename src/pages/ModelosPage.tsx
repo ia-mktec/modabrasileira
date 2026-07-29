@@ -430,12 +430,22 @@ const ModelosPage = () => {
   };
 
   // ── File upload handler ──
+  const sanitizeName = (name: string) =>
+    name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9._-]/g, "_").slice(-80);
+  const uniqueKey = (folder: string, file: File) => {
+    const refSlug = (referencia || "sem-ref").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9._-]/g, "_");
+    const uuid = (crypto as any).randomUUID ? (crypto as any).randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    return `${folder}/${refSlug}-${uuid}-${sanitizeName(file.name)}`;
+  };
+  const resetInput = (el: HTMLInputElement | null) => { if (el) el.value = ""; };
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setModelagemFile(file);
-    const fileName = `modelagem/${Date.now()}-${file.name}`;
-    const { error } = await supabase.storage.from("modelos").upload(fileName, file, { upsert: true });
+    const fileName = uniqueKey("modelagem", file);
+    const { error } = await supabase.storage.from("modelos").upload(fileName, file, { upsert: false });
+    resetInput(e.target);
     if (error) {
       toast({ title: "Erro ao enviar arquivo", description: error.message, variant: "destructive" });
       return;
@@ -448,8 +458,9 @@ const ModelosPage = () => {
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const fileName = `imagens/${Date.now()}-${file.name}`;
-    const { error } = await supabase.storage.from("modelos").upload(fileName, file, { upsert: true });
+    const fileName = uniqueKey("imagens", file);
+    const { error } = await supabase.storage.from("modelos").upload(fileName, file, { upsert: false });
+    resetInput(e.target);
     if (error) {
       toast({ title: "Erro ao enviar imagem", description: error.message, variant: "destructive" });
       return;
@@ -462,8 +473,9 @@ const ModelosPage = () => {
   const handleImageCostasSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const fileName = `imagens-costas/${Date.now()}-${file.name}`;
-    const { error } = await supabase.storage.from("modelos").upload(fileName, file, { upsert: true });
+    const fileName = uniqueKey("imagens-costas", file);
+    const { error } = await supabase.storage.from("modelos").upload(fileName, file, { upsert: false });
+    resetInput(e.target);
     if (error) {
       toast({ title: "Erro ao enviar imagem", description: error.message, variant: "destructive" });
       return;
@@ -477,8 +489,9 @@ const ModelosPage = () => {
   const handleFotoClienteSelect = async (e: React.ChangeEvent<HTMLInputElement>, slot: 1 | 2) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const fileName = `fotos-cliente/${Date.now()}-${file.name}`;
-    const { error } = await supabase.storage.from("modelos").upload(fileName, file, { upsert: true });
+    const fileName = uniqueKey("fotos-cliente", file);
+    const { error } = await supabase.storage.from("modelos").upload(fileName, file, { upsert: false });
+    resetInput(e.target);
     if (error) {
       toast({ title: "Erro ao enviar foto", description: error.message, variant: "destructive" });
       return;
@@ -488,6 +501,7 @@ const ModelosPage = () => {
     else setFotoCliente2(urlData.publicUrl);
     toast({ title: "Foto cliente carregada", description: file.name });
   };
+
 
   // ── Aviamentos handlers ──
   const selectAviamentoItem = (idx: number, item: any) => {
