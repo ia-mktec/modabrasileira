@@ -343,7 +343,7 @@ const ExpedicaoPage = () => {
     setModeloRef(oc.modelo_ref || "");
     const refTrim = (oc.modelo_ref || "").trim().toLowerCase();
     const candidatos = modelosDb.filter((m: any) => (m.referencia || "").trim().toLowerCase() === refTrim);
-    const foundModelo = candidatos.find((m: any) => !!m.imagem_url) || candidatos[0];
+    const foundModelo = candidatos.find((m: any) => !!m.imagem_detalhamento_url) || candidatos.find((m: any) => !!m.imagem_url) || candidatos[0];
     setModeloNome(foundModelo?.descricao || "");
     setTecido(oc.tecido_nome || foundModelo?.tecido_principal || "");
     setDataCorte(oc.data_corte || "");
