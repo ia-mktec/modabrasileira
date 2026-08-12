@@ -779,6 +779,7 @@ export type Database = {
           foto_cliente_2_url: string | null
           id: string
           imagem_costas_url: string | null
+          imagem_detalhamento_url: string | null
           imagem_url: string | null
           modelo: string | null
           observacoes: string | null
@@ -811,6 +812,7 @@ export type Database = {
           foto_cliente_2_url?: string | null
           id?: string
           imagem_costas_url?: string | null
+          imagem_detalhamento_url?: string | null
           imagem_url?: string | null
           modelo?: string | null
           observacoes?: string | null
@@ -843,6 +845,7 @@ export type Database = {
           foto_cliente_2_url?: string | null
           id?: string
           imagem_costas_url?: string | null
+          imagem_detalhamento_url?: string | null
           imagem_url?: string | null
           modelo?: string | null
           observacoes?: string | null
