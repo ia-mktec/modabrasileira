@@ -1644,11 +1644,25 @@ const ExpedicaoPage = () => {
                   </div>
                 </div>
               )}
-              <Textarea
-                value={observacoes}
-                onChange={(e) => setObservacoes(e.target.value)}
-                className={`${yellowInput} min-h-[80px]`}
-                placeholder="Anotações sobre a expedição..." />
+              <div className={`grid gap-3 ${refImageDetalhamento ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"}`}>
+                <Textarea
+                  value={observacoes}
+                  onChange={(e) => setObservacoes(e.target.value)}
+                  className={`${yellowInput} min-h-[160px]`}
+                  placeholder="Anotações sobre a expedição..." />
+                {refImageDetalhamento && (
+                  <div className="rounded-md border bg-muted/20 overflow-hidden flex flex-col">
+                    <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-1.5 border-b bg-muted/40">
+                      Detalhamento Produção
+                    </div>
+                    <img
+                      src={refImageDetalhamento}
+                      alt="Detalhamento de produção do modelo"
+                      className="w-full flex-1 object-contain max-h-[260px] p-2" />
+                  </div>
+                )}
+              </div>
+
               
             </CardContent>
           </Card>
