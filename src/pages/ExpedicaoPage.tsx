@@ -1645,11 +1645,6 @@ const ExpedicaoPage = () => {
                 </div>
               )}
               <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
-                <Textarea
-                  value={observacoes}
-                  onChange={(e) => setObservacoes(e.target.value)}
-                  className={`${yellowInput} min-h-[160px]`}
-                  placeholder="Anotações sobre a expedição..." />
                 <div className="rounded-md border bg-muted/20 overflow-hidden flex flex-col min-h-[160px]">
                   <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-1.5 border-b bg-muted/40">
                     Detalhamento Produção
@@ -1666,6 +1661,11 @@ const ExpedicaoPage = () => {
                     </div>
                   )}
                 </div>
+                <Textarea
+                  value={observacoes}
+                  onChange={(e) => setObservacoes(e.target.value)}
+                  className={`${yellowInput} min-h-[160px]`}
+                  placeholder="Anotações sobre a expedição..." />
               </div>
 
               
