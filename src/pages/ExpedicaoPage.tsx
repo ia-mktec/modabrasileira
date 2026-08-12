@@ -1644,23 +1644,28 @@ const ExpedicaoPage = () => {
                   </div>
                 </div>
               )}
-              <div className={`grid gap-3 ${refImageDetalhamento ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"}`}>
+              <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
                 <Textarea
                   value={observacoes}
                   onChange={(e) => setObservacoes(e.target.value)}
                   className={`${yellowInput} min-h-[160px]`}
                   placeholder="Anotações sobre a expedição..." />
-                {refImageDetalhamento && (
-                  <div className="rounded-md border bg-muted/20 overflow-hidden flex flex-col">
-                    <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-1.5 border-b bg-muted/40">
-                      Detalhamento Produção
-                    </div>
+                <div className="rounded-md border bg-muted/20 overflow-hidden flex flex-col min-h-[160px]">
+                  <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground px-3 py-1.5 border-b bg-muted/40">
+                    Detalhamento Produção
+                  </div>
+                  {refImageDetalhamento ? (
                     <img
                       src={refImageDetalhamento}
                       alt="Detalhamento de produção do modelo"
                       className="w-full flex-1 object-contain max-h-[260px] p-2" />
-                  </div>
-                )}
+                  ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center gap-1 text-muted-foreground p-4">
+                      <ImageOff className="h-6 w-6" />
+                      <span className="text-xs text-center">Sem imagem de detalhamento cadastrada na Ficha de Modelo</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               
