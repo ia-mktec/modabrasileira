@@ -146,9 +146,11 @@ const ModelosPage = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const imageCostasInputRef = useRef<HTMLInputElement>(null);
+  const imageDetalhamentoInputRef = useRef<HTMLInputElement>(null);
   const [modelImage, setModelImage] = useState<string | null>(null);
   const [modelImageCostas, setModelImageCostas] = useState<string | null>(null);
-  const [deleteImageTarget, setDeleteImageTarget] = useState<null | "frente" | "costas">(null);
+  const [modelImageDetalhamento, setModelImageDetalhamento] = useState<string | null>(null);
+  const [deleteImageTarget, setDeleteImageTarget] = useState<null | "frente" | "costas" | "detalhamento">(null);
   const [currentModeloId, setCurrentModeloId] = useState<string | null>(null);
   const [editingPedidoNumero, setEditingPedidoNumero] = useState<string | null>(null);
   const location = useLocation();
@@ -196,6 +198,7 @@ const ModelosPage = () => {
     setForroConsumoPeca((m as any).forro_tecido2_consumo_peca ? String((m as any).forro_tecido2_consumo_peca) : "");
     setModelImage(m.imagem_url || null);
     setModelImageCostas((m as any).imagem_costas_url || null);
+    setModelImageDetalhamento((m as any).imagem_detalhamento_url || null);
     setObservacoes(m.observacoes || "");
     setQtdeRolos((m as any).qtde_rolos != null ? String((m as any).qtde_rolos) : "");
     setCorte((m as any).corte || "");
@@ -486,6 +489,21 @@ const ModelosPage = () => {
     toast({ title: "Imagem das costas carregada", description: file.name });
   };
 
+  const handleImageDetalhamentoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const fileName = uniqueKey("imagens-detalhamento", file);
+    const { error } = await supabase.storage.from("modelos").upload(fileName, file, { upsert: false });
+    resetInput(e.target);
+    if (error) {
+      toast({ title: "Erro ao enviar imagem", description: error.message, variant: "destructive" });
+      return;
+    }
+    const { data: urlData } = supabase.storage.from("modelos").getPublicUrl(fileName);
+    setModelImageDetalhamento(urlData.publicUrl);
+    toast({ title: "Imagem de detalhamento carregada", description: file.name });
+  };
+
 
   const handleFotoClienteSelect = async (e: React.ChangeEvent<HTMLInputElement>, slot: 1 | 2) => {
     const file = e.target.files?.[0];
@@ -569,6 +587,7 @@ const ModelosPage = () => {
     status: statusKanban === "concluido" ? "ativo" : statusKanban === "pendente" ? "desenvolvimento" : "ativo",
     imagem_url: modelImage || null,
     imagem_costas_url: modelImageCostas || null,
+    imagem_detalhamento_url: modelImageDetalhamento || null,
     observacoes: observacoes || null,
     tamanhos_grade: JSON.stringify(gradeTamanhos),
     qtde_rolos: parseInt(qtdeRolos) || 0,
@@ -596,6 +615,7 @@ const ModelosPage = () => {
     arquivo_modelagem_url: modelagemUrl || null,
     imagem_url: modelImage || null,
     imagem_costas_url: modelImageCostas || null,
+    imagem_detalhamento_url: modelImageDetalhamento || null,
     tamanhos_grade: JSON.stringify(gradeTamanhos),
     qtde_rolos: parseInt(qtdeRolos) || 0,
     corte: corte || null,
@@ -1142,6 +1162,51 @@ const ModelosPage = () => {
               )}
             </Card>
           </div>
+
+          {/* Imagem de Detalhamento de Produção */}
+          <Card className="overflow-hidden">
+            <div className="bg-muted px-4 py-1.5 border-b">
+              <h3 className="text-xs font-bold tracking-wide text-center uppercase">Detalhamento Produção</h3>
+            </div>
+            <input
+              ref={imageDetalhamentoInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageDetalhamentoSelect}
+              className="hidden"
+            />
+            <div className="flex items-center justify-center min-h-[220px] print:min-h-[520px]">
+              {modelImageDetalhamento ? (
+                <div className="relative w-full h-full min-h-[220px] print:min-h-[520px]">
+                  <img src={modelImageDetalhamento} alt="Detalhamento Produção" className="w-full h-full object-contain p-2 print:p-0" />
+                  <div className="absolute bottom-2 right-2 flex gap-2 print:hidden">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => imageDetalhamentoInputRef.current?.click()}
+                    >
+                      Trocar Imagem
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="text-xs gap-1"
+                      onClick={() => setDeleteImageTarget("detalhamento")}
+                    >
+                      <Trash2 className="w-3 h-3" /> Excluir
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center text-muted-foreground space-y-2 py-6">
+                  <Upload className="w-12 h-12 mx-auto opacity-30" />
+                  <p className="text-sm">Imagem de Detalhamento Produção</p>
+                  <Button variant="outline" size="sm" className="text-xs" onClick={() => imageDetalhamentoInputRef.current?.click()}>Upload Imagem</Button>
+                </div>
+              )}
+            </div>
+          </Card>
           {/* Arquivo Modelagem Aprovada */}
           <Card className="print:hidden">
             <CardContent className="p-4">
@@ -1633,7 +1698,7 @@ const ModelosPage = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir imagem?</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir a imagem {deleteImageTarget === "frente" ? "da Frente" : "das Costas"}? A remoção só será persistida no banco após clicar em <strong>Salvar</strong>.
+              Tem certeza que deseja excluir a imagem {deleteImageTarget === "frente" ? "da Frente" : deleteImageTarget === "costas" ? "das Costas" : "de Detalhamento Produção"}? A remoção só será persistida no banco após clicar em <strong>Salvar</strong>.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1643,6 +1708,7 @@ const ModelosPage = () => {
               onClick={() => {
                 if (deleteImageTarget === "frente") setModelImage(null);
                 else if (deleteImageTarget === "costas") setModelImageCostas(null);
+                else if (deleteImageTarget === "detalhamento") setModelImageDetalhamento(null);
                 setDeleteImageTarget(null);
                 toast({ title: "Imagem removida", description: "Salve o modelo para confirmar a exclusão." });
               }}
