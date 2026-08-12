@@ -1713,7 +1713,6 @@ const ModelosPage = () => {
                 toast({ title: "Imagem removida", description: "Salve o modelo para confirmar a exclusão." });
               }}
             >
-            >
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
