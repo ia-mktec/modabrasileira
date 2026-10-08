@@ -12,7 +12,7 @@ export const DEFAULT_ROUTE_PERMISSIONS: RoutePermissionsMap = {
   "/tecidos": { corte: "edit", dev: "edit" },
   "/estoque-tecidos": { corte: "edit", gestao: "view", dev: "edit" },
   "/modelos": { corte: "view", modelagem: "edit", expedicao: "edit", gestao: "view", dev: "edit" },
-  "/pedidos": { corte: "view", modelagem: "view", expedicao: "view", recebimento: "view", acabamento: "view", gestao: "view", dev: "edit" },
+  "/pedidos": { corte: "edit", modelagem: "view", expedicao: "view", recebimento: "view", acabamento: "view", gestao: "view", dev: "edit" },
   "/pedidos/historico": { gestao: "view", modelagem: "view", dev: "edit" },
   "/corte": { corte: "edit", modelagem: "view", expedicao: "view", recebimento: "view", servicos: "view", dev: "edit" },
   "/cadastro": { corte: "edit", modelagem: "edit", expedicao: "edit", gestao: "edit", dev: "edit" },
