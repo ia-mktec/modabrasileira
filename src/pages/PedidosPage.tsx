@@ -46,6 +46,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
+import { canEditRoute } from "@/lib/permissions";
 import { toast } from "@/hooks/use-toast";
 import { showSaving } from "@/lib/saving-toast";
 
@@ -84,9 +85,9 @@ export default function PedidosPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [pedidoToDelete, setPedidoToDelete] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const { hasRole } = useAuth();
+  const { hasRole, roles } = useAuth();
   const canDelete = hasRole("modelagem") || hasRole("dev");
-  const canEdit = hasRole("modelagem") || hasRole("dev");
+  const canEdit = hasRole("dev") || canEditRoute("/pedidos", roles);
 
   const [editingPedido, setEditingPedido] = useState<PedidoRow | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
