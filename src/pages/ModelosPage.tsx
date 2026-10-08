@@ -179,13 +179,17 @@ const ModelosPage = () => {
 
 
   const loadModelo = async (m: any) => {
+    // Em edição de pedido: troca só a referência, preserva dados do pedido
+    const editandoPedido = !!editingPedidoNumero;
     setReferencia(m.referencia || "");
-    setNumeroPedido("");
+    if (!editandoPedido) {
+      setNumeroPedido("");
+      setCliente("");
+      setPilotoEntregue("");
+      setDataPedido("");
+    }
     setTecido(m.tecido_principal || "");
     setModelo(m.modelo || m.descricao || "");
-    setCliente("");
-    setPilotoEntregue("");
-    setDataPedido("");
     setConsumoMetros(m.consumo_metros ? Number(m.consumo_metros).toFixed(2) : (m.consumo_tecido ? Number(m.consumo_tecido).toFixed(2) : ""));
     setConsumoGramas(m.consumo_gramas ? Number(m.consumo_gramas).toFixed(2) : "");
     setEntretela(!!m.entretela);
@@ -942,7 +946,7 @@ const ModelosPage = () => {
 
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Referência</Label>
-              <Input value={referencia} onChange={(e) => { setReferencia(e.target.value); setNumeroPedido(""); }} className={yellowInput} placeholder="MK-2024-001" />
+              <Input value={referencia} onChange={(e) => { setReferencia(e.target.value); if (!editingPedidoNumero) setNumeroPedido(""); }} className={yellowInput} placeholder="MK-2024-001" />
             </div>
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Modelo</Label>
