@@ -22,6 +22,20 @@
       "when": 1795608411194,
       "tag": "0002_align_modelos_rls_with_pedidos",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795609452150,
+      "tag": "0003_atomic_salvar_ordem_corte",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795609550873,
+      "tag": "0004_atomic_salvar_expedicao_e_modelos",
+      "breakpoints": true
     }
   ]
 }

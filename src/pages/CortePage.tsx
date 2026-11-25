@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { cn, formatDateBR } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { canEditRoute } from "@/lib/permissions";
@@ -21,6 +21,7 @@ import { Plus, Save, Trash2, Printer, Search, ImageOff, Scissors, AlertTriangle,
 import { toast } from "@/hooks/use-toast";
 import { showSaving } from "@/lib/saving-toast";
 import { parseDecimalInput, validateConsumoMetros } from "@/lib/consumo-validation";
+import { findDuplicateGradeColors, isCorJaNaGrade } from "@/lib/grade-corte-utils";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { CreatableCombobox } from "@/components/shared/CreatableCombobox";
 
@@ -81,6 +82,8 @@ const CortePage = () => {
   const { aviamentos: aviamentosDb, loading: loadingAviamentos } = useAviamentos();
   const [selectedTecidoId, setSelectedTecidoId] = useState("");
   const [currentOrdemId, setCurrentOrdemId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const savingRef = useRef(false);
   const [numero, setNumero] = useState("");
   const [numeroPedido, setNumeroPedido] = useState("");
   const [pedidoSearchOpen, setPedidoSearchOpen] = useState(false);
@@ -504,6 +507,7 @@ const CortePage = () => {
   const consumoTotal = totalGeral * (parseFloat(consumoPorPeca) || 0);
 
   const handleSave = async () => {
+    if (savingRef.current) return;
     if (!numero || !modeloRef || !tecido) {
       toast({ title: "Campos obrigatórios", description: "Preencha ao menos Nº Ordem, Modelo e Tecido.", variant: "destructive" });
       return;
@@ -533,6 +537,16 @@ const CortePage = () => {
     const rowsSemCor = rowsComQtd.filter((row) => !row.tecidoId);
     if (rowsSemCor.length > 0) {
       toast({ title: "Cor não selecionada", description: "Selecione a cor em todas as linhas com quantidades preenchidas.", variant: "destructive" });
+      return;
+    }
+
+    const coresDuplicadas = findDuplicateGradeColors(rowsComQtd);
+    if (coresDuplicadas.length > 0) {
+      toast({
+        title: "Cor duplicada na grade",
+        description: `Remova ou consolide a(s) cor(es) repetida(s) antes de salvar: ${coresDuplicadas.join(", ")}.`,
+        variant: "destructive",
+      });
       return;
     }
 
@@ -573,12 +587,16 @@ const CortePage = () => {
       .filter(a => a.descricao && parseInt(a.quantidade) > 0)
       .map(a => ({ descricao: a.descricao, quantidade: parseInt(a.quantidade) || 0 }));
 
+    savingRef.current = true;
+    setIsSaving(true);
     const dismissSaving = showSaving();
     let result;
     try {
       result = await salvarOrdem(ordemData, gradeData, aviamentosData, currentOrdemId || undefined);
     } finally {
       dismissSaving();
+      savingRef.current = false;
+      setIsSaving(false);
     }
     if (result) {
       setCurrentOrdemId(result);
@@ -865,9 +883,9 @@ const CortePage = () => {
           )}
 
           {!isViewOnly && (
-            <Button className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]" onClick={handleSave}>
+            <Button disabled={isSaving} className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]" onClick={handleSave}>
               <Save className="w-4 h-4" />
-              <span>Salvar</span>
+              <span>{isSaving ? "Salvando..." : "Salvar"}</span>
             </Button>
           )}
 
@@ -1390,19 +1408,26 @@ const CortePage = () => {
             <div className="space-y-1 max-h-[60vh] overflow-y-auto">
               {filteredCores.map((t, idx) => {
                 const disponivel = Number(t.estoque_kg || 0);
+                const jaSelecionada = isCorJaNaGrade(gradeRows, corSearchRowId, t.cor);
                 return (
                   <button
                     key={`${t.id}-${idx}`}
+                    disabled={jaSelecionada}
                     onClick={() => {
+                      if (jaSelecionada) return;
                       if (corSearchRowId) {
                         updateGradeRowCor(corSearchRowId, t.cor, t.id);
                       }
                       setCorSearchOpen(false);
                       setCorSearchRowId(null);
                     }}
-                    className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm">
-                    
-                    <div className="font-semibold text-xs">{t.cor}</div>
+                    className={cn(
+                      "w-full text-left px-3 py-2 rounded-md transition-colors text-sm",
+                      jaSelecionada ? "opacity-50 cursor-not-allowed bg-muted/40" : "hover:bg-accent",
+                    )}>
+                    <div className="font-semibold text-xs">
+                      {t.cor} {jaSelecionada && <span className="text-[10px] font-normal text-muted-foreground">(já na grade)</span>}
+                    </div>
                     <div className="text-muted-foreground text-[10px]">Estoque: {disponivel.toFixed(2)} mt</div>
                   </button>);
 

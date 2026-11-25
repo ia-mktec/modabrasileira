@@ -101,6 +101,9 @@ const ModelosPage = () => {
   const [referencia, setReferencia] = useState("");
   const [numeroPedido, setNumeroPedido] = useState("");
   const [savingPedido, setSavingPedido] = useState(false);
+  const savingPedidoRef = useRef(false);
+  const [savingModelo, setSavingModelo] = useState(false);
+  const savingModeloRef = useRef(false);
   const [tecido, setTecido] = useState("");
   const [modelo, setModelo] = useState("");
   const [cliente, setCliente] = useState("");
@@ -654,6 +657,7 @@ const ModelosPage = () => {
 
   // ── Save / Clone ──
   const handleSaveClick = async () => {
+    if (savingModeloRef.current) return;
     const consumoErr = validateConsumoMetros();
     if (consumoErr) {
       toast({ title: "Consumo inválido", description: consumoErr, variant: "destructive" });
@@ -672,12 +676,16 @@ const ModelosPage = () => {
         setSaveDialogOpen(true);
         return;
       }
+      savingModeloRef.current = true;
+      setSavingModelo(true);
       const dismissSaving = showSaving();
       let result;
       try {
         result = await salvarModelo(buildModeloPayload(), currentModeloId || undefined, buildChildren());
       } finally {
         dismissSaving();
+        savingModeloRef.current = false;
+        setSavingModelo(false);
       }
       if (result) {
         setCurrentModeloId(result);
@@ -694,6 +702,7 @@ const ModelosPage = () => {
   };
 
   const handleSaveOverwriteConfirm = async () => {
+    if (savingModeloRef.current) return;
     setSaveOverwriteDialogOpen(false);
     const consumoErr = validateConsumoMetros();
     if (consumoErr) {
@@ -701,12 +710,16 @@ const ModelosPage = () => {
       return;
     }
     const existingModel = modelos.find((m: any) => m.referencia === referencia);
+    savingModeloRef.current = true;
+    setSavingModelo(true);
     const dismissSaving = showSaving();
     let result;
     try {
       result = await salvarModelo(buildModeloPayload(), existingModel?.id || currentModeloId || undefined, buildChildren());
     } finally {
       dismissSaving();
+      savingModeloRef.current = false;
+      setSavingModelo(false);
     }
     if (result) {
       toast({ title: "Modelo atualizado", description: `Referência ${referencia} foi sobrescrita com sucesso.` });
@@ -780,21 +793,13 @@ const ModelosPage = () => {
 
       // Substitui filhas (aviamentos e gradação) do modelo pai com o que está na tela.
       // Só sobrescreve se houver dados, para não apagar dados existentes acidentalmente.
-      if (modeloId && children.aviamentos.length > 0) {
-        const { error: delAvErr } = await supabase.from("modelo_aviamentos" as any).delete().eq("modelo_id", modeloId);
-        if (delAvErr) throw delAvErr;
-        const { error: insAvErr } = await supabase
-          .from("modelo_aviamentos" as any)
-          .insert(children.aviamentos.map((r) => ({ ...r, modelo_id: modeloId })));
-        if (insAvErr) throw insAvErr;
-      }
-      if (modeloId && children.gradacao.length > 0) {
-        const { error: delGrErr } = await supabase.from("modelo_gradacao" as any).delete().eq("modelo_id", modeloId);
-        if (delGrErr) throw delGrErr;
-        const { error: insGrErr } = await supabase
-          .from("modelo_gradacao" as any)
-          .insert(children.gradacao.map((r) => ({ ...r, modelo_id: modeloId })));
-        if (insGrErr) throw insGrErr;
+      if (modeloId && (children.aviamentos.length > 0 || children.gradacao.length > 0)) {
+        const { error: rpcErr } = await supabase.rpc("substituir_filhos_modelo_atomico", {
+          p_modelo_id: modeloId,
+          p_aviamentos: children.aviamentos.length > 0 ? children.aviamentos : null,
+          p_gradacao: children.gradacao.length > 0 ? children.gradacao : null,
+        });
+        if (rpcErr) throw rpcErr;
       }
       return { modeloId };
     } catch (e: any) {
@@ -804,7 +809,7 @@ const ModelosPage = () => {
 
   // ── Registrar Pedido ──
   const handleRegistrarPedido = async () => {
-    if (savingPedido) return;
+    if (savingPedidoRef.current || savingPedido) return;
     if (!numeroPedido) {
       toast({
         title: "Nº de Pedido obrigatório",
@@ -822,6 +827,7 @@ const ModelosPage = () => {
       toast({ title: "Consumo inválido", description: consumoErr, variant: "destructive" });
       return;
     }
+    savingPedidoRef.current = true;
     setSavingPedido(true);
     const isEdit = !!editingPedidoNumero && editingPedidoNumero === numeroPedido;
     let numeroAtual = numeroPedido;
@@ -886,11 +892,11 @@ const ModelosPage = () => {
         // Substitui aviamentos específicos do pedido
         if (!error) {
           const aviamentosRows = buildAviamentosRows(numeroAtual);
-          await supabase.from("aviamentos_pedido" as any).delete().eq("numero_pedido", numeroAtual);
-          if (aviamentosRows.length > 0) {
-            const ins = await supabase.from("aviamentos_pedido" as any).insert(aviamentosRows);
-            if (ins.error) error = ins.error;
-          }
+          const { error: avRpcErr } = await supabase.rpc("substituir_aviamentos_pedido_atomico", {
+            p_numero_pedido: numeroAtual,
+            p_aviamentos: aviamentosRows as any,
+          });
+          if (avRpcErr) error = avRpcErr;
         }
       } else {
         // Garante que não existe outro pedido com este número (evita sobrescrever)
@@ -928,6 +934,7 @@ const ModelosPage = () => {
       }
     } finally {
       dismissSaving();
+      savingPedidoRef.current = false;
       setSavingPedido(false);
     }
 
@@ -1681,11 +1688,12 @@ const ModelosPage = () => {
 
           {!editingPedidoNumero && (isIncluding || isLoadedFromSearch) && (
             <Button
+              disabled={savingModelo}
               className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(217,71%,45%)] hover:bg-[hsl(217,71%,38%)] text-[hsl(0,0%,100%)]"
               onClick={handleSaveClick}>
 
               <Save className="w-4 h-4" />
-              <span>{isIncluding ? "Salvar Modelo" : "Salvar Alterações"}</span>
+              <span>{savingModelo ? "Salvando..." : (isIncluding ? "Salvar Modelo" : "Salvar Alterações")}</span>
             </Button>
           )}
 

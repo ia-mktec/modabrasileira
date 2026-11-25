@@ -1303,6 +1303,27 @@ export type Database = {
         Args: { p_cliente_id: string; p_cor: string; p_nome: string }
         Returns: undefined
       }
+      salvar_expedicao_atomico: {
+        Args: { p_existing_id?: string; p_exp?: Json; p_grade?: Json }
+        Returns: string
+      }
+      salvar_ordem_corte_atomico: {
+        Args: {
+          p_aviamentos?: Json
+          p_existing_id?: string
+          p_grade?: Json
+          p_ordem?: Json
+        }
+        Returns: string
+      }
+      substituir_aviamentos_pedido_atomico: {
+        Args: { p_aviamentos?: Json; p_numero_pedido: string }
+        Returns: undefined
+      }
+      substituir_filhos_modelo_atomico: {
+        Args: { p_aviamentos?: Json; p_gradacao?: Json; p_modelo_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role:

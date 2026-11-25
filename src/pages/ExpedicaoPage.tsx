@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { formatDateBR } from "@/lib/utils";
 import { PageLoading } from "@/components/shared/PageLoading";
 import { Card, CardContent } from "@/components/ui/card";
@@ -52,6 +52,8 @@ const ExpedicaoPage = () => {
   const { modelos: modelosDb, loading: loadingModelos, carregarModeloCompleto } = useModelos();
   const { clientes: clientesDb } = useClientes();
   const [currentOrdemCorteId, setCurrentOrdemCorteId] = useState<string | null>(null);
+  const [savingSaida, setSavingSaida] = useState(false);
+  const savingSaidaRef = useRef(false);
   // Dados da ordem (consulta - read only)
   const [numero, setNumero] = useState("");
   const [numeroPedido, setNumeroPedido] = useState("");
@@ -565,6 +567,7 @@ const ExpedicaoPage = () => {
   setAviamentosExp((prev) => prev.map((a) => a.id === id ? { ...a, qtdEnvio: val } : a));
 
   const handleRegistrarSaida = async () => {
+    if (savingSaidaRef.current) return;
     if (!numero || !currentOrdemCorteId) {
       toast({ title: "Nenhuma ordem carregada", description: "Busque uma ordem de corte primeiro.", variant: "destructive" });
       return;
@@ -624,6 +627,8 @@ const ExpedicaoPage = () => {
       return;
     }
 
+    savingSaidaRef.current = true;
+    setSavingSaida(true);
     const dismissSaving = showSaving();
     let result;
     try {
@@ -644,6 +649,8 @@ const ExpedicaoPage = () => {
       }, gradeForSave, editingExpedicaoId || undefined);
     } finally {
       dismissSaving();
+      savingSaidaRef.current = false;
+      setSavingSaida(false);
     }
 
     if (result) {
@@ -1157,11 +1164,12 @@ const ExpedicaoPage = () => {
           <Separator className="hidden md:block" />
 
           <Button
+            disabled={savingSaida}
             className="justify-start gap-2 text-xs h-auto py-2 whitespace-nowrap shrink-0 bg-[hsl(142,50%,35%)] hover:bg-[hsl(142,50%,30%)] text-[hsl(0,0%,100%)]"
             onClick={handleRegistrarSaida}>
             
             <PackageCheck className="w-4 h-4" />
-            <span>Registrar Saída</span>
+            <span>{savingSaida ? "Salvando..." : "Registrar Saída"}</span>
           </Button>
 
           <Button

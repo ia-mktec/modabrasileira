@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { fetchAllRows } from "@/lib/fetch-all-rows";
@@ -153,6 +153,7 @@ export function useTecidos() {
 export function useModelos() {
   const [modelos, setModelos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const savingRef = useRef(false);
 
   const fetch = useCallback(async () => {
     const pageSize = 1000;
@@ -186,6 +187,8 @@ export function useModelos() {
       gradacao?: { ordem: number; tamanho?: string; medida_a?: number; medida_b?: number; medida_c?: number; medida_d?: number; observacao?: string }[];
     }
   ) => {
+    if (savingRef.current) return null;
+    savingRef.current = true;
     try {
       let modeloId = existingId;
       if (existingId) {
@@ -197,17 +200,13 @@ export function useModelos() {
         modeloId = data.id;
       }
       if (children && modeloId) {
-        if (children.aviamentos) {
-          await supabase.from("modelo_aviamentos" as any).delete().eq("modelo_id", modeloId);
-          if (children.aviamentos.length) {
-            await supabase.from("modelo_aviamentos" as any).insert(children.aviamentos.map(r => ({ ...r, modelo_id: modeloId })));
-          }
-        }
-        if (children.gradacao) {
-          await supabase.from("modelo_gradacao" as any).delete().eq("modelo_id", modeloId);
-          if (children.gradacao.length) {
-            await supabase.from("modelo_gradacao" as any).insert(children.gradacao.map(r => ({ ...r, modelo_id: modeloId })));
-          }
+        if (children.aviamentos || children.gradacao) {
+          const { error: rpcErr } = await supabase.rpc("substituir_filhos_modelo_atomico", {
+            p_modelo_id: modeloId,
+            p_aviamentos: children.aviamentos ?? null,
+            p_gradacao: children.gradacao ?? null,
+          });
+          if (rpcErr) throw rpcErr;
         }
       }
       await fetch();
@@ -215,6 +214,8 @@ export function useModelos() {
     } catch (error: any) {
       toast({ title: "Erro ao salvar modelo", description: error.message, variant: "destructive" });
       return null;
+    } finally {
+      savingRef.current = false;
     }
   }, [fetch]);
 
@@ -287,6 +288,7 @@ export function useAviamentos() {
 export function useOrdensCorte() {
   const [ordens, setOrdens] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const savingRef = useRef(false);
 
   const fetch = useCallback(async () => {
     const PAGE = 1000;
@@ -316,33 +318,23 @@ export function useOrdensCorte() {
 
   const salvarOrdem = useCallback(async (ordem: {
     numero: string; modelo_ref: string; tecido_nome: string;
-    tecido_id?: string; modelo_id?: string; cliente_id?: string;
-    quantidade_pecas: number; data_corte?: string; cortador?: string;
+    tecido_id?: string | null; modelo_id?: string | null; cliente_id?: string | null;
+    quantidade_pecas: number; data_corte?: string | null; cortador?: string | null;
+    enfestador?: string | null;
     enfestos?: number; perda_percent?: number; consumo_por_peca?: number;
-    observacoes?: string; status: string; numero_pedido?: string;
-  }, grade: { cor: string; tecido_id?: string; pp: number; p: number; m: number; g: number; gg: number; g1: number; g2: number; g3: number; }[], aviamentos: { descricao: string; quantidade: number; }[], existingId?: string) => {
+    observacoes?: string | null; status: string; numero_pedido?: string | null;
+  }, grade: { cor: string; tecido_id?: string | null; pp: number; p: number; m: number; g: number; gg: number; g1: number; g2: number; g3: number; }[], aviamentos: { descricao: string; quantidade: number; }[], existingId?: string) => {
+    if (savingRef.current) return null;
+    savingRef.current = true;
     try {
-      let ordemId = existingId;
-      if (existingId) {
-        const { error } = await supabase.from("ordens_corte").update(ordem).eq("id", existingId);
-        if (error) throw error;
-        await supabase.from("grade_corte").delete().eq("ordem_corte_id", existingId);
-        await supabase.from("aviamentos_ordem").delete().eq("ordem_corte_id", existingId);
-      } else {
-        const { data, error } = await supabase.from("ordens_corte").insert(ordem).select("id").single();
-        if (error) throw error;
-        ordemId = data.id;
-      }
-      if (grade.length > 0 && ordemId) {
-        const gradeRows = grade.map(g => ({ ordem_corte_id: ordemId, ...g }));
-        const { error } = await supabase.from("grade_corte").insert(gradeRows);
-        if (error) throw error;
-      }
-      if (aviamentos.length > 0 && ordemId) {
-        const avRows = aviamentos.map(a => ({ ordem_corte_id: ordemId, descricao: a.descricao, quantidade: a.quantidade }));
-        const { error } = await supabase.from("aviamentos_ordem").insert(avRows);
-        if (error) throw error;
-      }
+      const { data: savedId, error: rpcError } = await supabase.rpc("salvar_ordem_corte_atomico", {
+        p_existing_id: existingId ?? null,
+        p_ordem: ordem as any,
+        p_grade: grade as any,
+        p_aviamentos: aviamentos as any,
+      });
+      if (rpcError || !savedId) throw rpcError || new Error("Falha ao salvar ordem de corte.");
+      const ordemId = savedId;
       // Baixa de estoque ao concluir — agrupa por tecido_id de cada linha da grade
       // (cada cor pode usar um tecido diferente). Fallback: usa tecido_id principal da OC.
       if (ordem.status === "concluido" && ordem.consumo_por_peca && ordemId) {
@@ -399,6 +391,8 @@ export function useOrdensCorte() {
     } catch (error: any) {
       toast({ title: "Erro ao salvar ordem", description: error.message, variant: "destructive" });
       return null;
+    } finally {
+      savingRef.current = false;
     }
   }, [fetch]);
 
@@ -430,6 +424,7 @@ export function useOrdensCorte() {
 export function useExpedicao() {
   const [expedicoes, setExpedicoes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const savingRef = useRef(false);
 
   const fetch = useCallback(async () => {
     const { data, error } = await fetchAllRows((from, to) =>
@@ -447,26 +442,20 @@ export function useExpedicao() {
   }, []);
 
   const salvarExpedicao = useCallback(async (exp: {
-    ordem_corte_id: string; data_saida?: string; oficina_id?: string;
-    oficina_nome?: string;
-    preco_peca?: number; observacoes?: string; status: string;
+    ordem_corte_id: string; data_saida?: string | null; oficina_id?: string | null;
+    oficina_nome?: string | null;
+    preco_peca?: number; observacoes?: string | null; status: string;
   }, grade: { cor: string; pp_prod: number; p_prod: number; m_prod: number; g_prod: number; gg_prod: number; g1_prod: number; g2_prod: number; g3_prod: number; pp_exp: number; p_exp: number; m_exp: number; g_exp: number; gg_exp: number; g1_exp: number; g2_exp: number; g3_exp: number; }[], existingId?: string) => {
+    if (savingRef.current) return null;
+    savingRef.current = true;
     try {
-      let expId = existingId;
-      if (existingId) {
-        const { error } = await supabase.from("expedicao").update(exp).eq("id", existingId);
-        if (error) throw error;
-        await supabase.from("grade_expedicao").delete().eq("expedicao_id", existingId);
-      } else {
-        const { data, error } = await supabase.from("expedicao").insert(exp).select("id").single();
-        if (error) throw error;
-        expId = data.id;
-      }
-      if (grade.length > 0 && expId) {
-        const rows = grade.map(g => ({ expedicao_id: expId, ...g }));
-        const { error } = await supabase.from("grade_expedicao").insert(rows);
-        if (error) throw error;
-      }
+      const { data: savedExpId, error: rpcError } = await supabase.rpc("salvar_expedicao_atomico", {
+        p_existing_id: existingId ?? null,
+        p_exp: exp as any,
+        p_grade: grade as any,
+      });
+      if (rpcError || !savedExpId) throw rpcError || new Error("Falha ao salvar expedição.");
+      const expId = savedExpId;
       // Sincroniza status_kanban (Fase 4)
       const { data: ocData } = await supabase.from("ordens_corte")
         .select("numero_pedido").eq("id", exp.ordem_corte_id).single();
@@ -480,6 +469,8 @@ export function useExpedicao() {
     } catch (error: any) {
       toast({ title: "Erro ao salvar expedição", description: error.message, variant: "destructive" });
       return null;
+    } finally {
+      savingRef.current = false;
     }
   }, [fetch]);
 
