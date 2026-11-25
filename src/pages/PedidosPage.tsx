@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { formatDateBR } from "@/lib/utils";
 import { PageLoading } from "@/components/shared/PageLoading";
 import { supabase } from "@/integrations/supabase/client";
+import { validateConsumoMetros } from "@/lib/consumo-validation";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { PedidoTimeline } from "@/components/shared/PedidoTimeline";
@@ -218,6 +219,11 @@ export default function PedidosPage() {
 
   const handleSaveEdit = async () => {
     if (!editingPedido) return;
+    const consumoErr = validateConsumoMetros(editingPedido.consumo_tecido, "Consumo Tecido (m)");
+    if (consumoErr) {
+      toast({ title: "Consumo inválido", description: consumoErr, variant: "destructive" });
+      return;
+    }
     setSaving(true);
     const dismissSaving = showSaving();
 

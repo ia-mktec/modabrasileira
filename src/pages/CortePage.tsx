@@ -20,6 +20,7 @@ import { useTecidoSaldos } from "@/hooks/useTecidoSaldos";
 import { Plus, Save, Trash2, Printer, Search, ImageOff, Scissors, AlertTriangle, CheckCircle, ArrowLeft, Pencil } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { showSaving } from "@/lib/saving-toast";
+import { parseDecimalInput, validateConsumoMetros } from "@/lib/consumo-validation";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { CreatableCombobox } from "@/components/shared/CreatableCombobox";
 
@@ -507,6 +508,12 @@ const CortePage = () => {
       toast({ title: "Campos obrigatórios", description: "Preencha ao menos Nº Ordem, Modelo e Tecido.", variant: "destructive" });
       return;
     }
+    const consumoErr = validateConsumoMetros(consumoPorPeca, "Consumo/Peça (mt)");
+    if (consumoErr) {
+      toast({ title: "Consumo inválido", description: consumoErr, variant: "destructive" });
+      return;
+    }
+    const consumoNum = parseDecimalInput(consumoPorPeca);
     if (!selectedClienteId) {
       toast({ title: "Cliente não selecionado", description: "Selecione um cliente antes de salvar.", variant: "destructive" });
       return;
@@ -543,7 +550,7 @@ const CortePage = () => {
       cortador: cortador || null,
       enfestador: enfestador || null,
       perda_percent: 0,
-      consumo_por_peca: parseFloat(consumoPorPeca) || 0,
+      consumo_por_peca: Number.isFinite(consumoNum) ? consumoNum : 0,
       observacoes: observacoes || null,
       status: status || "pendente",
       numero_pedido: numeroPedido || null,

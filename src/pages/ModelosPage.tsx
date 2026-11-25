@@ -24,6 +24,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Plus, Save, Trash2, Printer, Search, Shirt, Upload, ClipboardCheck, X, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { showSaving } from "@/lib/saving-toast";
+import { parseDecimalInput, validateConsumoMetros as validateConsumoValue } from "@/lib/consumo-validation";
 
 // ── Types ──
 interface AviamentoRow {
@@ -571,22 +572,25 @@ const ModelosPage = () => {
   };
 
   // ── Build payload ──
+  const parseNum = parseDecimalInput;
+  const validateConsumoMetros = () => validateConsumoValue(consumoMetros, "Consumo (Metros)");
+
   const buildModeloPayload = () => ({
     referencia,
-    descricao: modelo,
-    modelo,
+    descricao: modelo || referencia,
+    modelo: modelo || null,
     tecido_principal: tecido || null,
-    consumo_tecido: parseFloat(consumoMetros) || 0,
-    consumo_metros: parseFloat(consumoMetros) || 0,
-    consumo_gramas: parseFloat(consumoGramas) || 0,
+    consumo_tecido: parseNum(consumoMetros),
+    consumo_metros: parseNum(consumoMetros),
+    consumo_gramas: parseNum(consumoGramas),
     entretela,
     entretela_descricao: entretelaDescricao || null,
-    entretela_quantidade: parseFloat(entreTelaQtde) || 0,
-    entretela_consumo_peca: parseFloat(entreTelaConsumoPeca) || 0,
+    entretela_quantidade: parseNum(entreTelaQtde),
+    entretela_consumo_peca: parseNum(entreTelaConsumoPeca),
     forro_tecido2: forroTecido2,
     forro_tecido2_descricao: forroDescricao || null,
-    forro_tecido2_quantidade: parseFloat(forroQtde) || 0,
-    forro_tecido2_consumo_peca: parseFloat(forroConsumoPeca) || 0,
+    forro_tecido2_quantidade: parseNum(forroQtde),
+    forro_tecido2_consumo_peca: parseNum(forroConsumoPeca),
     arquivo_modelagem_url: modelagemUrl || null,
     status: statusKanban === "concluido" ? "ativo" : statusKanban === "pendente" ? "desenvolvimento" : "ativo",
     imagem_url: modelImage || null,
@@ -602,20 +606,20 @@ const ModelosPage = () => {
   });
 
   const buildModeloFichaPayload = () => ({
-    descricao: modelo,
-    modelo,
+    descricao: modelo || referencia,
+    modelo: modelo || null,
     tecido_principal: tecido || null,
-    consumo_tecido: parseFloat(consumoMetros) || 0,
-    consumo_metros: parseFloat(consumoMetros) || 0,
-    consumo_gramas: parseFloat(consumoGramas) || 0,
+    consumo_tecido: parseNum(consumoMetros),
+    consumo_metros: parseNum(consumoMetros),
+    consumo_gramas: parseNum(consumoGramas),
     entretela,
     entretela_descricao: entretelaDescricao || null,
-    entretela_quantidade: parseFloat(entreTelaQtde) || 0,
-    entretela_consumo_peca: parseFloat(entreTelaConsumoPeca) || 0,
+    entretela_quantidade: parseNum(entreTelaQtde),
+    entretela_consumo_peca: parseNum(entreTelaConsumoPeca),
     forro_tecido2: forroTecido2,
     forro_tecido2_descricao: forroDescricao || null,
-    forro_tecido2_quantidade: parseFloat(forroQtde) || 0,
-    forro_tecido2_consumo_peca: parseFloat(forroConsumoPeca) || 0,
+    forro_tecido2_quantidade: parseNum(forroQtde),
+    forro_tecido2_consumo_peca: parseNum(forroConsumoPeca),
     arquivo_modelagem_url: modelagemUrl || null,
     imagem_url: modelImage || null,
     imagem_costas_url: modelImageCostas || null,
@@ -633,23 +637,28 @@ const ModelosPage = () => {
     aviamentos: aviamentos.map((a, i) => ({
       ordem: i + 1,
       descricao: a.selectedItem ? `${a.tipo} — ${a.selectedItem.descricao || ""}` : a.tipo,
-      quantidade: parseFloat(a.partesQtde) || 0,
+      quantidade: parseNum(a.partesQtde),
       unidade: a.selectedItem?.tamanho || null,
       observacao: null,
     })),
     gradacao: gradacao.map((g, i) => ({
       ordem: i + 1,
       tamanho: g.descricao || null,
-      medida_a: parseFloat(g.p) || 0,
-      medida_b: parseFloat(g.m) || 0,
-      medida_c: parseFloat(g.g) || 0,
-      medida_d: parseFloat(g.gg) || 0,
+      medida_a: parseNum(g.p),
+      medida_b: parseNum(g.m),
+      medida_c: parseNum(g.g),
+      medida_d: parseNum(g.gg),
       observacao: g.aumentoCm ? `Aumento: ${g.aumentoCm}cm` : null,
     })),
   });
 
   // ── Save / Clone ──
   const handleSaveClick = async () => {
+    const consumoErr = validateConsumoMetros();
+    if (consumoErr) {
+      toast({ title: "Consumo inválido", description: consumoErr, variant: "destructive" });
+      return;
+    }
     if (isLoadedFromSearch) {
       setSaveDialogOpen(true);
     } else {
@@ -686,6 +695,11 @@ const ModelosPage = () => {
 
   const handleSaveOverwriteConfirm = async () => {
     setSaveOverwriteDialogOpen(false);
+    const consumoErr = validateConsumoMetros();
+    if (consumoErr) {
+      toast({ title: "Consumo inválido", description: consumoErr, variant: "destructive" });
+      return;
+    }
     const existingModel = modelos.find((m: any) => m.referencia === referencia);
     const dismissSaving = showSaving();
     let result;
@@ -728,17 +742,18 @@ const ModelosPage = () => {
   // Garante que existe um modelo pai para a referência. Se não existir, cria
   // a partir dos dados do pedido atual (1º pedido = modelo pai). Se já existir,
   // atualiza os campos da ficha (Corte, Risco, Qtde de Rolos, fotos, consumo etc.).
-  // Retorna o id do modelo ou null em caso de erro.
-  const ensureParentModelo = async (): Promise<string | null> => {
+  // Retorna { modeloId, errorMessage }.
+  const ensureParentModelo = async (): Promise<{ modeloId: string | null; errorMessage?: string }> => {
     try {
       // Tenta localizar pelo id em cache; senão, busca por referência.
       let modeloId = currentModeloId;
       if (!modeloId) {
-        const { data: existing } = await supabase
+        const { data: existing, error: selErr } = await supabase
           .from("modelos")
           .select("id")
           .eq("referencia", referencia)
           .maybeSingle();
+        if (selErr) throw selErr;
         modeloId = existing?.id || null;
       }
 
@@ -766,21 +781,24 @@ const ModelosPage = () => {
       // Substitui filhas (aviamentos e gradação) do modelo pai com o que está na tela.
       // Só sobrescreve se houver dados, para não apagar dados existentes acidentalmente.
       if (modeloId && children.aviamentos.length > 0) {
-        await supabase.from("modelo_aviamentos" as any).delete().eq("modelo_id", modeloId);
-        await supabase
+        const { error: delAvErr } = await supabase.from("modelo_aviamentos" as any).delete().eq("modelo_id", modeloId);
+        if (delAvErr) throw delAvErr;
+        const { error: insAvErr } = await supabase
           .from("modelo_aviamentos" as any)
           .insert(children.aviamentos.map((r) => ({ ...r, modelo_id: modeloId })));
+        if (insAvErr) throw insAvErr;
       }
       if (modeloId && children.gradacao.length > 0) {
-        await supabase.from("modelo_gradacao" as any).delete().eq("modelo_id", modeloId);
-        await supabase
+        const { error: delGrErr } = await supabase.from("modelo_gradacao" as any).delete().eq("modelo_id", modeloId);
+        if (delGrErr) throw delGrErr;
+        const { error: insGrErr } = await supabase
           .from("modelo_gradacao" as any)
           .insert(children.gradacao.map((r) => ({ ...r, modelo_id: modeloId })));
+        if (insGrErr) throw insGrErr;
       }
-      return modeloId;
+      return { modeloId };
     } catch (e: any) {
-      toast({ title: "Erro ao sincronizar modelo pai", description: e.message, variant: "destructive" });
-      return null;
+      return { modeloId: null, errorMessage: e?.message || "Falha ao sincronizar modelo pai" };
     }
   };
 
@@ -799,42 +817,55 @@ const ModelosPage = () => {
       toast({ title: "Referência obrigatória", description: "Informe a referência do modelo.", variant: "destructive" });
       return;
     }
+    const consumoErr = validateConsumoMetros();
+    if (consumoErr) {
+      toast({ title: "Consumo inválido", description: consumoErr, variant: "destructive" });
+      return;
+    }
     setSavingPedido(true);
     const isEdit = !!editingPedidoNumero && editingPedidoNumero === numeroPedido;
     let numeroAtual = numeroPedido;
-    // Em criação, só agora consome o próximo número (evita números queimados).
-    if (!isEdit) {
-      const { data: numeroNovo, error: errNum } = await (supabase as unknown as {
-        rpc: (fn: "proximo_numero_pedido") => Promise<{ data: string | null; error: { message: string } | null }>;
-      }).rpc("proximo_numero_pedido");
-      if (errNum || !numeroNovo) {
-        setSavingPedido(false);
-        toast({ title: "Erro ao gerar pedido", description: errNum?.message || "Falha ao obter próximo número.", variant: "destructive" });
-        return;
-      }
-      numeroAtual = numeroNovo;
-      setNumeroPedido(numeroNovo);
-    }
     const dataBase = dataPedido || new Date().toISOString().slice(0, 10);
     const dismissSaving = showSaving();
     let error: any;
     let duplicado = false;
 
     // Monta as linhas de aviamentos_pedido a partir do estado atual
-    const aviamentosRows = aviamentos
+    const buildAviamentosRows = (numPedido: string) =>
+      aviamentos
       .filter((a) => a.selectedItem || a.partesQtde)
       .map((a) => ({
-        numero_pedido: numeroAtual,
+        numero_pedido: numPedido,
         modelo_ref: referencia,
         tipo: a.tipo || null,
         descricao_item: a.selectedItem?.descricao || null,
         cor: a.selectedItem?.cor || null,
         tamanho: a.selectedItem?.tamanho || null,
-        partes_qtde: parseFloat(a.partesQtde) || 0,
+        partes_qtde: parseNum(a.partesQtde),
       }));
 
     try {
-      if (isEdit) {
+      // Sincroniza o modelo pai ANTES de consumir número ou gravar o pedido,
+      // evitando pedidos duplicados/órfãos caso a sincronização falhe.
+      const { modeloId: syncedModeloId, errorMessage: syncErr } = await ensureParentModelo();
+      if (!syncedModeloId) {
+        error = new Error(syncErr || "Falha ao sincronizar modelo pai");
+      } else if (!isEdit) {
+        // Em criação, só consome o próximo número após garantir o modelo pai.
+        const { data: numeroNovo, error: errNum } = await (supabase as unknown as {
+          rpc: (fn: "proximo_numero_pedido") => Promise<{ data: string | null; error: { message: string } | null }>;
+        }).rpc("proximo_numero_pedido");
+        if (errNum || !numeroNovo) {
+          error = new Error(errNum?.message || "Falha ao obter próximo número.");
+        } else {
+          numeroAtual = numeroNovo;
+          setNumeroPedido(numeroNovo);
+        }
+      }
+
+      if (error) {
+        // Erro já capturado; pula gravação do pedido
+      } else if (isEdit) {
         // UPDATE do pedido existente
         const res = await supabase
           .from("modelo_pedidos")
@@ -843,7 +874,7 @@ const ModelosPage = () => {
             modelo_ref: referencia,
             data_pedido: dataBase,
             tecido: tecido || null,
-            consumo_tecido: parseFloat(consumoMetros) || 0,
+            consumo_tecido: parseNum(consumoMetros),
             status_kanban: statusKanban || "pendente",
             piloto_entregue: pilotoEntregue === "sim",
             observacoes: observacoes || null,
@@ -852,14 +883,9 @@ const ModelosPage = () => {
           .eq("numero_pedido", numeroAtual);
         error = res.error;
 
-        // Garante modelo pai (cria se não existir, atualiza ficha se existir).
-        if (!error) {
-          const mid = await ensureParentModelo();
-          if (!mid) error = new Error("Falha ao sincronizar modelo pai");
-        }
-
         // Substitui aviamentos específicos do pedido
         if (!error) {
+          const aviamentosRows = buildAviamentosRows(numeroAtual);
           await supabase.from("aviamentos_pedido" as any).delete().eq("numero_pedido", numeroAtual);
           if (aviamentosRows.length > 0) {
             const ins = await supabase.from("aviamentos_pedido" as any).insert(aviamentosRows);
@@ -884,22 +910,19 @@ const ModelosPage = () => {
             modelo_ref: referencia,
             data_pedido: dataBase,
             tecido: tecido || null,
-            consumo_tecido: parseFloat(consumoMetros) || 0,
+            consumo_tecido: parseNum(consumoMetros),
             status_kanban: statusKanban || "pendente",
             piloto_entregue: pilotoEntregue === "sim",
             observacoes: observacoes || null,
           } as any);
           error = res.error;
           // Persiste aviamentos específicos do pedido (para edições futuras)
-          if (!error && aviamentosRows.length > 0) {
-            const ins = await supabase.from("aviamentos_pedido" as any).insert(aviamentosRows);
-            if (ins.error) error = ins.error;
-          }
-          // Regra: 1º pedido de uma referência cria o modelo pai automaticamente
-          // (se já existir, apenas atualiza a ficha com os dados deste pedido).
           if (!error) {
-            const mid = await ensureParentModelo();
-            if (!mid) error = new Error("Falha ao sincronizar modelo pai");
+            const aviamentosRows = buildAviamentosRows(numeroAtual);
+            if (aviamentosRows.length > 0) {
+              const ins = await supabase.from("aviamentos_pedido" as any).insert(aviamentosRows);
+              if (ins.error) error = ins.error;
+            }
           }
         }
       }
