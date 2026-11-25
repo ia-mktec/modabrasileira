@@ -1278,10 +1278,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_any_route: {
+        Args: { _routes: string[]; _user_id: string }
+        Returns: boolean
+      }
+      can_edit_any_route: {
+        Args: { _routes: string[]; _user_id: string }
+        Returns: boolean
+      }
       get_user_roles: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"][]
       }
+      has_any_role: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
